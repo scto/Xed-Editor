@@ -6,7 +6,6 @@ import android.view.KeyEvent
 import androidx.annotation.Keep
 import androidx.appcompat.app.AppCompatActivity
 import androidx.collection.ArrayMap
-import com.rk.plugin.server.api.PluginLifeCycle
 import com.rk.xededitor.MainActivity.MainActivity
 import com.rk.xededitor.MainActivity.handlers.KeyEventHandler
 import com.rk.xededitor.ui.theme.ThemeManager
@@ -36,22 +35,18 @@ abstract class BaseActivity : AppCompatActivity() {
         ThemeManager.apply(this)
         super.onCreate(savedInstanceState)
         activityMap[javaClass] = WeakReference(this)
-        PluginLifeCycle.onActivityEvent(this, PluginLifeCycle.LifeCycleType.CREATE)
     }
 
     override fun onResume() {
         super.onResume()
-        PluginLifeCycle.onActivityEvent(this, PluginLifeCycle.LifeCycleType.RESUMED)
     }
 
     override fun onPause() {
         super.onPause()
         ThemeManager.apply(this)
-        PluginLifeCycle.onActivityEvent(this, PluginLifeCycle.LifeCycleType.PAUSED)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        PluginLifeCycle.onActivityEvent(this, PluginLifeCycle.LifeCycleType.DESTROY)
     }
 }

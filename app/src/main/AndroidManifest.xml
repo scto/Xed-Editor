@@ -24,9 +24,6 @@
         android:theme="@style/Theme.Karbon"
         tools:targetApi="tiramisu">
         <activity
-            android:name=".pluginClient.ManagePlugins"
-            android:exported="true" />
-        <activity
             android:name=".MainActivity.MainActivity"
             android:alwaysRetainTaskState="true"
             android:exported="true"
@@ -88,6 +85,9 @@ android:inputType="textFilter"
         <activity
             android:name=".ui.activities.settings.SettingsActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.mainactivity.MainActivity"
+            android:exported="true" />
     </application>
 
 </manifest>

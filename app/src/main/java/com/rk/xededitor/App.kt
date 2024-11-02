@@ -3,7 +3,6 @@ package com.rk.xededitor
 import android.app.Application
 import android.content.Context
 import com.rk.libcommons.application
-import com.rk.plugin.server.Loader
 import com.rk.xededitor.CrashHandler.CrashHandler
 import com.rk.xededitor.MainActivity.handlers.VersionChangeHandler
 import com.rk.xededitor.ui.screens.settings.terminal.updateProotArgs
@@ -44,11 +43,6 @@ class App : Application() {
             launch(Dispatchers.IO) {
                 delay(1000)
                 updateProotArgs(this@App)
-            }
-            launch(Dispatchers.IO) {
-                delay(5000)
-                val pluginLoader = Loader(this@App)
-                pluginLoader.start()
             }
             launch(Dispatchers.IO) {
                 SetupEditor.init(this@App)
