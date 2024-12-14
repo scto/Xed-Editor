@@ -4,6 +4,6 @@
     "config:recommended",
     ":dependencyDashboard"
   ],
-  "automerge": false,
+  "automerge": true,
   "includeForks": true
 }
