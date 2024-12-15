@@ -12,6 +12,8 @@ import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
+import com.google.android.material.color.MaterialColors
 import com.google.gson.JsonParser
 import com.rk.libcommons.application
 import com.rk.settings.PreferencesData
@@ -42,6 +44,7 @@ import kotlinx.coroutines.withContext
 import org.eclipse.tm4e.core.registry.IThemeSource
 import org.greenrobot.eventbus.EventBus
 import java.io.File
+import java.io.InputStream
 import java.io.InputStreamReader
 
 private typealias onClick = OnClickListener
@@ -181,7 +184,21 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
             GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
         }
 
+        private fun read(inputStream: InputStream, replacements: Map<String, String>): String {
+            val content = inputStream.bufferedReader().use { it.readText() }
+            var modifiedContent = content
+            for ((oldValue, newValue) in replacements) {
+                modifiedContent = modifiedContent.replace(oldValue, newValue)
+            }
+
+            return modifiedContent
+        }
+
+
         private suspend fun initTextMateTheme(ctx: Context) {
+            val surfaceColor = MaterialColors.getColor(ctx, com.google.android.material.R.attr.colorSurface, Color.parseColor("#FAF9FF"))
+            val surfaceColorHex = String.format("#%06X", 0xFFFFFF and surfaceColor)
+
             darkThemeRegistry = ThemeRegistry()
             oledThemeRegistry = ThemeRegistry()
             lightThemeRegistry = ThemeRegistry()
@@ -197,9 +214,13 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
                 oledThemeRegistry?.loadTheme(
                     ThemeModel(IThemeSource.fromInputStream(darcula_oled, "darcula.json", null))
                 )
-                lightThemeRegistry?.loadTheme(
-                    ThemeModel(IThemeSource.fromInputStream(quietlight, "quietlight.json", null))
-                )
+//                lightThemeRegistry?.loadTheme(
+//                    ThemeModel(IThemeSource.fromInputStream(quietlight, "quietlight.json", null))
+//                )
+
+                lightThemeRegistry?.loadTheme(ThemeModel(IThemeSource.fromString(IThemeSource.ContentType.JSON,
+                    read(quietlight, mapOf("#FAF9FF" to surfaceColorHex))
+                )))
             } catch (e: Exception) {
                 throw RuntimeException(e)
             } finally {
@@ -266,10 +287,6 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
     }
 
     fun getInputView(): SymbolInputView {
-        fun hapticFeedBack(view: View) {
-            view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-        }
-
         val darkTheme: Boolean = when (PreferencesData.getString(
             PreferencesKeys.DEFAULT_NIGHT_MODE,
             "-1"
@@ -288,7 +305,7 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
 
             val keys = mutableListOf<Pair<String, View.OnClickListener>>().apply {
                 add(Pair("->", onClick {
-                    hapticFeedBack(it)
+
                     editor.onKeyDown(
                         KeyEvent.KEYCODE_TAB, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_TAB)
                     )
@@ -297,14 +314,12 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
                 }))
 
                 add(Pair("⌘", onClick {
-                    hapticFeedBack(it)
-
                     EventBus.getDefault().post(ControlPanel())
 
                 }))
 
                 add(Pair("←", onClick {
-                    hapticFeedBack(it)
+
                     editor.onKeyDown(
                         KeyEvent.KEYCODE_DPAD_LEFT,
                         KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT)
@@ -312,7 +327,7 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
                 }))
 
                 add(Pair("↑", onClick {
-                    hapticFeedBack(it)
+
                     editor.onKeyDown(
                         KeyEvent.KEYCODE_DPAD_UP,
                         KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP)
@@ -321,7 +336,7 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
                 }))
 
                 add(Pair("→", onClick {
-                    hapticFeedBack(it)
+
                     editor.onKeyDown(
                         KeyEvent.KEYCODE_DPAD_RIGHT,
                         KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT)
@@ -330,7 +345,7 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
                 }))
 
                 add(Pair("↓", onClick {
-                    hapticFeedBack(it)
+
                     editor.onKeyDown(
                         KeyEvent.KEYCODE_DPAD_DOWN,
                         KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN)
@@ -339,7 +354,7 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
                 }))
 
                 add(Pair("⇇", onClick {
-                    hapticFeedBack(it)
+
                     editor.onKeyDown(
                         KeyEvent.KEYCODE_MOVE_HOME,
                         KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MOVE_HOME)
@@ -347,7 +362,7 @@ class SetupEditor(val editor: KarbonEditor, private val ctx: Context, scope: Cor
                 }))
 
                 add(Pair("⇉", onClick {
-                    hapticFeedBack(it)
+
                     editor.onKeyDown(
                         KeyEvent.KEYCODE_MOVE_END,
                         KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MOVE_END)
