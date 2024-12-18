@@ -42,7 +42,7 @@ android {
     namespace = "com.rk.xededitor"
     compileSdk = 34
     android.buildFeatures.buildConfig = true
-    
+
     println("Building for commit ${getGitCommitHash()}")
     
     
@@ -140,6 +140,10 @@ android {
     packaging {
         resources {
             exclude("META-INF/**")
+            exclude("lib/x86/**")
+        }
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 }
@@ -198,6 +202,7 @@ dependencies {
     implementation(project(":core:resources"))
     implementation(project(":core:karbon-exec"))
     implementation(project(":core:Engine"))
+    implementation(project(":core:loader"))
 
     implementation(libs.nanohttpd)
     implementation(libs.photoview)

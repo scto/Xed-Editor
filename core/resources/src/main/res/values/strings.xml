@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Karbon</string>
     <string name="open_drawer">open</string>
@@ -266,7 +267,7 @@
     <string name="version">Version</string>
     <string name="version_code">Version Code</string>
     <string name="github">GitHub</string>
-    <string name="github_desc">Karbon is Open Source!</string>
+    <string name="github_desc">Star it On Github 🤩</string>
     <string name="telegram">Telegram Group</string>
     <string name="telegram_desc">Join Telegram community</string>
     <string name="join">Join</string>
@@ -328,4 +329,9 @@
     <string name="update">Update</string>
     <string name="ignore">Ignore</string>
     <string name="update_disable">Update check disabled</string>
+
+    <string name="launch_termux">Launch Termux?</string>
+    <string name="launch_termux_explanation">Termux is stopped so karbon is unable to run command in it. do you like to start it?</string>
+    <string name="launch">Launch</string>
+
 </resources>
