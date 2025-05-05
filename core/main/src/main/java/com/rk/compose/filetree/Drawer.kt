@@ -54,6 +54,7 @@ import com.rk.file_wrapper.UriWrapper
 import com.rk.libcommons.ActionPopup
 import com.rk.libcommons.DefaultScope
 import com.rk.libcommons.alpineHomeDir
+import com.rk.libcommons.toFileObject
 import com.rk.resources.drawables
 import com.rk.resources.getString
 import com.rk.resources.strings
@@ -118,12 +119,7 @@ private suspend fun restore(){
                     val projectsList = gson.fromJson(jsonString, Array<String>::class.java).toList()
 
                     projectsList.forEach {
-                        val file = File(it)
-                        if (file.exists()) {
-                            addProject(FileWrapper(file))
-                        } else {
-                            addProject(UriWrapper(Uri.parse(it)))
-                        }
+                        addProject(it.toFileObject())
                         delay(100)
                     }
 
@@ -217,7 +213,7 @@ fun DrawerContent(modifier: Modifier = Modifier) {
                                     )
 
                                     val is11Plus = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-                                    val isManager = Environment.isExternalStorageManager()
+                                    val isManager = is11Plus && Environment.isExternalStorageManager()
                                     val legacyPermission = ContextCompat.checkSelfPermission(
                                         this@withContext,
                                         Manifest.permission.READ_EXTERNAL_STORAGE,

@@ -56,10 +56,10 @@ object UpdateChecker {
                         parseJson(jsonResponse)
                     }
                 }
-                Settings.last_update_check_timestamp = System.currentTimeMillis()
             } catch (e: Exception) {
                 e.printStackTrace()
-                errorDialog(e)
+            }finally {
+                Settings.last_update_check_timestamp = System.currentTimeMillis()
             }
         }
     }
