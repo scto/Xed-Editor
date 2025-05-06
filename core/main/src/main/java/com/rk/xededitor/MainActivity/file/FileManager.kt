@@ -22,8 +22,8 @@ import com.rk.libcommons.PathUtils.toPath
 import com.rk.libcommons.application
 import com.rk.libcommons.askInput
 import com.rk.libcommons.errorDialog
-import com.rk.libcommons.toFileObject
 import com.rk.libcommons.toast
+import com.rk.libcommons.uriToFileObject
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.xededitor.MainActivity.MainActivity
@@ -47,7 +47,7 @@ class FileManager(private val mainActivity: MainActivity) {
                 mainActivity.lifecycleScope.launch{
                     delay(100)
                     withContext(Dispatchers.Main){
-                        mainActivity.adapter!!.addFragment(it.data!!.data!!.toFileObject())
+                        mainActivity.adapter!!.addFragment(uriToFileObject(it.data!!.data!!,expectFile = true))
                     }
                 }
             }
@@ -159,7 +159,7 @@ class FileManager(private val mainActivity: MainActivity) {
             if (result.resultCode == Activity.RESULT_OK) {
                 mainActivity.lifecycleScope.launch{
                     val data: Intent? = result.data
-                    val wrapper = data?.data?.toFileObject()!!
+                    val wrapper = uriToFileObject(data?.data!!,expectFile = true)
                     delay(100)
                     withContext(Dispatchers.Main){
                         mainActivity.adapter?.addFragment(wrapper)
@@ -184,7 +184,9 @@ class FileManager(private val mainActivity: MainActivity) {
     fun selectDirForNewFileLaunch(fileName:String){
         selectDirCallBack = {
             val file = File(it?.data!!.data!!.toPath())
-            val fileObject = if (file.exists().not()) {
+            val fileObject = if (file.exists() && file.canWrite() && file.canWrite() && file.isDirectory) {
+                FileWrapper(file)
+            } else {
                 runCatching {
                     val takeFlags: Int =
                         (it.data!!.flags and (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
@@ -193,11 +195,9 @@ class FileManager(private val mainActivity: MainActivity) {
                     )
                 }
                 UriWrapper(it.data!!.data!!)
-            } else {
-                FileWrapper(file)
             }
 
-            if (fileObject.hasChild(fileName).not()){
+            if (fileObject.hasChild(fileName)){
                 toast("File with name $fileName already exists")
             }else{
                 val newFile = fileObject.createChild(true,fileName)
@@ -209,6 +209,8 @@ class FileManager(private val mainActivity: MainActivity) {
                     }
                 }
             }
+
+
 
         }
         selectDirInternal.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE))
