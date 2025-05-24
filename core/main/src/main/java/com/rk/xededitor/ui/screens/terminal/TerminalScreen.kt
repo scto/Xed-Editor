@@ -3,7 +3,9 @@ package com.rk.xededitor.ui.screens.terminal
 import android.content.Intent
 import android.graphics.Typeface
 import android.util.TypedValue
-import android.view.View
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -21,10 +23,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
@@ -44,8 +47,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -53,18 +57,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.widget.doOnTextChanged
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.rk.SessionService
 import com.rk.libcommons.dpToPx
 import com.rk.libcommons.pendingCommand
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.rk.xededitor.service.SessionService
-import com.rk.xededitor.ui.activities.settings.SettingsActivity
-import com.rk.xededitor.ui.activities.settings.SettingsRoutes
-import com.rk.xededitor.ui.activities.settings.settingsNavController
 import com.rk.xededitor.ui.activities.terminal.Terminal
 import com.rk.xededitor.ui.animations.NavigationAnimationTransitions
 import com.rk.xededitor.ui.screens.settings.terminal.SettingsTerminalScreen
@@ -73,14 +75,11 @@ import com.rk.xededitor.ui.screens.terminal.virtualkeys.VirtualKeysInfo
 import com.rk.xededitor.ui.screens.terminal.virtualkeys.VirtualKeysListener
 import com.rk.xededitor.ui.screens.terminal.virtualkeys.VirtualKeysView
 import com.termux.view.TerminalView
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 var terminalView = WeakReference<TerminalView?>(null)
 var virtualKeysView = WeakReference<VirtualKeysView?>(null)
-var virtualKeysId = View.generateViewId()
-
 
 @Composable
 fun TerminalScreen(modifier: Modifier = Modifier, terminalActivity: Terminal) {
@@ -93,10 +92,10 @@ fun TerminalScreen(modifier: Modifier = Modifier, terminalActivity: Terminal) {
         popEnterTransition = { NavigationAnimationTransitions.popEnterTransition },
         popExitTransition = { NavigationAnimationTransitions.popExitTransition },
     ) {
-        composable("terminal"){
+        composable("terminal") {
             TerminalScreenX(terminalActivity = terminalActivity, navController = navController)
         }
-        composable("terminal_settings"){
+        composable("terminal_settings") {
             SettingsTerminalScreen()
         }
     }
@@ -104,7 +103,11 @@ fun TerminalScreen(modifier: Modifier = Modifier, terminalActivity: Terminal) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TerminalScreenX(modifier: Modifier = Modifier, terminalActivity: Terminal,navController: NavController) {
+fun TerminalScreenX(
+    modifier: Modifier = Modifier,
+    terminalActivity: Terminal,
+    navController: NavController
+) {
 
     val context = LocalContext.current
     LaunchedEffect("terminal") {
@@ -118,7 +121,7 @@ fun TerminalScreenX(modifier: Modifier = Modifier, terminalActivity: Terminal,na
         val drawerWidth = (screenWidthDp * 0.84).dp
 
         BackHandler(enabled = drawerState.isOpen) {
-            scope.launch{
+            scope.launch {
                 drawerState.close()
             }
         }
@@ -160,7 +163,10 @@ fun TerminalScreenX(modifier: Modifier = Modifier, terminalActivity: Terminal,na
                                         ?.let {
                                             val client = TerminalBackEnd(it, terminalActivity)
                                             terminalActivity.sessionBinder.get()!!.createSession(
-                                                generateUniqueString(terminalActivity.sessionBinder.get()!!.getService().sessionList),
+                                                generateUniqueString(
+                                                    terminalActivity.sessionBinder.get()!!
+                                                        .getService().sessionList
+                                                ),
                                                 client,
                                                 terminalActivity
                                             )
@@ -185,11 +191,12 @@ fun TerminalScreenX(modifier: Modifier = Modifier, terminalActivity: Terminal,na
 
                         }
 
-                        terminalActivity.sessionBinder.get()?.getService()?.sessionList?.let{
+                        terminalActivity.sessionBinder.get()?.getService()?.sessionList?.let {
                             LazyColumn {
-                                items(it){ session_id ->
+                                items(it) { session_id ->
                                     SelectableCard(
-                                        selected = session_id == terminalActivity.sessionBinder.get()?.getService()?.currentSession?.value,
+                                        selected = session_id == terminalActivity.sessionBinder.get()
+                                            ?.getService()?.currentSession?.value,
                                         onSelect = { changeSession(terminalActivity, session_id) },
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -204,13 +211,16 @@ fun TerminalScreenX(modifier: Modifier = Modifier, terminalActivity: Terminal,na
                                                 style = MaterialTheme.typography.bodyLarge
                                             )
 
-                                            if (session_id != terminalActivity.sessionBinder.get()?.getService()?.currentSession?.value){
+                                            if (session_id != terminalActivity.sessionBinder.get()
+                                                    ?.getService()?.currentSession?.value
+                                            ) {
                                                 Spacer(modifier = Modifier.weight(1f))
 
                                                 IconButton(
                                                     onClick = {
                                                         println(session_id)
-                                                        terminalActivity.sessionBinder.get()?.terminateSession(session_id)
+                                                        terminalActivity.sessionBinder.get()
+                                                            ?.terminateSession(session_id)
                                                     },
                                                     modifier = Modifier.size(24.dp)
                                                 ) {
@@ -251,21 +261,32 @@ fun TerminalScreenX(modifier: Modifier = Modifier, terminalActivity: Terminal,na
                             factory = { context ->
                                 TerminalView(context, null).apply {
                                     terminalView = WeakReference(this)
-                                    setTextSize(dpToPx(Settings.terminal_font_size.toFloat(), context))
+                                    setTextSize(
+                                        dpToPx(
+                                            Settings.terminal_font_size.toFloat(),
+                                            context
+                                        )
+                                    )
                                     val client = TerminalBackEnd(this, terminalActivity)
 
-                                    val session = if (pendingCommand != null){
-                                        terminalActivity.sessionBinder.get()!!.getService().currentSession.value = pendingCommand!!.id
-                                        terminalActivity.sessionBinder.get()!!.getSession(pendingCommand!!.id)
+                                    val session = if (pendingCommand != null) {
+                                        terminalActivity.sessionBinder.get()!!
+                                            .getService().currentSession.value = pendingCommand!!.id
+                                        terminalActivity.sessionBinder.get()!!
+                                            .getSession(pendingCommand!!.id)
                                             ?: terminalActivity.sessionBinder.get()!!.createSession(
                                                 pendingCommand!!.id,
                                                 client,
                                                 terminalActivity
                                             )
-                                    }else{
-                                        terminalActivity.sessionBinder.get()!!.getSession(terminalActivity.sessionBinder.get()!!.getService().currentSession.value)
+                                    } else {
+                                        terminalActivity.sessionBinder.get()!!.getSession(
+                                            terminalActivity.sessionBinder.get()!!
+                                                .getService().currentSession.value
+                                        )
                                             ?: terminalActivity.sessionBinder.get()!!.createSession(
-                                                terminalActivity.sessionBinder.get()!!.getService().currentSession.value,
+                                                terminalActivity.sessionBinder.get()!!
+                                                    .getService().currentSession.value,
                                                 client,
                                                 terminalActivity
                                             )
@@ -317,44 +338,117 @@ fun TerminalScreenX(modifier: Modifier = Modifier, terminalActivity: Terminal,na
                                 terminalView.mEmulator?.mColors?.mCurrentColors?.apply {
                                     set(256, typedValue.data)
                                     set(258, typedValue.data)
-                                } },
-                        )
-
-                        AndroidView(
-                            factory = { context ->
-                                VirtualKeysView(context, null).apply {
-                                    virtualKeysView = WeakReference(this)
-                                    id = virtualKeysId
-                                    val typedValue = TypedValue()
-                                    context.theme.resolveAttribute(
-                                        com.google.android.material.R.attr.colorOnSurface,
-                                        typedValue,
-                                        true
-                                    )
-
-
-                                    virtualKeysViewClient =
-                                        terminalView.get()?.mTermSession?.let {
-                                            VirtualKeysListener(
-                                                it
-                                            )
-                                        }
-
-                                    buttonTextColor = typedValue.data
-
-                                    reload(
-                                        VirtualKeysInfo(
-                                            VIRTUAL_KEYS,
-                                            "",
-                                            VirtualKeysConstants.CONTROL_CHARS_ALIASES
-                                        )
-                                    )
                                 }
                             },
+                        )
+
+                        val pagerState = rememberPagerState(pageCount = { 2 })
+                        HorizontalPager(
+                            state = pagerState,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(75.dp)
-                        )
+                        ) { page ->
+                            when (page) {
+                                0 -> {
+                                    terminalView.get()?.requestFocus()
+                                    //terminalView.get()?.requestFocusFromTouch()
+                                    AndroidView(
+                                        factory = { context ->
+                                            VirtualKeysView(context, null).apply {
+                                                virtualKeysView = WeakReference(this)
+                                                val typedValue = TypedValue()
+                                                context.theme.resolveAttribute(
+                                                    com.google.android.material.R.attr.colorOnSurface,
+                                                    typedValue,
+                                                    true
+                                                )
+
+
+                                                virtualKeysViewClient =
+                                                    terminalView.get()?.mTermSession?.let {
+                                                        VirtualKeysListener(
+                                                            it
+                                                        )
+                                                    }
+
+                                                buttonTextColor = typedValue.data
+
+                                                reload(
+                                                    VirtualKeysInfo(
+                                                        VIRTUAL_KEYS,
+                                                        "",
+                                                        VirtualKeysConstants.CONTROL_CHARS_ALIASES
+                                                    )
+                                                )
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(75.dp)
+                                    )
+                                }
+
+                                1 -> {
+                                    var text by rememberSaveable { mutableStateOf("") }
+
+                                    AndroidView(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(75.dp),
+                                        factory = { ctx ->
+                                            EditText(ctx).apply {
+                                                maxLines = 1
+                                                isSingleLine = true
+                                                imeOptions = EditorInfo.IME_ACTION_DONE
+
+                                                // Listen for text changes to update Compose state
+                                                doOnTextChanged { textInput, _, _, _ ->
+                                                    text = textInput.toString()
+                                                }
+
+                                                setOnEditorActionListener { v, actionId, event ->
+                                                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                                                        if (text.isEmpty()) {
+                                                            // Dispatch enter key events if text is empty
+                                                            val eventDown = KeyEvent(
+                                                                KeyEvent.ACTION_DOWN,
+                                                                KeyEvent.KEYCODE_ENTER
+                                                            )
+                                                            val eventUp = KeyEvent(
+                                                                KeyEvent.ACTION_UP,
+                                                                KeyEvent.KEYCODE_ENTER
+                                                            )
+                                                            terminalView.get()
+                                                                ?.dispatchKeyEvent(eventDown)
+                                                            terminalView.get()
+                                                                ?.dispatchKeyEvent(eventUp)
+                                                        } else {
+                                                            terminalView.get()?.currentSession?.write(
+                                                                text
+                                                            )
+                                                            setText("")
+                                                        }
+                                                        true
+                                                    } else {
+                                                        false
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        update = { editText ->
+                                            // Keep EditText's text in sync with Compose state, avoid infinite loop by only updating if different
+                                            if (editText.text.toString() != text) {
+                                                editText.setText(text)
+                                                editText.setSelection(text.length)
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                        }
+
                     }
                 }
             })
@@ -402,7 +496,7 @@ fun SelectableCard(
 }
 
 
-fun changeSession(terminalActivity: Terminal, session_id:String){
+fun changeSession(terminalActivity: Terminal, session_id: String) {
     terminalView.get()?.apply {
         val client = TerminalBackEnd(this, terminalActivity)
         val session =
@@ -433,14 +527,14 @@ fun changeSession(terminalActivity: Terminal, session_id:String){
             }
         }
         virtualKeysView.get()?.apply {
-            virtualKeysViewClient = terminalView.get()?.mTermSession?.let { VirtualKeysListener(it) }
+            virtualKeysViewClient =
+                terminalView.get()?.mTermSession?.let { VirtualKeysListener(it) }
         }
 
     }
     terminalActivity.sessionBinder.get()!!.getService().currentSession.value = session_id
 
 }
-
 
 
 const val VIRTUAL_KEYS =

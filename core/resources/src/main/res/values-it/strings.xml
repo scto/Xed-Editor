@@ -88,7 +88,7 @@
     <string name="dir_example">Nome es. Test</string>
     <string name="create">Crea</string>
     <string name="ask_enter_name">Per favore inserisci un nome</string>
-    <string name="ask_del">Sei sicuro di voler cancellare</string>
+    <string name="ask_del">Sei sicuro di voler eliminare definitivamente</string>
     <string name="redir">Per favore seleziona nuovamente la cartella</string>
     <string name="canthandle">Nessuna app associata a questo tipo di file</string>
     <string name="clipboardempty">Nessun appunto in memoria</string>
@@ -247,7 +247,7 @@
     <string name="cannot_be_empty">Non può essere vuoto.</string>
     <string name="theme_mode_desc">Cambia il tema colore dell\'app</string>
     <string name="no_plugins_available">Nessun Plugin Disponibile</string>
-    <string name="show_suggestions">Mostra Suggerimenti</string>
+    <string name="show_suggestions">Mostra Suggerimenti Tastiera</string>
     <string name="about">Informazioni</string>
     <string name="about_desc">Informazioni su Xed-Editor</string>
     <string name="version">Versione</string>
@@ -387,4 +387,23 @@
     <string name="unknown_err">Qualcosa è andato storto</string>
     <string name="misc">Varie</string>
     <string name="misc_desc">Impostazioni varie</string>
+    <string name="expose_saf">Rendi Visibile la Directory Home</string>
+    <string name="saf_expose_warning">L’esposizione della directory home potrebbe rivelare informazioni sensibili ad app malevole, inclusi token Git, password, nomi utente e altri file presenti nella directory home del terminale. Vuoi continuare?</string>
+    <string name="can_read">Può Leggere</string>
+    <string name="can_write">Può Scrivere</string>
+    <string name="isfile">È un File</string>
+    <string name="copied">Copiato</string>
+    <string name="expose_saf_desc">Rendi accessibile la directory home alle app esterne tramite il selettore file di sistema (SAF)</string>
+    <string name="info">Info</string>
+    <string name="file_size">Dimensione File</string>
+    <string name="file_info">Informazioni File</string>
+    <string name="flavor">Variante</string>
+    <string name="cant_undo">Questa azione non può essere annullata</string>
+    <string name="isDisableSoftKbdIfHardKbdAvailable">Disabilita tastiera virtuale</string>
+    <string name="isDisableSoftKbdIfHardKbdAvailable_desc">Disabilita la tastiera virtuale se è Disponibile la Tastiera fisica</string>
+    <string name="auto_complete">Completamento Automatico dell\'Editor</string>
+    <string name="logcat_service">Servizio Logcat</string>
+    <string name="logcat_service_desc">Acquisizione log in background</string>
+    <string name="capture_logcat_desc">Acquisisci i log in background per il debug</string>
+    <string name="capture_logcat">Acquisisci Logcat</string>
 </resources>

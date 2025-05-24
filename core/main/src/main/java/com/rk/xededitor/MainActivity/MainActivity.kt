@@ -3,23 +3,24 @@ package com.rk.xededitor.MainActivity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.documentfile.provider.DocumentFile
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -47,12 +48,11 @@ import com.rk.libcommons.editor.textmateSources
 import com.rk.libcommons.errorDialog
 import com.rk.libcommons.toast
 import com.rk.libcommons.toastCatching
+import com.rk.mutator_engine.Engine
 import com.rk.resources.drawables
 import com.rk.resources.strings
-import com.rk.mutator_engine.Engine
 import com.rk.runner.Runner
 import com.rk.settings.Settings
-import com.rk.xededitor.BaseActivity
 import com.rk.xededitor.MainActivity.file.FileManager
 import com.rk.xededitor.MainActivity.file.TabSelectedListener
 import com.rk.xededitor.MainActivity.file.getFragmentType
@@ -68,6 +68,7 @@ import com.rk.xededitor.ui.screens.settings.feature_toggles.InbuiltFeatures
 import com.rk.xededitor.ui.screens.settings.mutators.ImplAPI
 import com.rk.xededitor.ui.screens.settings.mutators.Mutators
 import com.rk.xededitor.ui.theme.KarbonTheme
+import com.rk.xededitor.ui.theme.ThemeManager
 import io.github.rosemoe.sora.text.Content
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -82,7 +83,7 @@ import java.io.ObjectOutputStream
 import java.io.Serializable
 import java.lang.ref.WeakReference
 
-class MainActivity : BaseActivity() {
+class MainActivity : AppCompatActivity() {
 
     companion object {
         var activityRef = WeakReference<MainActivity?>(null)
@@ -109,17 +110,21 @@ class MainActivity : BaseActivity() {
         var fragmentTypes = mutableListOf<FragmentType>()
         var fragmentTitles = mutableListOf<String>()
         var fileSet = HashSet<String>()
-        var fragmentContent = hashMapOf<String,Content?>()
+        var fragmentContent = hashMapOf<String, Content?>()
 
         private var _isRestoring = false
-        val isRestoring:Boolean
+        val isRestoring: Boolean
             get() = _isRestoring
 
         @OptIn(DelicateCoroutinesApi::class)
-        fun save(){
+        fun save() {
             val state = toState()
             GlobalScope.launch(Dispatchers.IO) {
-                FileOutputStream(File(application!!.cacheDir,"state").also { if (it.exists()){it.delete()} }).use { fileOutputStream ->
+                FileOutputStream(File(application!!.cacheDir, "state").also {
+                    if (it.exists()) {
+                        it.delete()
+                    }
+                }).use { fileOutputStream ->
                     ObjectOutputStream(fileOutputStream).use {
                         it.writeObject(state)
                     }
@@ -127,9 +132,9 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        fun restore(){
+        fun restore() {
             viewModelScope.launch(Dispatchers.IO) {
-                if (Settings.restore_session.not()){
+                if (Settings.restore_session.not()) {
                     return@launch
                 }
                 _isRestoring = true
@@ -146,7 +151,7 @@ class MainActivity : BaseActivity() {
                     toast("State lost")
                 }.onSuccess {
                     activityRef.get()?.let {
-                        while(it.binding == null || it.tabLayout == null){
+                        while (it.binding == null || it.tabLayout == null) {
                             delay(50)
                         }
                     }
@@ -160,9 +165,14 @@ class MainActivity : BaseActivity() {
                             }
                             binding?.viewpager2?.offscreenPageLimit = tabLimit.toInt()
 
-                            lifecycleScope.launch(Dispatchers.Main){
+                            lifecycleScope.launch(Dispatchers.Main) {
                                 TabLayoutMediator(tabLayout!!, viewPager!!) { tab, position ->
-                                    tab.text = tabViewModel.fragmentTitles[position]
+                                    val titles = tabViewModel.fragmentTitles
+                                    if (position in titles.indices) {
+                                        tab.text = titles[position]
+                                    } else {
+                                        toast("${strings.unknown_err} ${strings.restart_app}")
+                                    }
                                 }.attach()
                             }
                         }
@@ -181,7 +191,8 @@ class MainActivity : BaseActivity() {
         }
 
         private fun restoreState(state: TabViewModelState) {
-            val files = state.fragmentFiles.filter { it.exists() && it.canRead() && it.isFile() }.toMutableList()
+            val files = state.fragmentFiles.filter { it.exists() && it.canRead() && it.isFile() }
+                .toMutableList()
             val types = files.map { it.getFragmentType() }.toMutableList()
             val titles = files.map { it.getName() }.toMutableList()
             val fileSet = files.map { it.getCanonicalPath() }.toHashSet()
@@ -196,6 +207,7 @@ class MainActivity : BaseActivity() {
 
     var badge: BadgeDrawable? = null
     override fun onCreate(savedInstanceState: Bundle?) {
+        ThemeManager.apply(this)
         super.onCreate(savedInstanceState)
         activityRef = WeakReference(this)
         tabViewModel.restore()
@@ -205,6 +217,21 @@ class MainActivity : BaseActivity() {
         setSupportActionBar(binding!!.toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
+
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById<View>(android.R.id.content)) { v, insets ->
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            v.setPadding(
+                systemBars.left,
+                systemBars.top,
+                systemBars.right,
+                maxOf(systemBars.bottom, imeInsets.bottom)
+            )
+
+            insets
+        }
 
         lifecycleScope.launch(Dispatchers.IO) {
             SetupEditor.initActivity(this@MainActivity, calculateColors = {
@@ -299,13 +326,20 @@ class MainActivity : BaseActivity() {
             list.sort()
             list.forEach { sourceName ->
                 var ext = sourceName.substringAfterLast(".")
-                if (sourceName == "text.html.basic"){
+                if (sourceName == "text.html.basic") {
                     ext = "html"
                 }
 
-                add(1,sourceName.hashCode(),order,ext).setOnMenuItemClickListener {
-                    (adapter?.getCurrentFragment()?.fragment as? EditorFragment)?.apply { scope.launch { setupEditor?.setLanguage(sourceName) } }
-                    false }
+                add(1, sourceName.hashCode(), order, ext).setOnMenuItemClickListener {
+                    (adapter?.getCurrentFragment()?.fragment as? EditorFragment)?.apply {
+                        scope.launch {
+                            setupEditor?.setLanguage(
+                                sourceName
+                            )
+                        }
+                    }
+                    false
+                }
 
                 order++
             }
@@ -316,12 +350,13 @@ class MainActivity : BaseActivity() {
         menu.findItem(R.id.tools).isVisible = InbuiltFeatures.mutators.state.value
 
         val tool = ContextCompat.getDrawable(this, drawables.build)
-        if (InbuiltFeatures.mutators.state.value){
+        if (InbuiltFeatures.mutators.state.value) {
             var order = 0
             Mutators.getMutators().forEach { mut ->
                 menu.findItem(R.id.tools).subMenu?.add(
                     1, mut.hashCode(), order, mut.name
-                )?.apply { icon = tool;order++;toolItems.add(mut.hashCode())
+                )?.apply {
+                    icon = tool;order++;toolItems.add(mut.hashCode())
                     setOnMenuItemClickListener {
                         DefaultScope.launch {
                             Engine(mut.script, DefaultScope).start(onResult = { engine, result ->
@@ -343,15 +378,16 @@ class MainActivity : BaseActivity() {
         return true
     }
 
-    private fun openTabForIntent(intent: Intent){
-        if ((Intent.ACTION_VIEW == intent.action || Intent.ACTION_EDIT == intent.action)){
+    private fun openTabForIntent(intent: Intent) {
+        if ((Intent.ACTION_VIEW == intent.action || Intent.ACTION_EDIT == intent.action)) {
             val uri = intent.data!!
             val file = File(uri.toPath())
-            val fileObject = if (file.exists() && file.canRead() && file.canWrite() && file.isFile){
-                FileWrapper(file)
-            }else{
-                UriWrapper(uri)
-            }
+            val fileObject =
+                if (file.exists() && file.canRead() && file.canWrite() && file.isFile) {
+                    FileWrapper(file)
+                } else {
+                    UriWrapper(DocumentFile.fromSingleUri(this, uri)!!)
+                }
             adapter?.addFragment(fileObject)
             setIntent(Intent())
         }
@@ -359,7 +395,7 @@ class MainActivity : BaseActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        setIntent(intent);
+        setIntent(intent)
     }
 
     override fun onRequestPermissionsResult(
@@ -372,6 +408,8 @@ class MainActivity : BaseActivity() {
     }
 
     var isPaused = true
+
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onPause() {
         isPaused = true
         tabViewModel.save()
@@ -380,8 +418,19 @@ class MainActivity : BaseActivity() {
         if (Settings.auto_save) {
             toastCatching { saveAllFiles() }
         }
-
         super.onPause()
+        ThemeManager.apply(this)
+        ExtensionManager.onMainActivityPaused()
+    }
+
+    override fun onLowMemory() {
+        ExtensionManager.onLowMemory()
+        super.onLowMemory()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        ExtensionManager.onLowMemory()
+        super.onTrimMemory(level)
     }
 
     override fun onResume() {
@@ -391,7 +440,7 @@ class MainActivity : BaseActivity() {
         PermissionHandler.verifyStoragePermission(this)
         openTabForIntent(intent)
         binding?.viewpager2?.offscreenPageLimit = tabLimit.toInt()
-        lifecycleScope.launch{ Runner.onMainActivityResumed() }
+        lifecycleScope.launch { Runner.onMainActivityResumed() }
         lifecycleScope.launch {
             isLoading = true
             restoreProjects()
@@ -471,7 +520,12 @@ class MainActivity : BaseActivity() {
         viewPager!!.adapter = adapter
 
         TabLayoutMediator(tabLayout!!, viewPager!!) { tab, position ->
-            tab.text = tabViewModel.fragmentTitles[position]
+            val titles = tabViewModel.fragmentTitles
+            if (position in titles.indices) {
+                tab.text = titles[position]
+            } else {
+                toast("${strings.unknown_err} ${strings.restart_app}")
+            }
         }.attach()
 
 

@@ -65,7 +65,7 @@
     <string name="ask_enter_name">Please enter a name</string>
     <string name="already_exists">A document already exist with this name</string>
     <string name="attention">Attention</string>
-    <string name="ask_del">Are you sure you want to delete</string>
+    <string name="ask_del">Are you sure you want to permanently delete</string>
     <string name="redir">Please reselect the directory</string>
     <string name="canthandle">No app found to handle the file</string>
     <string name="clipboardempty">Clipboard is empty</string>
@@ -82,7 +82,7 @@
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="download">Download</string>
-    
+
 
     <string name="git">Git</string>
     <string name="cred">Credentials</string>
@@ -231,19 +231,19 @@
     <string name="force_desktop_desc">Force Desktop layout on smaller screen devices</string>
     <string name="force_normal">Force Normal Mode</string>
     <string name="force_normal_desc">Force Normal layout on large screen devices</string>
-    
+
     <string name="light_mode">Light</string>
     <string name="dark_mode">Dark</string>
     <string name="auto_mode">Auto</string>
-    <string name="select_theme_mode" >@string/theme_mode</string>
-    
+    <string name="select_theme_mode">@string/theme_mode</string>
+
     <string name="cannot_be_empty">It cannot be empty.</string>
-    
+
     <string name="theme_mode">Theme</string>
     <string name="theme_mode_desc">Change app color theme</string>
 
-    <string name="show_suggestions">Show Suggestions</string>
-    
+    <string name="show_suggestions">Show Keyboard Suggestions</string>
+
     <string name="about">About</string>
     <string name="about_desc">About Xed-Editor</string>
     <string name="version">Version</string>
@@ -253,12 +253,12 @@
     <string name="telegram">Telegram Group</string>
     <string name="telegram_desc">Report issues, feature requests etc.</string>
     <string name="join">Join</string>
-    
+
     <string name="show_virtual_keyboard">Show Virtual Keyboard</string>
     <string name="show_virtual_keyboard_desc">Show virtual keyboard when Physical keyboard is connected</string>
 
     <string name="git_commit">Git Commit Hash</string>
-    
+
     <string name="check_for_updates">Check for Updates</string>
     <string name="check_for_updates_desc">Periodically check for updates</string>
 
@@ -373,8 +373,8 @@
     <string name="file_not_loaded">File isn\'t loaded yet.</string>
     <string name="file_not_exist">File No longer exists</string>
 
-    <string name="soft_keyboard_always">Always show keyboard</string>
-    <string name="soft_keyboard_always_desc">Always show soft keyboard even if hardware keyboard is connected</string>
+    <string name="isDisableSoftKbdIfHardKbdAvailable">Disable virtual keyboard</string>
+    <string name="isDisableSoftKbdIfHardKbdAvailable_desc">Disable virtual keyboard If Hardware keyboard is Available</string>
 
     <string name="experimental_feature">Experimental Feature</string>
     <string name="experimental_session_restore_warning">This Feature is experimental and known to sometimes cause loss of data</string>
@@ -415,5 +415,26 @@
     <string name="misc">Miscellaneous</string>
     <string name="misc_desc">Miscellaneous Settings</string>
 
+    <string name="expose_saf">Expose Home Directory</string>
+    <string name="expose_saf_desc">Make the home directory accessible to external apps via the system file picker (SAF)</string>
+    <string name="saf_expose_warning">Exposing the home directory may reveal sensitive information to malicious apps, including Git tokens, passwords, usernames, and other files stored in your terminal home directory. Do you want to continue?</string>
 
+    <string name="info">Info</string>
+    <string name="file_info">File Info</string>
+
+    <string name="file_size">File Size</string>
+    <string name="can_read">Can Read</string>
+    <string name="can_write">Can Write</string>
+    <string name="isfile">Is File</string>
+    <string name="copied">Copied</string>
+
+    <string name="flavor">Flavor</string>
+
+    <string name="cant_undo">This action cannot be undone</string>
+    <string name="auto_complete">Editor Auto Complete</string>
+
+    <string name="capture_logcat">Capture Logcat</string>
+    <string name="capture_logcat_desc">Capture logs in background for debugging</string>
+    <string name="logcat_service">Logcat Service</string>
+    <string name="logcat_service_desc">Capturing logs in background</string>
 </resources>

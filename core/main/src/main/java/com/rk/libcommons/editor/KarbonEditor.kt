@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.rk.file_wrapper.FileObject
 import com.rk.libcommons.isDarkMode
 import com.rk.libcommons.isMainThread
-import com.rk.libcommons.toast
 import com.rk.libcommons.toastCatching
 import com.rk.settings.Settings
 import io.github.rosemoe.sora.text.ContentIO
@@ -22,11 +21,9 @@ import io.github.rosemoe.sora.widget.component.EditorAutoCompletion
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.OutputStream
 import java.nio.charset.Charset
 
 
@@ -53,19 +50,20 @@ class KarbonEditor : CodeEditor {
             else -> isDarkMode(context)
         }
 
-        val color = if (darkTheme) {
+        val surface = if (darkTheme) {
             Color.BLACK
         } else {
             Color.WHITE
         }
 
-        colorScheme.setColor(EditorColorScheme.WHOLE_BACKGROUND, color)
-        colorScheme.setColor(EditorColorScheme.LINE_NUMBER_BACKGROUND, color)
-        colorScheme.setColor(EditorColorScheme.LINE_DIVIDER, color)
+        colorScheme.setColor(EditorColorScheme.WHOLE_BACKGROUND, surface)
+        colorScheme.setColor(EditorColorScheme.LINE_NUMBER_BACKGROUND, surface)
+        colorScheme.setColor(EditorColorScheme.LINE_DIVIDER, surface)
 
         CoroutineScope(Dispatchers.Default).launch {
             applySettings()
         }
+
     }
 
     suspend fun applySettings() {
@@ -89,7 +87,6 @@ class KarbonEditor : CodeEditor {
             val textSize = Settings.editor_text_size
             val wordWrap = Settings.wordwrap
             val keyboardSuggestion = Settings.show_suggestions
-            val always_show_soft_keyboard = Settings.always_show_soft_keyboard
             val lineSpacing = Settings.line_spacing
 
             withContext(Dispatchers.Main) {
@@ -103,7 +100,7 @@ class KarbonEditor : CodeEditor {
                 setTextSize(textSize.toFloat())
                 isWordwrap = wordWrap
                 lineSpacingExtra = lineSpacing
-                isDisableSoftKbdIfHardKbdAvailable = always_show_soft_keyboard.not()
+                isDisableSoftKbdIfHardKbdAvailable = Settings.hide_soft_keyboard_if_hardware
                 showSuggestions(keyboardSuggestion)
             }
         }
@@ -114,13 +111,12 @@ class KarbonEditor : CodeEditor {
             val fontPath = Settings.selected_font_path
             if (fontPath.isNotEmpty()) {
                 val isAsset = Settings.is_selected_font_assest
-                if (isAsset) {
-                    typefaceText = Typeface.createFromAsset(context.assets, fontPath)
+                typefaceText = if (isAsset) {
+                    Typeface.createFromAsset(context.assets, fontPath)
                 } else {
-                    typefaceText = Typeface.createFromFile(File(fontPath))
+                    Typeface.createFromFile(File(fontPath))
                 }
             } else {
-                println("fallback: font Path is empty")
                 typefaceText =
                     Typeface.createFromAsset(context.assets, "fonts/Default.ttf")
             }
@@ -137,10 +133,10 @@ class KarbonEditor : CodeEditor {
             toastCatching {
                 withContext(Dispatchers.Main) {
                     setText(withContext(Dispatchers.IO) {
-                            assert(isMainThread().not())
-                            fileObject.getInputStream().use {
-                                ContentIO.createFrom(it, encoding)
-                            }
+                        assert(isMainThread().not())
+                        fileObject.getInputStream().use {
+                            ContentIO.createFrom(it, encoding)
+                        }
                     })
                 }
             }

@@ -31,7 +31,7 @@
     <string name="print">Cetak</string>
     <string name="search">Cari</string>
     <string name="go_next">Selanjutnya</string>
-    <string name="go_prev">Sebelumnya</string>
+    <string name="go_prev">Kembali ke Sblm.</string>
     <string name="close_search">Tutup Pencarian</string>
     <string name="replace">Ganti</string>
     <string name="share">Bagikan</string>
@@ -70,7 +70,7 @@
     <string name="ask_enter_name">Silakan masukkan nama</string>
     <string name="already_exists">Dokumen dengan nama ini sudah ada</string>
     <string name="attention">Perhatian</string>
-    <string name="ask_del">Apakah anda yakin ingin menghapus</string>
+    <string name="ask_del">Apakah anda yakin ingin menghapus secara permanen</string>
     <string name="redir">Pilih kembali direktori tersebut</string>
     <string name="canthandle">Tidak ada aplikasi yang ditemukan untuk menangani berkas tersebut</string>
     <string name="clipboardempty">Papan klip kosong</string>
@@ -232,7 +232,7 @@
     <string name="theme_mode">Tema</string>
     <string name="theme_mode_desc">Ubah warna tema aplikasi</string>
     <string name="no_plugins_available">Tidak Ada Plugin yang Tersedia</string>
-    <string name="show_suggestions">Tampilkan Saran</string>
+    <string name="show_suggestions">Tampilkan Saran di Keyboard</string>
     <string name="about">Tentang</string>
     <string name="about_desc">Tentang Xed-Editor</string>
     <string name="version">Versi</string>
@@ -263,7 +263,7 @@
     <string name="add_font_desc">Pilih font ttf dari penyimpanan</string>
     <string name="install_termux">Pasang Termux dari F-Droid</string>
     <string name="termux_exec">Termux Exec</string>
-    <string name="termux_exec_guide">Docs Termux Exec</string>
+    <string name="termux_exec_guide">Dokumentasi Termux Exec</string>
     <string name="gestures">Gerakan</string>
     <string name="config_gestures">Mengkonfigurasi Gerakan</string>
     <string name="Save_as">Simpan Sebagai</string>
@@ -305,7 +305,7 @@
     <string name="restore_sessions_desc">Pulihkan tab sebelumnya</string>
     <string name="sessions">Sesi</string>
     <string name="add_session">Tambahkan Sesi</string>
-    <string name="terminal_runtime">Terminal Runtime</string>
+    <string name="terminal_runtime">Runtime Terminal</string>
     <string name="terminal_runtime_desc">Pilih Terminal Runtime</string>
     <string name="mutators">Mutator</string>
     <string name="terminal_home">Beranda Terminal</string>
@@ -387,4 +387,23 @@
     <string name="unknown_err">Ada yang tidak beres</string>
     <string name="misc">Lainnya</string>
     <string name="misc_desc">Pengaturan Lainnya</string>
+    <string name="expose_saf_desc">Jadikan direktori beranda dapat diakses oleh aplikasi eksternal melalui pemilih berkas sistem (SAF)</string>
+    <string name="expose_saf">Perlihatkan Direktori Beranda</string>
+    <string name="file_size">Ukuran Berkas</string>
+    <string name="isfile">Merupakan Berkas</string>
+    <string name="can_write">Dapat Menulis</string>
+    <string name="can_read">Dapat Membaca</string>
+    <string name="info">Informasi</string>
+    <string name="copied">Disalin</string>
+    <string name="saf_expose_warning">Memperlihatkan direktori beranda dapat menampilkan informasi sensitif ke aplikasi berbahaya, termasuk token Git, kata sandi, nama pengguna, dan berkas lain yang tersimpan di direktori beranda terminal Anda. Apakah Anda ingin melanjutkan?</string>
+    <string name="file_info">Informasi Berkas</string>
+    <string name="cant_undo">Tindakan ini tidak dapat dibatalkan</string>
+    <string name="flavor">Rasa</string>
+    <string name="logcat_service">Layanan Logcat</string>
+    <string name="isDisableSoftKbdIfHardKbdAvailable">Nonaktifkan keyboard virtual</string>
+    <string name="isDisableSoftKbdIfHardKbdAvailable_desc">Nonaktifkan keyboard virtual apabila Perangkat keras keyboard tersedia</string>
+    <string name="auto_complete">Pelengkapan Otomatis Penyunting</string>
+    <string name="capture_logcat">Ambil Logcat</string>
+    <string name="capture_logcat_desc">Ambil pencatatan di latar belakang untuk debugging</string>
+    <string name="logcat_service_desc">Mengambil catatan di latar belakang</string>
 </resources>

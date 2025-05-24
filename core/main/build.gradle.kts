@@ -36,7 +36,10 @@ fun getFullGitCommitHash(): String {
 
 android {
     namespace = "com.rk.xededitor"
-    android.buildFeatures.buildConfig = true
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileSdk = 35
 
     defaultConfig {
@@ -56,7 +59,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
         }
-        debug{
+        debug {
             buildConfigField("String", "GIT_COMMIT_HASH", "\"${getFullGitCommitHash()}\"")
             buildConfigField("String", "GIT_SHORT_COMMIT_HASH", "\"${getGitCommitHash()}\"")
             buildConfigField("String", "GIT_COMMIT_DATE", "\"${getGitCommitDate()}\"")
@@ -109,9 +112,9 @@ dependencies {
     //api(libs.org.eclipse.jgit)
     api(libs.gson)
     api(libs.commons.net)
-   // api(libs.jcodings)
-   // api(libs.joni)
-   // api(libs.snakeyaml.engine)
+    // api(libs.jcodings)
+    // api(libs.joni)
+    // api(libs.snakeyaml.engine)
     //api(libs.jdt.annotation)
     api(libs.okhttp)
     api(libs.material.motion.compose.core)
@@ -130,9 +133,12 @@ dependencies {
     //debug libs these libs doesnt get added when creating release builds
     debugApi(libs.bsh)
     debugApi(libs.leakcanary.android)
-    
-    api(project(":core:editor"))
-    api(project(":core:language-textmate"))
+
+    api(platform("io.github.Rosemoe.sora-editor:bom:0.23.5-0d363ed-SNAPSHOT"))
+    api("io.github.Rosemoe.sora-editor:editor")
+    api("io.github.Rosemoe.sora-editor:language-textmate")
+    //api(project(":core:editor"))
+    //api(project(":core:language-textmate"))
     api(project(":core:resources"))
     api(project(":core:components"))
 }

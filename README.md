@@ -20,17 +20,21 @@
   - [x] Open Multiple Projects
   - [x] Edit Multiple files
   - [x] Word Wrap
+  - [X] Different/Custom Fonts
   - [x] Undo-Redo functionality
   - [x] Syntax Highlighting
   - [x] Search and Batch Replacement
   - [x] Integrated File Browser
+  - [x] Operability With Android's Storage Access Framework (SAF)
   - [x] Create, Rename, Copy, and Delete Files/Folders
+  - [x] Check Files/Folders Info
   - [x] Print text documents
   - [x] AMOLED Theme
   - [x] Keybindings
-  - [x] Built-in Terminal
+  - [x] Built-in Terminal (Alpine Linux)
   - [x] Termux Interoperability
   - [x] Run Python,Html,C/C++, Node.js, etc.
+  - [x] Git (Plugin)
 
 
 <br>
@@ -41,6 +45,25 @@ Join the Xed-Editor community to stay updated and engage with other users:
 - [Telegram](https://t.me/Xed_Editor)
 
 <br>
+
+
+
+> \[!CAUTION]
+> ⚠️ **Important Warning: Fake App on Google Play Store**
+> A **counterfeit version** of my app has been uploaded to the Google Play Store **without my permission**. This unauthorized version includes **ads, trackers**, and other modifications that I did **not** create or approve.
+> I want to make it clear: **I have not published my app on the Play Store.** Please do **not install** any version found there. It's deeply upsetting to see my work exploited like this.
+>
+> **How you can help:**
+> If you'd like to support me, please report the fake app to Google:
+>
+> * Visit the Play Store listing: [[Fake App Listing](https://play.google.com/store/apps/details?id=com.rk.xededitor)]
+> * Click **“Flag as inappropriate”**
+> * Or use this form to report a violation: [[Report a policy violation](https://support.google.com/googleplay/android-developer/contact/policy_violation_report?rd=1)]
+>
+> **App details:**
+>
+> * Package name: `com.rk.xededitor`
+
 
 ## Installation
 

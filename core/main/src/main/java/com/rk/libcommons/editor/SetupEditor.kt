@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
+import android.util.TypedValue
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import com.google.gson.JsonParser
 import com.rk.libcommons.application
 import com.rk.libcommons.isDarkMode
@@ -19,6 +21,16 @@ import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.COMPLETION_WND_BACKGROUND
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.COMPLETION_WND_ITEM_CURRENT
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.COMPLETION_WND_TEXT_PRIMARY
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.COMPLETION_WND_TEXT_SECONDARY
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.HIGHLIGHTED_DELIMITERS_FOREGROUND
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.HIGHLIGHTED_DELIMITERS_UNDERLINE
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.MATCHED_TEXT_BACKGROUND
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.SELECTED_TEXT_BACKGROUND
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.TEXT_ACTION_WINDOW_BACKGROUND
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.TEXT_ACTION_WINDOW_ICON_COLOR
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -97,20 +109,22 @@ class SetupEditor(
         }
     }
 
-    private fun getSourceForSpacialFileName(fileName: String):String?{
-        return when(fileName){
+    private fun getSourceForSpacialFileName(fileName: String): String? {
+        return when (fileName) {
             "gradlew" -> textmateSources["sh"]
             "logcat.txt" -> {
                 editor.isWordwrap = Settings.wordwrap
                 textmateSources["log"]
             }
+
             else -> null
         }
     }
 
     suspend fun setupLanguage(fileName: String) {
         mutex.withLock {
-            val source = getSourceForSpacialFileName(fileName) ?: textmateSources[fileName.substringAfterLast('.', "").trim()]
+            val source = getSourceForSpacialFileName(fileName)
+                ?: textmateSources[fileName.substringAfterLast('.', "").trim()]
             source?.let { setLanguage(it) }
         }
     }
@@ -151,15 +165,43 @@ class SetupEditor(
             }
         }
 
-        private fun initTextMateTheme(ctx: Context, darkSurfaceColor: String?, lightSurfaceColor: String?) {
+        private fun initTextMateTheme(
+            ctx: Context,
+            darkSurfaceColor: String?,
+            lightSurfaceColor: String?
+        ) {
             darkThemeRegistry = ThemeRegistry()
             oledThemeRegistry = ThemeRegistry()
             lightThemeRegistry = ThemeRegistry()
 
             try {
-                darkThemeRegistry?.loadTheme(ThemeModel(IThemeSource.fromInputStream(ctx.assets.open("textmate/darcula.json"), "darcula.json", null)))
-                oledThemeRegistry?.loadTheme(ThemeModel(IThemeSource.fromInputStream(ctx.assets.open("textmate/black/darcula.json"), "darcula.json", null)))
-                lightThemeRegistry?.loadTheme(ThemeModel(IThemeSource.fromInputStream(ctx.assets.open("textmate/quietlight.json"), "quietlight.json", null)))
+                darkThemeRegistry?.loadTheme(
+                    ThemeModel(
+                        IThemeSource.fromInputStream(
+                            ctx.assets.open(
+                                "textmate/darcula.json"
+                            ), "darcula.json", null
+                        )
+                    )
+                )
+                oledThemeRegistry?.loadTheme(
+                    ThemeModel(
+                        IThemeSource.fromInputStream(
+                            ctx.assets.open(
+                                "textmate/black/darcula.json"
+                            ), "darcula.json", null
+                        )
+                    )
+                )
+                lightThemeRegistry?.loadTheme(
+                    ThemeModel(
+                        IThemeSource.fromInputStream(
+                            ctx.assets.open(
+                                "textmate/quietlight.json"
+                            ), "quietlight.json", null
+                        )
+                    )
+                )
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     assert(darkSurfaceColor != null)
@@ -167,14 +209,22 @@ class SetupEditor(
 
                     fun read(inputStream: InputStream, replacements: Map<String, String>) =
                         inputStream.bufferedReader().use { it.readText() }.let { content ->
-                            replacements.entries.fold(content) { acc, (old, new) -> acc.replace(old, new) }
+                            replacements.entries.fold(content) { acc, (old, new) ->
+                                acc.replace(
+                                    old,
+                                    new
+                                )
+                            }
                         }
 
                     lightThemeRegistry?.loadTheme(
                         ThemeModel(
                             IThemeSource.fromString(
                                 IThemeSource.ContentType.JSON,
-                                read(ctx.assets.open("textmate/quietlight.json"), mapOf("#FAF9FF" to lightSurfaceColor!!))
+                                read(
+                                    ctx.assets.open("textmate/quietlight.json"),
+                                    mapOf("#FAF9FF" to lightSurfaceColor!!)
+                                )
                             )
                         )
                     )
@@ -183,7 +233,10 @@ class SetupEditor(
                         ThemeModel(
                             IThemeSource.fromString(
                                 IThemeSource.ContentType.JSON,
-                                read(ctx.assets.open("textmate/darcula.json"), mapOf("#1C1B20" to darkSurfaceColor!!))
+                                read(
+                                    ctx.assets.open("textmate/darcula.json"),
+                                    mapOf("#1C1B20" to darkSurfaceColor!!)
+                                )
                             )
                         )
                     )
@@ -197,11 +250,13 @@ class SetupEditor(
 
     suspend fun setLanguage(languageScopeName: String) = withContext(Dispatchers.IO) {
         val language = if (languageScopeName != "text.plain") {
-            TextMateLanguage.create(languageScopeName, true).apply {
-                ctx.assets.open("textmate/keywords.json").use { inputStream ->
-                    JsonParser.parseReader(InputStreamReader(inputStream)).asJsonObject
-                        .getAsJsonArray(languageScopeName)?.map { it.asString }?.toTypedArray()
-                        ?.let { setCompleterKeywords(it) }
+            TextMateLanguage.create(languageScopeName, Settings.auto_complete).apply {
+                if (Settings.auto_complete) {
+                    ctx.assets.open("textmate/keywords.json").use { inputStream ->
+                        JsonParser.parseReader(InputStreamReader(inputStream)).asJsonObject
+                            .getAsJsonArray(languageScopeName)?.map { it.asString }?.toTypedArray()
+                            ?.let { setCompleterKeywords(it) }
+                    }
                 }
             }
         } else {
@@ -226,11 +281,79 @@ class SetupEditor(
 
         themeRegistry?.let {
             val editorColorScheme = TextMateColorScheme.create(it).apply {
-                if (darkTheme && Settings.amoled) setColor(EditorColorScheme.WHOLE_BACKGROUND, Color.BLACK)
+                if (darkTheme && Settings.amoled) setColor(
+                    EditorColorScheme.WHOLE_BACKGROUND,
+                    Color.BLACK
+                )
             }
 
             scope.launch(Dispatchers.Main) {
                 editor.colorScheme = editorColorScheme
+                editor.colorScheme.let { colorScheme ->
+                    val typedValue = TypedValue()
+                    val theme = ctx.theme
+                    theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true)
+
+                    val colorPrimary = ContextCompat.getColor(ctx, typedValue.resourceId)
+
+                    
+                    val transparentColor = Color.argb(
+                        130,
+                        Color.red(colorPrimary),
+                        Color.green(colorPrimary),
+                        Color.blue(colorPrimary)
+                    )
+
+                    colorScheme.setColor(EditorColorScheme.SELECTION_HANDLE, colorPrimary)
+                    colorScheme.setColor(EditorColorScheme.SELECTION_INSERT, colorPrimary)
+                    colorScheme.setColor(EditorColorScheme.BLOCK_LINE, colorPrimary)
+                    colorScheme.setColor(EditorColorScheme.BLOCK_LINE_CURRENT, colorPrimary)
+
+                    colorScheme.setColor(
+                        SELECTED_TEXT_BACKGROUND,
+                        transparentColor
+                    )
+                    //colorScheme.setColor(EditorColorScheme.FUNCTION_CHAR_BACKGROUND_STROKE,transparentColor)
+
+                    //search match text color
+                    colorScheme.setColor(MATCHED_TEXT_BACKGROUND, colorPrimary)
+
+                    colorScheme.setColor(SELECTED_TEXT_BACKGROUND, transparentColor)
+                    //setColor(FUNCTION_CHAR_BACKGROUND_STROKE,transparentColor)
+
+                    //bracket
+                    colorScheme.setColor(HIGHLIGHTED_DELIMITERS_UNDERLINE, Color.TRANSPARENT)
+                    colorScheme.setColor(HIGHLIGHTED_DELIMITERS_FOREGROUND, colorPrimary)
+
+                    val darkTheme: Boolean = when (Settings.default_night_mode) {
+                        AppCompatDelegate.MODE_NIGHT_YES -> true
+                        AppCompatDelegate.MODE_NIGHT_NO -> false
+                        else -> isDarkMode(ctx)
+                    }
+
+                    val surface = if (darkTheme) {
+                        Color.BLACK
+                    } else {
+                        Color.WHITE
+                    }
+
+                    val onSurface = if (darkTheme) {
+                        Color.WHITE
+                    } else {
+                        Color.BLACK
+                    }
+
+                    colorScheme.setColor(TEXT_ACTION_WINDOW_BACKGROUND, surface)
+                    colorScheme.setColor(COMPLETION_WND_BACKGROUND, surface)
+
+                    colorScheme.setColor(TEXT_ACTION_WINDOW_ICON_COLOR, onSurface)
+                    colorScheme.setColor(COMPLETION_WND_TEXT_PRIMARY, onSurface)
+                    colorScheme.setColor(COMPLETION_WND_TEXT_SECONDARY, onSurface)
+
+                    colorScheme.setColor(COMPLETION_WND_ITEM_CURRENT, transparentColor)
+
+                }
+
             }
         }
     }
