@@ -7,7 +7,7 @@ updates:
     schedule:
       interval: daily
       time: '17:55'
-    target-branch: maim
+    target-branch: main
 
   - package-ecosystem: github-actions
     directory: '/'
