@@ -9,9 +9,15 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
-        maven { url = uri("https://jitpack.io")}
+        maven { url = uri("https://jitpack.io") }
+        maven {
+            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+        }
         maven("https://oss.sonatype.org/content/repositories/snapshots/")
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+    }
+    plugins {
+        kotlin("jvm") version "2.1.10"
     }
 }
 dependencyResolutionManagement {
@@ -19,25 +25,21 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io")}
+        maven { url = uri("https://jitpack.io") }
+        maven {
+            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+        }
         maven("https://oss.sonatype.org/content/repositories/snapshots/")
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
     }
 }
 
-rootProject.name = "Karbon"
+rootProject.name = "Xed-Editor"
 include(":app")
+include(":core:main")
 
-include(":editor:editor")
-include(":editor:editor-lsp")
-include(":editor:language-textmate")
-include(":feature:runner")
-include(":feature:filetree")
-include(":feature:settings")
+//include(":core:editor")
+//include(":core:editor-lsp")
+//include(":core:language-textmate")
 include(":core:components")
-include(":core:commons")
-include(":app:ExternalEditor")
 include(":core:resources")
-include(":core:karbon-exec")
-include(":feature:git")
-include(":core:Engine")

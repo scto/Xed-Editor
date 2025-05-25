@@ -1,0 +1,28 @@
+name: Update Gradle Wrapper
+
+on:
+  schedule:
+    # run every Sunday at 13:28
+    - cron: "0 16 * * *"
+    
+  workflow_dispatch:
+
+jobs:
+  update-gradle-wrapper:
+    permissions:
+      # for gradle-update/update-gradle-wrapper-action
+      contents: write
+      # for gradle-update/update-gradle-wrapper-action
+      pull-requests: write
+      
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Update Gradle Wrapper
+        uses: gradle-update/update-gradle-wrapper-action@v2
+        
+      - name: Validate gradle wrapper
+        uses: gradle/wrapper-validation-action@v3
