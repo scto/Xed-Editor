@@ -6,12 +6,12 @@ updates:
     directory: '/'
     schedule:
       interval: daily
-      time: '13:42'
-    target-branch: main
+      time: '17:55'
+    target-branch: maim
 
   - package-ecosystem: github-actions
     directory: '/'
     schedule:
       interval: daily
-      time: '13:42'
+      time: '17:55'
     target-branch: main
