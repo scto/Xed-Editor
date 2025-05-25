@@ -1,10 +1,6 @@
 [versions]
-<<<<<<< HEAD
-agp = "8.7.3"
-=======
 accompanistSwiperefresh = "0.36.0"
 agp = "8.6.0"
->>>>>>> main
 annotation = "1.9.1"
 anrwatchdog = "1.4.0"
 appcompat = "1.7.0"
@@ -34,13 +30,8 @@ kotlin = "2.1.10"
 asynclayoutinflater = "1.0.0"
 navigationFragmentKtx = "2.8.7"
 navigationUiKtx = "2.8.5"
-<<<<<<< HEAD
 coreKtx = "1.15.0"
-activity = "1.9.3"
-=======
-coreKtx = "1.13.1"
 activity = "1.10.0"
->>>>>>> main
 nbJavacAndroid = "17.0.0.3"
 okhttp = "4.12.0"
 orgEclipseJgit = "7.1.0.202411261347-r"
