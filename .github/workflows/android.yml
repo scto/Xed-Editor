@@ -85,6 +85,16 @@ jobs:
       - name: Delete xed.keystore and signing.properties
         run: rm /tmp/xed.keystore /tmp/signing.properties
 
+<<<<<<< HEAD
+#      - name: Send APK to Telegram
+#        if: ${{ success() }}
+#        run: |
+#          curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
+#          -F chat_id="-1002408175863" \
+#          -F message_thread_id="582" \
+#          -F caption="${{ github.event.head_commit.message }} by ${{ github.actor }}" \
+#          -F document=@"app/karbon-${{ env.COMMIT_HASH }}.apk"
+=======
       - name: Send APK to Telegram
         if: ${{ success() && github.event.head_commit.message != '' }}
         run: |
@@ -93,6 +103,7 @@ jobs:
           -F message_thread_id="582" \
           -F caption="${{ github.event.head_commit.message }}" \
           -F document=@"app/xed-editor-${{ env.COMMIT_HASH }}.apk"
+>>>>>>> main
 
       - name: Process Build
         run: |
