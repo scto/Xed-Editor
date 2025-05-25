@@ -1,6 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
+<<<<<<< HEAD
     "config:base",
     "group:all",
     ":dependencyDashboard",
@@ -31,5 +32,15 @@
       ],
       "groupName": "kotlin"
     }
+=======
+    "config:recommended",
+    ":dependencyDashboard"
+  ],
+  "automerge": false,
+  "forkProcessing": "enabled",
+  "baseBranches": ["dev"],
+  "labels": [
+    "dependencies"
+>>>>>>> main
   ]
 }
