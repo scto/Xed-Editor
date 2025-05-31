@@ -63,7 +63,7 @@
     <string name="terminal_text_size_desc">Nastavit velikost textu v terminálu</string>
     <string name="u_err">Neznámá Chyba</string>
     <string name="saved">Uloženo</string>
-    <string name="show_suggestions">Ukázat Návrhy</string>
+    <string name="show_suggestions">Ukázat Návrhy Klávesnice</string>
     <string name="file_too_large">Soubor je příliš velký pro otevření</string>
     <string name="initializing">Inicializace…</string>
     <string name="downloading">Stažení…</string>
@@ -337,4 +337,20 @@
     <string name="can_read">Lze Číst</string>
     <string name="file_size">Velikost Souboru</string>
     <string name="cant_undo">Táto akce nemůže být vrácena zpět</string>
+    <string name="capture_logcat">Zaznamenat Logcat</string>
+    <string name="capture_logcat_desc">Zaznamenat obsah protokolů na pozadí pro ladění</string>
+    <string name="logcat_service_desc">Zaznamenávání obsahu protokolů na pozadí</string>
+    <string name="auto_complete">Automatické Doplňování Editoru</string>
+    <string name="logcat_service">Služba Logcat</string>
+    <string name="no_mutators">Žádné mutátory</string>
+    <string name="tab_opened">Karta Otevřena</string>
+    <string name="name_used">Jméno už použito</string>
+    <string name="tempFile">Dočasný Soubor</string>
+    <string name="canthandle">Žádná aplikace nenalezena pro typ tohoto souboru</string>
+    <string name="mutator_name">Jméno Mutátora</string>
+    <string name="no_ext">Žádné Doplňky Nainstalované.</string>
+    <string name="mutators">Mutátory</string>
+    <string name="name_empty_err">Jméno nemůže být prázdné</string>
+    <string name="isDisableSoftKbdIfHardKbdAvailable">Vypnout softwarovou klávesnici</string>
+    <string name="isDisableSoftKbdIfHardKbdAvailable_desc">Vypnout softwarovou klávesnici pokud je připojená fyzická klávesnice</string>
 </resources>

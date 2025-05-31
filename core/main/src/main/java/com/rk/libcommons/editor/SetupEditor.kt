@@ -4,14 +4,14 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
-import android.util.TypedValue
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat
+import com.google.android.material.color.MaterialColors
 import com.google.gson.JsonParser
 import com.rk.libcommons.application
 import com.rk.libcommons.isDarkMode
 import com.rk.libcommons.toastIt
 import com.rk.settings.Settings
+import com.rk.xededitor.R
 import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
@@ -96,6 +96,8 @@ val textmateSources = hashMapOf(
     "ltx" to "text.tex.latex",
     "toml" to "source.toml",
     "dart" to "source.dart",
+    "lisp" to "source.lisp",
+    "sql" to "source.sql",
 )
 
 class SetupEditor(
@@ -249,18 +251,14 @@ class SetupEditor(
     }
 
     suspend fun setLanguage(languageScopeName: String) = withContext(Dispatchers.IO) {
-        val language = if (languageScopeName != "text.plain") {
-            TextMateLanguage.create(languageScopeName, Settings.auto_complete).apply {
-                if (Settings.auto_complete) {
-                    ctx.assets.open("textmate/keywords.json").use { inputStream ->
-                        JsonParser.parseReader(InputStreamReader(inputStream)).asJsonObject
-                            .getAsJsonArray(languageScopeName)?.map { it.asString }?.toTypedArray()
-                            ?.let { setCompleterKeywords(it) }
-                    }
+        val language = TextMateLanguage.create(languageScopeName, Settings.auto_complete).apply {
+            if (Settings.auto_complete) {
+                ctx.assets.open("textmate/keywords.json").use { inputStream ->
+                    JsonParser.parseReader(InputStreamReader(inputStream)).asJsonObject
+                        .getAsJsonArray(languageScopeName)?.map { it.asString }?.toTypedArray()
+                        ?.let { setCompleterKeywords(it) }
                 }
             }
-        } else {
-            PlainTextLanguage()
         }
 
         withContext(Dispatchers.Main) { editor.setEditorLanguage(language as Language) }
@@ -290,13 +288,13 @@ class SetupEditor(
             scope.launch(Dispatchers.Main) {
                 editor.colorScheme = editorColorScheme
                 editor.colorScheme.let { colorScheme ->
-                    val typedValue = TypedValue()
-                    val theme = ctx.theme
-                    theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true)
 
-                    val colorPrimary = ContextCompat.getColor(ctx, typedValue.resourceId)
+                    val colorPrimary = MaterialColors.getColor(
+                        ctx,
+                        androidx.appcompat.R.attr.colorPrimary,
+                        ctx.resources.getColor(R.color.md_theme_primary, ctx.theme)
+                    );
 
-                    
                     val transparentColor = Color.argb(
                         130,
                         Color.red(colorPrimary),

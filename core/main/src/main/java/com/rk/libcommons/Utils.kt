@@ -21,6 +21,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rk.components.compose.preferences.base.DividerColumn
 import com.rk.resources.getString
 import com.rk.resources.strings
+import com.rk.settings.Settings
 import com.rk.xededitor.BuildConfig
 import com.rk.xededitor.MainActivity.MainActivity
 import com.rk.xededitor.R
@@ -242,16 +243,15 @@ fun composeDialog(
     }
 }
 
-val origin
-    get() = {
-        application!!.run {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                return@run packageManager.getInstallSourceInfo(packageName).installingPackageName.toString()
-            } else {
-                return@run packageManager.getInstallerPackageName(packageName).toString()
-            }
+fun origin():String{
+    return application!!.run {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return@run packageManager.getInstallSourceInfo(packageName).installingPackageName.toString()
+        } else {
+            return@run packageManager.getInstallerPackageName(packageName).toString()
         }
     }
+}
 
 fun Context.getColorFromAttr(attr: Int): Int {
     val typedValue = android.util.TypedValue()
@@ -283,7 +283,9 @@ fun errorDialog(throwable: Throwable) {
     var message = StringBuilder()
     throwable.let {
         message.append(it.message).append("\n")
-        message.append(it.stackTraceToString()).append("\n")
+        if (Settings.verbose_error) {
+            message.append(it.stackTraceToString()).append("\n")
+        }
     }
 
     errorDialog(msg = message.toString())
@@ -293,7 +295,9 @@ fun errorDialog(exception: Exception) {
     var message = StringBuilder()
     exception.let {
         message.append(it.message).append("\n")
-        message.append(it.stackTraceToString()).append("\n")
+        if (Settings.verbose_error) {
+            message.append(it.stackTraceToString()).append("\n")
+        }
     }
 
     errorDialog(msg = message.toString())
