@@ -1,4 +1,4 @@
-name: Android Orig Release CI
+name: Orig Release CI
 
 on:
   push:
