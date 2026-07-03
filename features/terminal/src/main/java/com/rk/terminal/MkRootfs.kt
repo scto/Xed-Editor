@@ -8,13 +8,15 @@ import com.rk.utils.getTempDir
 import com.rk.utils.isMainThread
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 enum class NEXT_STAGE {
     NONE,
     EXTRACTION,
 }
 
-suspend fun CoroutineScope.getNextStage(context: Context): NEXT_STAGE {
+suspend fun CoroutineScope.getNextStage(context: Context): NEXT_STAGE = withContext(Dispatchers.IO) {
     if (isMainThread()) {
         throw RuntimeException("IO operation on the main thread")
     }
@@ -26,7 +28,7 @@ suspend fun CoroutineScope.getNextStage(context: Context): NEXT_STAGE {
                 it.absolutePath != sandboxDir().child("tmp").absolutePath
         } ?: emptyList()
 
-    return if (sandboxFile.exists().not() || rootfsFiles.isEmpty().not()) {
+    return@withContext if (sandboxFile.exists().not() || rootfsFiles.isEmpty().not()) {
         NEXT_STAGE.NONE
     } else {
         NEXT_STAGE.EXTRACTION
