@@ -2,8 +2,8 @@ package com.rk.lsp
 
 import android.util.Log
 import com.rk.SandboxedProcessRegistry
+import com.rk.feature.FeatureRegistry
 import com.rk.settings.Settings
-import com.rk.settings.app.InbuiltFeatures
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -33,21 +33,21 @@ class ProcessConnection(private val cmd: Array<String>, instance: LspServerInsta
     override fun start() {
         if (process != null) return
         scope = CoroutineScope(Dispatchers.IO)
-        val provider = SandboxedProcessRegistry.provider
-            ?: throw IllegalStateException("PRoot Sandbox is not registered")
+        val provider =
+            SandboxedProcessRegistry.provider ?: throw IllegalStateException("PRoot Sandbox is not registered")
         runBlocking { process = provider(cmd.toList(), null, listOf()) }
 
         loggingInput =
             LoggingInputStream(process!!.inputStream) { json ->
                 Log.d("ProcessConnection", "[stdout] $json")
-                if (InbuiltFeatures.debugMode.state.value && Settings.record_rpc) {
+                if (FeatureRegistry.isEnabled("debug_mode") && Settings.record_rpc) {
                     instance.addLog(LspLogEntry(MessageSource.RPC, null, "→ $json"))
                 }
             }
         loggingOutput =
             LoggingOutputStream(process!!.outputStream) { json ->
                 Log.d("ProcessConnection", "[stdin] $json")
-                if (InbuiltFeatures.debugMode.state.value && Settings.record_rpc) {
+                if (FeatureRegistry.isEnabled("debug_mode") && Settings.record_rpc) {
                     instance.addLog(LspLogEntry(MessageSource.RPC, null, "← $json"))
                 }
             }
