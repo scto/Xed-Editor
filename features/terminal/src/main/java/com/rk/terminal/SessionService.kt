@@ -99,6 +99,7 @@ class SessionService : Service() {
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }
+        StatUpdater.stop()
         super.onDestroy()
     }
 
@@ -135,6 +136,7 @@ class SessionService : Service() {
                     "${strings.app_name.getString()}::${this::class.java.simpleName}",
                 )
         }
+        StatUpdater.start(this)
     }
 
     var wakeLock: PowerManager.WakeLock? = null

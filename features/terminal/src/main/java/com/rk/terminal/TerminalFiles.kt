@@ -6,7 +6,6 @@ import com.rk.file.localBinDir
 import com.rk.file.localDir
 import com.rk.file.sandboxDir
 import com.rk.utils.application
-import com.rk.exec.setupAssetFile
 
 fun setupTerminalFiles() {
     if (sandboxDir().exists().not() || localBinDir().exists().not()) return
@@ -14,14 +13,12 @@ fun setupTerminalFiles() {
     with(localDir().child("stat")) {
         if (exists().not()) {
             createFileIfNot()
-            writeText(stat)
         }
     }
 
     with(localDir().child("vmstat")) {
         if (exists().not()) {
             createFileIfNot()
-            writeText(vmstat)
         }
     }
 
@@ -39,3 +36,14 @@ fun setupTerminalFiles() {
 }
 
 fun setupLspFile(fileName: String) = setupAssetFile("lsp/$fileName")
+
+fun setupAssetFile(fileName: String) {
+    with(localBinDir().child(fileName)) {
+        parentFile?.mkdir()
+        if (exists().not()) {
+            createFileIfNot()
+            writeText(application!!.assets.open("terminal/$fileName.sh").bufferedReader().use { it.readText() })
+        }
+    }
+}
+

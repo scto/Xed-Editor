@@ -37,13 +37,3 @@ fun launchTerminal(activity: Activity, terminalCommand: TerminalCommand) {
         toast("Terminal feature is not available in this build")
     }
 }
-
-fun setupAssetFile(fileName: String) {
-    with(com.rk.file.localBinDir().child(fileName)) {
-        parentFile?.mkdir()
-        if (exists().not()) {
-            createFileIfNot()
-            writeText(application!!.assets.open("terminal/$fileName.sh").bufferedReader().use { it.readText() })
-        }
-    }
-}

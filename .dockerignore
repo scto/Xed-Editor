@@ -15,6 +15,6 @@ soraX/language-textmate/build/
 baselineprofile/build/
 benchmark/build/
 benchmark2/build/
-core/proot/build/
+features/terminal/proot/build/
 local.properties
 *.apk
