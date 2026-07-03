@@ -12,8 +12,6 @@ pluginManagement {
     }
 }
 
-//plugins { id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0" }
-
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -25,8 +23,6 @@ dependencyResolutionManagement {
         maven("https://repo.eclipse.org/content/groups/releases/")
     }
 }
-
-
 
 val soraX = file("soraX")
 
@@ -43,6 +39,7 @@ if (!soraX.exists() || soraX.listFiles()?.isEmpty() != false) {
 }
 
 include(":app", ":core:main", ":core:components", ":core:resources")
+
 include(":features:terminal", ":features:extensions", ":features:runner", ":features:git")
 
 include(":editor", ":oniguruma-native", ":editor-lsp", ":language-textmate")

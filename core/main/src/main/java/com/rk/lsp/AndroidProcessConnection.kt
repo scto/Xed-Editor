@@ -1,15 +1,17 @@
 package com.rk.lsp
 
 import android.util.Log
+import com.rk.feature.FeatureRegistry
 import com.rk.file.localBinDir
 import com.rk.file.localLibDir
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
+import com.rk.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 
 class AndroidProcessConnection(private val cmd: Array<String>, instance: LspServerInstance) :
     BaseLspConnectionProvider(instance) {
@@ -60,14 +62,14 @@ class AndroidProcessConnection(private val cmd: Array<String>, instance: LspServ
         loggingInput =
             LoggingInputStream(process!!.inputStream) { json ->
                 Log.d("AndroidProcessConnection", "[stdout] $json")
-                if (com.rk.settings.Preference.getBoolean("debug_mode", com.rk.xededitor.BuildConfig.DEBUG)) {
+                if (FeatureRegistry.isEnabled("debug_mode") && Settings.record_rpc) {
                     instance.addLog(LspLogEntry(MessageSource.RPC, null, "→ $json"))
                 }
             }
         loggingOutput =
             LoggingOutputStream(process!!.outputStream) { json ->
                 Log.d("AndroidProcessConnection", "[stdin] $json")
-                if (com.rk.settings.Preference.getBoolean("debug_mode", com.rk.xededitor.BuildConfig.DEBUG)) {
+                if (FeatureRegistry.isEnabled("debug_mode") && Settings.record_rpc) {
                     instance.addLog(LspLogEntry(MessageSource.RPC, null, "← $json"))
                 }
             }
