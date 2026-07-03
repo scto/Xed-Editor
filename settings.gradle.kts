@@ -56,5 +56,6 @@ project(":editor-lsp").projectDir = file("soraX/editor-lsp")
 project(":language-textmate").projectDir = file("soraX/language-textmate")
 
 include(":baselineprofile", ":benchmark", ":benchmark2")
-include(":core:proot")
-include(":core:link2symlink")
+include(":features:terminal:proot")
+include(":features:terminal:link2symlink")
+include(":features:terminal:xed-cli")
