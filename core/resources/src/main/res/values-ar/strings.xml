@@ -299,4 +299,21 @@
     <string name="wrapper_type">نوع الغلاف</string>
     <string name="strict_mode_desc">اكتشاف الوصول إلى القرص أو الشبكة على الخيط الرئيسي</string>
     <string name="use_tabs">إدخال حرف التبويب</string>
+    <string name="store_desc">تنزيل الإضافات والسمات وحزم الأيقونات</string>
+    <string name="extension_warning_msg">قد تقوم الإضافات بتنفيذ تعليمات برمجية عشوائية، وقد تكون ضارة. لذا، لا تقم بتثبيت أي إضافة إلا إذا كنت تثق بمطورها وتحققت من شفرة المصدر الخاصة بها.</string>
+    <string name="no_themes">لم يتم العثور على أي سمات.</string>
+    <string name="no_icon_packs">لم يتم العثور على أي حزم أيقونات.</string>
+    <string name="seccomp_unspecified">غير محدد</string>
+    <string name="seccomp_no_seccomp">لا يوجد seccomp</string>
+    <string name="enable_sticky_scroll_desc">أبقِ رأس كتلة التعليمات البرمجية الحالية مرئيًا أثناء التمرير</string>
+    <string name="enable_quick_deletion">تفعيل حذف الأسطر السريع</string>
+    <string name="enable_quick_deletion_desc">حذف السطر بأكمله تلقائيًا إذا كان فارغًا</string>
+    <string name="type_command">اكتب الأمر</string>
+    <string name="select_language">اختر اللغة</string>
+    <string name="recently_used">(مستخدمة مؤخراً)</string>
+    <string name="command_palette">لوحة الأوامر</string>
+    <string name="rename_failed">تعذر إعادة تسمية الملف</string>
+    <string name="delete_failed">تعذر حذف الملف</string>
+    <string name="paste_failed">تعذر لصق الملف</string>
+    <string name="debug_mode_warn">يؤدي وضع التصحيح إلى تعطيل قيود الأمان، مما قد يتسبب في فقدان البيانات أو مشاكل أخرى في حال إساءة استخدامه. لا تقم بتفعيله إلا إذا كنت على دراية تامة بما تفعله.</string>
 </resources>
