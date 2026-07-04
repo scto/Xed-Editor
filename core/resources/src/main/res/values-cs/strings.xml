@@ -154,7 +154,7 @@
     <string name="smooth_tabs">Hladké animace karet</string>
     <string name="smooth_tab_desc">Hladce přepnout mezi karty</string>
     <string name="info">Informace</string>
-    <string name="copied">Kopírováno</string>
+    <string name="copied">Zkopírováno</string>
     <string name="tab_opened">Karta otevřena</string>
     <string name="temp_file">Dočasný soubor</string>
     <string name="cant_handle">Žádná aplikace nenalezena pro typ tohoto souboru</string>
@@ -683,4 +683,5 @@
     <string name="search_themes">Hledat téma</string>
     <string name="search_icon_packs">Hledat sady ikon</string>
     <string name="vcs_status">Stav v VCS</string>
+    <string name="download_count">Počet stažení</string>
 </resources>
