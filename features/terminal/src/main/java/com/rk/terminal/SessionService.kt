@@ -96,6 +96,7 @@ class SessionService : Service() {
         sessions.forEach { s -> s.value.finishIfRunning() }
 
         deamonRunning = false
+        XedCliServer.stop()
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }
@@ -126,7 +127,8 @@ class SessionService : Service() {
         }
 
         if (deamonRunning.not()) {
-            GlobalScope.launch(Dispatchers.IO) { deamonRunning = true }
+            deamonRunning = true
+            XedCliServer.start(this)
         }
 
         if (wakeLock == null) {
@@ -245,7 +247,8 @@ class SessionService : Service() {
             }
         }"
     }
-}
+
+    }
 
 typealias SessionId = String
 
