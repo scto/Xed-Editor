@@ -247,7 +247,7 @@ fun DraggableLspFormatter(modifier: Modifier = Modifier) {
         checked = it
     }
 
-    val enabled = FeatureRegistry.isEnabled("feature_terminal")
+    val enabled = true
 
     Surface(shape = MaterialTheme.shapes.large, tonalElevation = 1.dp, modifier = modifier) {
         PreferenceTemplate(

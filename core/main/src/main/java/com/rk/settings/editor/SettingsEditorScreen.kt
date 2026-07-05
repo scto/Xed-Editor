@@ -58,29 +58,27 @@ fun SettingsEditorScreen(navController: NavController) {
         var showSortingModeDialog by remember { mutableStateOf(false) }
         var sortingModeValue by remember { mutableIntStateOf(Settings.sort_mode) }
 
-        if (FeatureRegistry.isEnabled("feature_terminal")) {
-            PreferenceGroup(heading = stringResource(strings.language_server)) {
-                NextScreenCard(
-                    navController = navController,
-                    label = stringResource(strings.manage_language_servers),
-                    description = stringResource(strings.manage_language_servers_desc),
-                    route = SettingsRoutes.LspSettings,
-                )
+        PreferenceGroup(heading = stringResource(strings.language_server)) {
+            NextScreenCard(
+                navController = navController,
+                label = stringResource(strings.manage_language_servers),
+                description = stringResource(strings.manage_language_servers_desc),
+                route = SettingsRoutes.LspSettings,
+            )
 
-                EditorSettingsItem(
-                    label = stringResource(strings.insert_final_newline),
-                    description = stringResource(strings.insert_final_newline_desc),
-                    default = Settings.insert_final_newline,
-                    sideEffect = { Settings.insert_final_newline = it },
-                )
+            EditorSettingsItem(
+                label = stringResource(strings.insert_final_newline),
+                description = stringResource(strings.insert_final_newline_desc),
+                default = Settings.insert_final_newline,
+                sideEffect = { Settings.insert_final_newline = it },
+            )
 
-                EditorSettingsItem(
-                    label = stringResource(strings.trim_trailing_whitespace),
-                    description = stringResource(strings.trim_trailing_whitespace_desc),
-                    default = Settings.trim_trailing_whitespace,
-                    sideEffect = { Settings.trim_trailing_whitespace = it },
-                )
-            }
+            EditorSettingsItem(
+                label = stringResource(strings.trim_trailing_whitespace),
+                description = stringResource(strings.trim_trailing_whitespace_desc),
+                default = Settings.trim_trailing_whitespace,
+                sideEffect = { Settings.trim_trailing_whitespace = it },
+            )
         }
 
         PreferenceGroup(heading = stringResource(strings.formatting)) {
