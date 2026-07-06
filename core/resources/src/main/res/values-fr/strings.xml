@@ -695,4 +695,11 @@
     <string name="search_icon_packs">Rechercher des lots d\'icônes</string>
     <string name="extension_warning_msg">Les extensions peuvent exécuter du code quelconque et être potentiellement malveillantes. N\'installez des extensions que si vous faites confiance à leur développeur et si vous avez vérifié leur code source.</string>
     <string name="vcs_status">Statut VCS</string>
+    <string name="supported">Supporté</string>
+    <string name="crashed">Crashé</string>
+    <string name="publish_date">Date de publication</string>
+    <string name="record_rpc_traffic">Enregistrer le trafic RPC</string>
+    <string name="record_rpc_traffic_desc">Enregistre les communications RPC des serveurs de langue pour le débogage</string>
+    <string name="lsp_log_limit">Limite de journal LSP</string>
+    <string name="lsp_log_limit_desc">Les entrées de journal plus anciennes sont automatiquement supprimées quand la limite est atteinte pour éviter une consommation mémoire importante</string>
 </resources>
