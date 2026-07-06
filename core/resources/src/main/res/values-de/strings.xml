@@ -677,8 +677,23 @@
     <string name="check_abnormalities">Auf Auffälligkeiten überprüfen</string>
     <string name="samsung_proot_warning">Dein Samsung-Gerät ist von einem bekannten Problem betroffen, das dazu führt, dass die PRoot-basierte Terminal-Installation fehlschlägt.</string>
     <string name="document_highlight">Vorkommen hervorheben</string>
-    <string name="document_highlight_desc">Vorkommen des Symbols an der Cursorposition hervorheben.</string>
+    <string name="document_highlight_desc">Vorkommen des Symbols an der Cursorposition hervorheben</string>
     <string name="seccomp_unspecified">Nicht angegeben</string>
     <string name="seccomp_no_seccomp">Kein Seccomp</string>
     <string name="seccomp_seccomp">Seccomp</string>
+    <string name="store_desc">Erweiterungen, Themen und Icon-Pakete herunterladen</string>
+    <string name="extension_warning_msg">Erweiterungen können beliebigen Code ausführen und potenziell schädlich sein. Installiere Erweiterungen nur, wenn du dem Entwickler der Erweiterung vertraust und deren Quellcode überprüft hast.</string>
+    <string name="no_themes">Keine Themen gefunden.</string>
+    <string name="no_icon_packs">Keine Icon-Pakete gefunden.</string>
+    <string name="search_themes">Themen suchen</string>
+    <string name="search_icon_packs">Icon-Pakete suchen</string>
+    <string name="supported">Unterstützt</string>
+    <string name="crashed">Abgestürzt</string>
+    <string name="disabled_crashed">Deaktiviert (Abgestürzt)</string>
+    <string name="download_count">Downloadzahl</string>
+    <string name="publish_date">Veröffentlichungsdatum</string>
+    <string name="record_rpc_traffic">RPC-Datenverkehr aufzeichnen</string>
+    <string name="record_rpc_traffic_desc">RPC-Kommunikation von Sprachservern zu Debugging-Zwecken protokollieren</string>
+    <string name="lsp_log_limit">LSP-Protokoll-Limit</string>
+    <string name="lsp_log_limit_desc">Ältere Logs werden automatisch entfernt, sobald das Limit erreicht ist, um einen hohen Speicherverbrauch zu vermeiden</string>
 </resources>
