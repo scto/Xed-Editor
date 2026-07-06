@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import com.rk.extension.EXTENSION_API_BASE
 import com.rk.extension.ExtensionManifest
-import com.rk.extension.ExtensionStats
 import com.rk.extension.ICONPACKS_API_BASE
 import com.rk.extension.THEMES_API_BASE
 import com.rk.icons.pack.IconPackManifest
@@ -21,18 +20,27 @@ import java.io.File
 
 @Serializable private data class ExtensionListResponse(val extensions: List<ExtensionEntry>)
 
-@Serializable private data class ExtensionEntry(val manifest: ExtensionManifest)
-
-@Serializable private data class ExtensionDetail(val downloads: Int? = null, val download: DownloadUrls)
-
 @Serializable
-private data class DownloadUrls(val icon: String? = null, val readme: String? = null, val zip: String, val size: Int)
-
-@Serializable
-data class ThemeStoreEntry(
+data class ExtensionEntry(
     val id: String,
-    val userId: String,
+    val manifest: ExtensionManifest,
+    val downloads: Int? = null,
+    // TODO: val download: DownloadUrls,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+@Serializable
+data class DownloadUrls(val icon: String? = null, val readme: String? = null, val zip: String, val size: Int)
+
+@Serializable data class ThemeListResponse(val themes: List<ThemeEntry>)
+
+@Serializable
+data class ThemeEntry(
+    val id: String,
     val manifest: ThemeManifest,
+    val createdAt: Int,
+    val updatedAt: Int,
 )
 
 @Serializable
@@ -41,16 +49,15 @@ data class ThemeManifest(
     val name: String,
 )
 
-@Serializable data class ThemesResponse(val themes: List<ThemeStoreEntry>)
+@Serializable data class IconPackListResponse(val iconPacks: List<IconPackEntry>)
 
 @Serializable
-data class IconPackStoreEntry(
+data class IconPackEntry(
     val id: String,
-    val userId: String,
     val manifest: IconPackManifest,
+    val createdAt: Int,
+    val updatedAt: Int,
 )
-
-@Serializable data class IconPacksResponse(val iconPacks: List<IconPackStoreEntry>)
 
 object ExtensionRegistry {
     private const val TAG = "ExtensionRegistry"
@@ -69,44 +76,44 @@ object ExtensionRegistry {
     ): Boolean =
         withContext(Dispatchers.IO) {
             runCatching {
-                    val request = Request.Builder().url(url).build()
-                    client.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful) error("HTTP ${response.code}")
-                        val totalBytes = response.body.contentLength()
-                        destFile.parentFile?.mkdirs()
-                        response.body.byteStream().use { input ->
-                            destFile.outputStream().use { output ->
-                                val buffer = ByteArray(8192)
-                                var bytesRead: Int
-                                var totalBytesRead = 0L
-                                while (input.read(buffer).also { bytesRead = it } != -1) {
-                                    output.write(buffer, 0, bytesRead)
-                                    totalBytesRead += bytesRead
-                                    if (totalBytes > 0) {
-                                        val progress = totalBytesRead.toFloat() / totalBytes
-                                        onProgress(progress)
-                                    } else {
-                                        onProgress(-1f)
-                                    }
+                val request = Request.Builder().url(url).build()
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) error("HTTP ${response.code}")
+                    val totalBytes = response.body.contentLength()
+                    destFile.parentFile?.mkdirs()
+                    response.body.byteStream().use { input ->
+                        destFile.outputStream().use { output ->
+                            val buffer = ByteArray(8192)
+                            var bytesRead: Int
+                            var totalBytesRead = 0L
+                            while (input.read(buffer).also { bytesRead = it } != -1) {
+                                output.write(buffer, 0, bytesRead)
+                                totalBytesRead += bytesRead
+                                if (totalBytes > 0) {
+                                    val progress = totalBytesRead.toFloat() / totalBytes
+                                    onProgress(progress)
+                                } else {
+                                    onProgress(-1f)
                                 }
                             }
                         }
                     }
-                    true
                 }
+                true
+            }
                 .onFailure {
                     it.printStackTrace()
                 }
                 .getOrElse { false }
         }
 
-    suspend fun fetchExtensions(): List<ExtensionManifest> =
+    suspend fun fetchExtensions(): List<ExtensionEntry> =
         withContext(Dispatchers.IO) {
             runCatching {
-                    val jsonString = requestJson(BASE_URL)
-                    val response = json.decodeFromString<ExtensionListResponse>(jsonString)
-                    response.extensions.map { it.manifest }
-                }
+                val jsonString = requestJson(BASE_URL)
+                val response = json.decodeFromString<ExtensionListResponse>(jsonString)
+                response.extensions
+            }
                 .onFailure {
                     it.printStackTrace()
                     throw it
@@ -119,23 +126,6 @@ object ExtensionRegistry {
     fun getReadmeUrl(id: String): String = "$BASE_URL/$id/README.md"
 
     fun getChangelogUrl(id: String): String = "$BASE_URL/$id/CHANGELOG.md"
-
-    suspend fun getStats(id: String): ExtensionStats {
-        val details =
-            runCatching {
-                    withContext(Dispatchers.IO) {
-                        val jsonString = requestJson("$BASE_URL/$id")
-                        json.decodeFromString<ExtensionDetail>(jsonString)
-                    }
-                }
-                .getOrNull()
-
-        return ExtensionStats(
-            downloadCount = details?.downloads,
-            rating = null,
-            size = details?.download?.size?.toLong(),
-        )
-    }
 
     private fun requestJson(url: String): String {
         val req = Request.Builder().url(url).build()
@@ -150,18 +140,18 @@ object ExtensionRegistry {
     suspend fun downloadZip(manifest: ExtensionManifest, destFile: File): Boolean =
         withContext(Dispatchers.IO) {
             runCatching {
-                    val zipUrl = "$BASE_URL/${manifest.id}/plugin.zip"
+                val zipUrl = "$BASE_URL/${manifest.id}/plugin.zip"
 
-                    val request = Request.Builder().url(zipUrl).build()
-                    client.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful) error("HTTP ${response.code}")
-                        destFile.parentFile?.mkdirs()
-                        response.body.byteStream().use { input ->
-                            destFile.outputStream().use { output -> input.copyTo(output) }
-                        }
+                val request = Request.Builder().url(zipUrl).build()
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) error("HTTP ${response.code}")
+                    destFile.parentFile?.mkdirs()
+                    response.body.byteStream().use { input ->
+                        destFile.outputStream().use { output -> input.copyTo(output) }
                     }
-                    true
                 }
+                true
+            }
                 .onFailure {
                     it.printStackTrace()
                     errorDialog(throwable = it)
@@ -169,26 +159,26 @@ object ExtensionRegistry {
                 .getOrElse { false }
         }
 
-    suspend fun fetchThemes(): List<ThemeStoreEntry> =
+    suspend fun fetchThemes(): List<ThemeEntry> =
         withContext(Dispatchers.IO) {
             runCatching {
-                    val jsonString = requestJson(THEMES_API_BASE)
-                    val response = json.decodeFromString<ThemesResponse>(jsonString)
-                    response.themes
-                }
+                val jsonString = requestJson(THEMES_API_BASE)
+                val response = json.decodeFromString<ThemeListResponse>(jsonString)
+                response.themes
+            }
                 .onFailure {
                     it.printStackTrace()
                 }
                 .getOrElse { emptyList() }
         }
 
-    suspend fun fetchIconPacks(): List<IconPackStoreEntry> =
+    suspend fun fetchIconPacks(): List<IconPackEntry> =
         withContext(Dispatchers.IO) {
             runCatching {
-                    val jsonString = requestJson(ICONPACKS_API_BASE)
-                    val response = json.decodeFromString<IconPacksResponse>(jsonString)
-                    response.iconPacks
-                }
+                val jsonString = requestJson(ICONPACKS_API_BASE)
+                val response = json.decodeFromString<IconPackListResponse>(jsonString)
+                response.iconPacks
+            }
                 .onFailure {
                     it.printStackTrace()
                 }
@@ -198,17 +188,17 @@ object ExtensionRegistry {
     suspend fun downloadIconPackZip(id: String, destFile: File): Boolean =
         withContext(Dispatchers.IO) {
             runCatching {
-                    val zipUrl = "${ICONPACKS_API_BASE}/$id/iconpack.zip"
-                    val request = Request.Builder().url(zipUrl).build()
-                    client.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful) error("HTTP ${response.code}")
-                        destFile.parentFile?.mkdirs()
-                        response.body.byteStream().use { input ->
-                            destFile.outputStream().use { output -> input.copyTo(output) }
-                        }
+                val zipUrl = "${ICONPACKS_API_BASE}/$id/iconpack.zip"
+                val request = Request.Builder().url(zipUrl).build()
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) error("HTTP ${response.code}")
+                    destFile.parentFile?.mkdirs()
+                    response.body.byteStream().use { input ->
+                        destFile.outputStream().use { output -> input.copyTo(output) }
                     }
-                    true
                 }
+                true
+            }
                 .onFailure {
                     it.printStackTrace()
                     errorDialog(throwable = it)

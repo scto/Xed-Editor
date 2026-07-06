@@ -690,5 +690,4 @@
     <string name="search_themes">Temaları ara</string>
     <string name="search_icon_packs">Simge paketlerini ara</string>
     <string name="download_count">İndirme Sayısı</string>
-    <string name="vcs_status">VCS durumu</string>
 </resources>

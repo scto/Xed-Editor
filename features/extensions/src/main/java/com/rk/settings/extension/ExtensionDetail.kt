@@ -245,13 +245,12 @@ private fun AboutSection(
     var showStar by remember { mutableStateOf(false) }
 
     LaunchedEffect(refreshKey) {
-        val stats = extension.getStats()
-        stats.size?.let { size = formatFileSize(it) }
-        stats.rating?.let {
+        extension.size?.let { size = formatFileSize(it) }
+        extension.rating?.let {
             rating = it.toString()
             showStar = true
         }
-        stats.downloadCount?.let { downloadCount = formatNumberCompact(it) }
+        extension.downloads?.let { downloadCount = formatNumberCompact(it) }
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

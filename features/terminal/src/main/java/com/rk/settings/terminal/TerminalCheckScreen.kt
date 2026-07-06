@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,14 +28,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rk.components.InfoBlock
 import com.rk.components.compose.preferences.base.PreferenceGroup
 import com.rk.components.compose.preferences.base.PreferenceLayout
 import com.rk.components.compose.preferences.base.PreferenceTemplate
 import com.rk.icons.LucideCircleQuestionMark
 import com.rk.resources.strings
 import com.rk.theme.greenStatus
-import com.rk.utils.openUrl
 
 enum class CheckStatus {
     PENDING,
@@ -83,25 +80,6 @@ fun TerminalCheckScreen() {
     }
 
     PreferenceLayout(label = stringResource(strings.terminal_health), backArrowVisible = true) {
-        if (isAffectedSamsungDevice()) {
-            InfoBlock(
-                icon = { Icon(imageVector = Icons.Outlined.Warning, contentDescription = null) },
-                text = stringResource(strings.samsung_proot_warning),
-                warning = true,
-                onClick = {
-                    context.openUrl("https://github.com/Xed-Editor/Xed-Editor/issues/639")
-                },
-            )
-        }
-
-        if (isTerminalDegraded(context)) {
-            InfoBlock(
-                icon = { Icon(imageVector = Icons.Outlined.Warning, contentDescription = null) },
-                text = stringResource(strings.terminal_degraded_warning),
-                warning = true,
-            )
-        }
-
         checks.forEachIndexed { index, check ->
             PreferenceGroup {
                 PreferenceTemplate(

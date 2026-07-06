@@ -635,7 +635,6 @@
     <string name="search_icon_packs">Search icon packs</string>
     <string name="date_added">Date added</string>
     <string name="supported">Supported</string>
-    <string name="crashed">Crashed</string>
     <string name="filter_options">Filter options</string>
     <string name="sort_options">Sort options</string>
     <string name="source_code">Source code</string>
@@ -657,7 +656,6 @@
     <string name="scrollback_buffer_desc">Number of lines the terminal keeps in memory as history</string>
     <string name="file_type">File type</string>
     <string name="git_status">Git status</string>
-    <string name="vcs_status">VCS status</string>
     <string name="invalid_color">Invalid color</string>
     <string name="color_picker">Pick a color</string>
     <string name="auto_closing_bracket">Auto closing bracket</string>
@@ -690,11 +688,10 @@
     <string name="check_ubuntu">Check Ubuntu</string>
     <string name="check_network_access">Check network access</string>
     <string name="check_abnormalities">Check abnormalities</string>
-    <string name="samsung_proot_warning">Your Samsung device is affected by a known issue that causes the PRoot-based terminal installation to fail.</string>
-    <string name="terminal_degraded_warning">The terminal is currently running in a degraded mode due to a known compatibility issue caused by a malfunction in the PRoot environment on certain devices. Some features may be limited or behave differently.</string>
     <string name="disabled_crashed">Disabled (Crashed)</string>
     <string name="download_count">Download count</string>
     <string name="publish_date">Publish date</string>
+    <string name="update_date">Update date</string>
     <string name="record_rpc_traffic">Record RPC traffic</string>
     <string name="record_rpc_traffic_desc">Log RPC communication of language servers for debugging</string>
     <string name="lsp_log_limit">LSP log limit</string>

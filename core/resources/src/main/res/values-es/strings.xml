@@ -679,7 +679,6 @@
     <string name="seccomp_seccomp">Seccomp</string>
     <string name="search_themes">Búsqueda de temas</string>
     <string name="search_icon_packs">Búsqueda de paquetes de iconos</string>
-    <string name="vcs_status">Estado de VCS</string>
     <string name="terminal_health">Estado del terminal</string>
     <string name="terminal_health_desc">Ejecute diagnósticos para identificar incidencias con el entorno del terminal</string>
     <string name="no_logs">Sin bitácoras disponibles</string>

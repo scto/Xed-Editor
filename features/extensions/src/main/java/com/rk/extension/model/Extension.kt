@@ -1,15 +1,12 @@
 package com.rk.extension
 
+import com.rk.extension.manager.ExtensionEntry
 import com.rk.extension.manager.ExtensionRegistry
 import com.rk.xededitor.BuildConfig
 import io.github.z4kn4fein.semver.toVersionOrNull
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.io.File
 import java.util.Date
-
-data class ExtensionStats(val downloadCount: Int?, val rating: Float?, val size: Long?)
 
 sealed interface Extension {
     val id: ExtensionId
@@ -21,17 +18,16 @@ sealed interface Extension {
     val repository: String
     val license: String?
     val hasSettings: Boolean
-
     val iconUrl: String
-
     val readmeUrl: String
     val changelogUrl: String
-
     val minAppVersion: Int?
-
     val maxAppVersion: Int?
-
-    suspend fun getStats(): ExtensionStats
+    val downloads: Int?
+    val rating: Float?
+    val size: Long?
+    val createdAt: Long?
+    val updatedAt: Long?
 
     suspend fun getReviews(): List<Review>
 }
@@ -44,7 +40,10 @@ data class ExtensionAuthor(val displayName: String, val github: String? = null) 
 }
 
 /** Extensions that are published in the store (online registry). Might or might not be installed locally. */
-data class StoreExtension(val manifest: ExtensionManifest, val verified: Boolean = false) : Extension {
+data class StoreExtension(private val entry: ExtensionEntry) : Extension {
+
+    val manifest
+        get() = entry.manifest
 
     override val id
         get() = manifest.id
@@ -88,7 +87,20 @@ data class StoreExtension(val manifest: ExtensionManifest, val verified: Boolean
     override val maxAppVersion
         get() = manifest.maxAppVersion
 
-    override suspend fun getStats() = ExtensionRegistry.getStats(manifest.id)
+    override val downloads
+        get() = entry.downloads
+
+    override val rating
+        get() = null
+
+    override val size
+        get() = null
+
+    override val createdAt
+        get() = entry.createdAt
+
+    override val updatedAt
+        get() = entry.updatedAt
 
     override suspend fun getReviews(): List<Review> = emptyList()
 }
@@ -96,12 +108,11 @@ data class StoreExtension(val manifest: ExtensionManifest, val verified: Boolean
 /** Extensions that are installed locally (from disk). */
 data class LocalExtension(
     val manifest: ExtensionManifest,
-
-    // Path where extension is installed
     val installPath: String,
-
-    // Whether it’s enabled / disabled by the user
     val enabled: Boolean = true,
+    override val size: Long,
+    override val createdAt: Long?,
+    override val updatedAt: Long?,
 ) : Extension {
     override fun equals(other: Any?): Boolean {
         if (other !is LocalExtension) {
@@ -157,30 +168,11 @@ data class LocalExtension(
     override val maxAppVersion
         get() = manifest.maxAppVersion
 
-    override suspend fun getStats(): ExtensionStats {
-        return ExtensionStats(null, null, calcSize())
-    }
+    override val downloads
+        get() = null
 
-    private suspend fun calcSize(): Long {
-        return withContext(Dispatchers.IO) {
-            var totalSize = 0L
-            val stack = ArrayDeque<File>()
-            stack.add(File(installPath))
-
-            loop@ while (stack.isNotEmpty()) {
-                val current = stack.removeLast()
-                runCatching {
-                    if (current.isDirectory()) {
-                        val files = current.listFiles() ?: continue@loop
-                        stack.addAll(files)
-                    } else {
-                        totalSize += current.length()
-                    }
-                }
-            }
-            totalSize
-        }
-    }
+    override val rating
+        get() = null
 
     override suspend fun getReviews(): List<Review> = emptyList()
 }
@@ -231,7 +223,20 @@ data class UpdatableExtension(val installed: LocalExtension, val store: StoreExt
     override val maxAppVersion
         get() = store.maxAppVersion
 
-    override suspend fun getStats() = store.getStats()
+    override val downloads
+        get() = store.downloads
+
+    override val rating
+        get() = store.rating
+
+    override val size
+        get() = installed.size
+
+    override val createdAt
+        get() = store.createdAt
+
+    override val updatedAt
+        get() = store.updatedAt
 
     override suspend fun getReviews() = store.getReviews()
 

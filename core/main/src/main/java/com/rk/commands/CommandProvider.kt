@@ -35,6 +35,8 @@ import com.rk.commands.lsp.FormatSelectionCommand
 import com.rk.commands.lsp.GoToDefinitionCommand
 import com.rk.commands.lsp.GoToReferencesCommand
 import com.rk.commands.lsp.RenameSymbolCommand
+import com.rk.extension.api.DisposableManager
+import com.rk.extension.api.Disposer
 import com.rk.extension.api.XedExtensionPoint
 
 object CommandProvider {
@@ -134,6 +136,23 @@ object CommandProvider {
     @XedExtensionPoint
     fun unregisterCommand(command: Command) {
         _commandList.remove(command)
+    }
+
+    private val disposer =
+        Disposer<Command> {
+            unregisterCommand(it)
+        }
+
+    @XedExtensionPoint
+    fun registerCommand(command: Command, dm: DisposableManager) {
+        registerCommand(command)
+        dm.register(command, disposer)
+    }
+
+    @XedExtensionPoint
+    fun unregisterCommand(command: Command, dm: DisposableManager) {
+        unregisterCommand(command)
+        dm.unregister(command, disposer)
     }
 
     fun getForId(id: String): Command? = findRecursive(id, commandList)

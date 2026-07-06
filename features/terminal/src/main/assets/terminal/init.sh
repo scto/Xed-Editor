@@ -13,7 +13,7 @@ rm $LOCAL/bin/xed 2&> /dev/null
 ln -s $NATIVE_LIB_DIR/libxed_cli.so $LOCAL/bin/xed
 
 if [ -f "$LOCAL/.sandbox_degraded" ]; then
-    warn "Running in degraded mode. Some features may not work"
+    warn "Running in degraded mode. Some features may not work. Please reinstall the terminal"
 fi
 
 # Set timezone

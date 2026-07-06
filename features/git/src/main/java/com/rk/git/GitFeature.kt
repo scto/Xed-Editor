@@ -1,111 +1,118 @@
 package com.rk.git
 
 import android.app.Application
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.rk.feature.Feature
-import com.rk.feature.SettingsRegistry
-import com.rk.feature.SettingsCategory
-import com.rk.feature.SettingsRoute
+import androidx.compose.ui.res.stringResource
 import com.rk.activities.settings.SettingsRoutes
-import com.rk.resources.drawables
-import com.rk.resources.strings
-import com.rk.drawer.AddProjectRegistry
+import com.rk.components.DialogRegistry
 import com.rk.drawer.AddProjectOption
+import com.rk.drawer.AddProjectRegistry
 import com.rk.drawer.ServiceTabRegistry
-import com.rk.icons.Icon
-import com.rk.file.FileObject
+import com.rk.feature.Feature
+import com.rk.feature.FeatureRegistry
+import com.rk.feature.FeatureToggle
+import com.rk.feature.SettingsCategory
+import com.rk.feature.SettingsRegistry
+import com.rk.feature.SettingsRoute
+import com.rk.file.FileChangeNotifier
 import com.rk.file.FileDecoration
 import com.rk.file.FileDecorationProvider
 import com.rk.file.FileDecorationRegistry
-import com.rk.file.FileProperty
+import com.rk.file.FileObject
 import com.rk.file.FilePropertiesProvider
 import com.rk.file.FilePropertiesRegistry
-import com.rk.file.FileChangeNotifier
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
-import androidx.compose.material3.MaterialTheme
-import com.rk.components.DialogRegistry
-import com.rk.feature.FeatureRegistry
-import com.rk.feature.FeatureToggle
-import com.rk.theme.vcsAdded
-import com.rk.theme.vcsModified
-import com.rk.theme.vcsDeleted
-import com.rk.theme.vcsConflicted
+import com.rk.file.FileProperty
+import com.rk.icons.Icon
+import com.rk.resources.drawables
+import com.rk.resources.strings
+import com.rk.settings.git.GitSettings
+import com.rk.theme.gitAdded
+import com.rk.theme.gitConflicted
+import com.rk.theme.gitDeleted
+import com.rk.theme.gitModified
 import java.lang.ref.WeakReference
 
 // Global reference for gitViewModel
 var gitViewModel = WeakReference<GitViewModel?>(null)
 
 class GitFeature : Feature {
-    override val toggle = FeatureToggle(
-        nameRes = strings.git,
-        key = "enable_git",
-        default = true,
-        iconRes = drawables.git
-    )
+    override val toggle =
+        FeatureToggle(
+            nameRes = strings.git,
+            key = "enable_git",
+            default = true,
+            iconRes = drawables.git,
+        )
 
     override fun init(application: Application) {
-
         // Register Git settings category
         SettingsRegistry.registerCategory(
             SettingsCategory(
                 labelRes = strings.git,
                 descriptionRes = strings.git_desc,
                 iconRes = drawables.git,
-                route = SettingsRoutes.Git.route
+                route = SettingsRoutes.Git.route,
             )
         )
 
         // Register Git settings route
         SettingsRegistry.registerRoute(
             SettingsRoute(SettingsRoutes.Git.route) {
-                com.rk.settings.git.GitSettings()
+                GitSettings()
             }
         )
 
         // Register FileDecorationProvider
-        FileDecorationRegistry.provider = object : FileDecorationProvider {
-            @Composable
-            override fun getDecoration(file: FileObject): FileDecoration? {
-                if (!FeatureRegistry.isEnabled("enable_git") || !com.rk.settings.Settings.git_colorize_names) return null
-                val changeType = gitViewModel.get()?.getChangeType(file.getAbsolutePath()) ?: return null
-                val color = when (changeType) {
-                    ChangeType.ADDED,
-                    ChangeType.UNTRACKED -> MaterialTheme.colorScheme.vcsAdded
-                    ChangeType.DELETED -> MaterialTheme.colorScheme.vcsDeleted
-                    ChangeType.CONFLICTING -> MaterialTheme.colorScheme.vcsConflicted
-                    ChangeType.MODIFIED -> MaterialTheme.colorScheme.vcsModified
-                    ChangeType.RENAMED -> MaterialTheme.colorScheme.vcsModified
+        FileDecorationRegistry.provider =
+            object : FileDecorationProvider {
+                @Composable
+                override fun getDecoration(file: FileObject): FileDecoration? {
+                    if (!FeatureRegistry.isEnabled("enable_git") || !com.rk.settings.Settings.git_colorize_names)
+                        return null
+                    val changeType = gitViewModel.get()?.getChangeType(file.getAbsolutePath()) ?: return null
+                    val color =
+                        when (changeType) {
+                            ChangeType.ADDED,
+                            ChangeType.UNTRACKED -> MaterialTheme.colorScheme.gitAdded
+                            ChangeType.DELETED -> MaterialTheme.colorScheme.gitDeleted
+                            ChangeType.CONFLICTING -> MaterialTheme.colorScheme.gitConflicted
+                            ChangeType.MODIFIED -> MaterialTheme.colorScheme.gitModified
+                            ChangeType.RENAMED -> MaterialTheme.colorScheme.gitModified
+                        }
+                    return FileDecoration(color = color)
                 }
-                return FileDecoration(color = color)
             }
-        }
 
         // Register FilePropertiesProvider
-        FilePropertiesRegistry.providers.add(object : FilePropertiesProvider {
-            @Composable
-            override fun getProperties(file: FileObject): List<FileProperty> {
-                val changeType = gitViewModel.get()?.getChangeType(file.getAbsolutePath()) ?: return emptyList()
-                val gitStatus = changeType.name.lowercase().replaceFirstChar { it.uppercase() }
-                val color = when (changeType) {
-                    ChangeType.ADDED,
-                    ChangeType.UNTRACKED -> MaterialTheme.colorScheme.vcsAdded
-                    ChangeType.DELETED -> MaterialTheme.colorScheme.vcsDeleted
-                    ChangeType.CONFLICTING -> MaterialTheme.colorScheme.vcsConflicted
-                    ChangeType.MODIFIED -> MaterialTheme.colorScheme.vcsModified
-                    ChangeType.RENAMED -> MaterialTheme.colorScheme.vcsModified
-                }
-                return listOf(
-                    FileProperty(
-                        label = stringResource(strings.git_status),
-                        value = gitStatus,
-                        valueColor = color
+        FilePropertiesRegistry.providers.add(
+            object : FilePropertiesProvider {
+                @Composable
+                override fun getProperties(file: FileObject): List<FileProperty> {
+                    val changeType = gitViewModel.get()?.getChangeType(file.getAbsolutePath()) ?: return emptyList()
+                    val gitStatus = changeType.name.lowercase().replaceFirstChar { it.uppercase() }
+                    val color =
+                        when (changeType) {
+                            ChangeType.ADDED,
+                            ChangeType.UNTRACKED -> MaterialTheme.colorScheme.gitAdded
+                            ChangeType.DELETED -> MaterialTheme.colorScheme.gitDeleted
+                            ChangeType.CONFLICTING -> MaterialTheme.colorScheme.gitConflicted
+                            ChangeType.MODIFIED -> MaterialTheme.colorScheme.gitModified
+                            ChangeType.RENAMED -> MaterialTheme.colorScheme.gitModified
+                        }
+                    return listOf(
+                        FileProperty(
+                            label = stringResource(strings.git_status),
+                            value = gitStatus,
+                            valueColor = color,
+                        )
                     )
-                )
+                }
             }
-        })
+        )
 
         // Register Service Tab Provider
         ServiceTabRegistry.providers.add { owner ->
@@ -119,7 +126,6 @@ class GitFeature : Feature {
             gitViewModel.get()?.syncChanges(path)
         }
         FileChangeNotifier.projectOpenListeners.add { root ->
-
             val gitRoot = findGitRoot(root)
             if (gitRoot != null) {
                 gitViewModel.get()?.loadRepository(gitRoot)
@@ -137,7 +143,7 @@ class GitFeature : Feature {
                     onClick = { onDismiss ->
                         showCloneDialog = true
                         onDismiss()
-                    }
+                    },
                 )
             )
         }
@@ -149,7 +155,7 @@ class GitFeature : Feature {
                     onCloneComplete = { fileObject ->
                         // Add file tree tab on success
                         com.rk.activities.main.MainActivity.instance?.drawerViewModel?.addFileTreeTab(fileObject)
-                    }
+                    },
                 )
             }
         }

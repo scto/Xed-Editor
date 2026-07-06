@@ -1,7 +1,5 @@
 package com.rk.settings.terminal
 
-import android.content.Context
-import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -11,29 +9,12 @@ import com.rk.exec.isTerminalInstalled
 import com.rk.exec.readStderr
 import com.rk.exec.ubuntuProcess
 import com.rk.file.child
-import com.rk.file.localDir
 import com.rk.file.sandboxDir
 import com.rk.file.sandboxHomeDir
 import com.rk.resources.strings
 import com.rk.utils.application
 import com.rk.utils.getTempDir
 import java.io.File
-
-fun isAffectedSamsungDevice(): Boolean {
-    val model = Build.MODEL.uppercase()
-
-    return model.startsWith("SM-S911") || // S23
-        model.startsWith("SM-S721") || // S24 FE
-        model.startsWith("SM-S936") || // S25+
-        model.startsWith("SM-F96") || // Fold7
-        model.startsWith("SM-A56") || // A56
-        model.startsWith("SM-A17") || // A17
-        model.startsWith("SM-A16") // A16
-}
-
-fun isTerminalDegraded(context: Context): Boolean {
-    return localDir(context).child(".sandbox_degraded").exists()
-}
 
 /** These checks are intended for troubleshooting terminal issues */
 @Composable

@@ -14,10 +14,13 @@ import com.rk.extension.InstallResult
 import com.rk.extension.LocalExtension
 import com.rk.extension.StoreExtension
 import com.rk.extension.UpdatableExtension
+import com.rk.file.FileOperations
+import com.rk.file.FileWrapper
 import com.rk.file.child
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.utils.errorDialog
+import com.rk.utils.logError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -26,6 +29,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.zip.ZipFile
@@ -37,6 +41,13 @@ val Context.extensionDir: File
     get() = localDir.resolve("extensions").apply { if (!exists()) mkdirs() }
 
 internal fun Context.compiledDexDir() = extensionDir.resolve("oat")
+
+@Serializable
+data class ExtensionCache(
+    val createdAt: Long? = null,
+    val updatedAt: Long? = null,
+    val size: Long? = null,
+)
 
 data class LoadedExtension(val api: ExtensionAPI, val scope: CoroutineScope)
 
@@ -96,6 +107,30 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
         return getSyncedExtensions().filter { it is StoreExtension || it is UpdatableExtension }
     }
 
+    private suspend fun calcSize(dir: File): Long {
+        return FileOperations.calculateContent(FileWrapper(dir)).totalSize
+    }
+
+    private fun resolveCache(dir: File): ExtensionCache {
+        val cacheFile = dir.resolve("cache.json")
+
+        if (!cacheFile.exists() || !cacheFile.isFile) {
+            return ExtensionCache()
+        }
+
+        return runCatching {
+            json.decodeFromString<ExtensionCache>(cacheFile.readText())
+        }
+            .getOrElse {
+                ExtensionCache()
+            }
+    }
+
+    private fun writeCache(dir: File, cache: ExtensionCache) {
+        val cacheFile = dir.resolve("cache.json")
+        cacheFile.writeText(json.encodeToString(cache))
+    }
+
     suspend fun indexLocalExtensions() = mutex.withLock {
         val newExtensions =
             withContext(Dispatchers.IO) {
@@ -103,16 +138,29 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
                 val extensionFolders = context.extensionDir.listFiles()?.filter { it.isDirectory }
                 extensionFolders?.forEach { dir ->
                     val extensionJson = dir.resolve("manifest.json")
+
                     if (extensionJson.exists()) {
                         runCatching {
                             val extensionManifest = json.decodeFromString<ExtensionManifest>(extensionJson.readText())
+                            val extensionCache = resolveCache(dir)
+                            val size =
+                                extensionCache.size
+                                    ?: calcSize(dir).also {
+                                        writeCache(dir, extensionCache.copy(size = it))
+                                    }
                             val extension =
                                 LocalExtension(
                                     manifest = extensionManifest,
                                     installPath = dir.absolutePath,
+                                    size = size,
+                                    createdAt = extensionCache.createdAt,
+                                    updatedAt = extensionCache.updatedAt,
                                 )
                             map[extensionManifest.id] = extension
                         }
+                            .onFailure {
+                                logError(it)
+                            }
                     }
                 }
                 map
@@ -147,11 +195,12 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
         if (!extensionJson.exists()) {
             return Result.failure(Exception("Missing manifest.json"))
         }
-        val extensionManifest =
-            runCatching { json.decodeFromString<ExtensionManifest>(extensionJson.readText()) }
-                .getOrElse { e ->
-                    return Result.failure(e)
-                }
+        val extensionManifest = runCatching {
+            json.decodeFromString<ExtensionManifest>(extensionJson.readText())
+        }
+            .getOrElse { e ->
+                return Result.failure(e)
+            }
 
         val hasApk = dir.listFiles()?.any { it.extension == "apk" } == true
         if (!hasApk) {
@@ -200,7 +249,9 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
             val targetDir = context.extensionDir.resolve(extensionInfo.id)
 
             var performedUpdate = false
+            var oldCreatedAt: Long? = null
             if (targetDir.exists()) {
+                oldCreatedAt = resolveCache(targetDir).createdAt
                 uninstallExtension(extensionInfo.id, update = true)
                 performedUpdate = true
             }
@@ -216,7 +267,25 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
 
             dir.copyRecursively(targetDir, overwrite = true)
 
-            val extension = LocalExtension(manifest = extensionInfo, installPath = targetDir.absolutePath)
+            val size = calcSize(targetDir)
+            val newExtensionCache =
+                ExtensionCache(
+                        createdAt = oldCreatedAt ?: System.currentTimeMillis(),
+                        updatedAt = System.currentTimeMillis(),
+                        size = size,
+                    )
+                    .also {
+                        writeCache(targetDir, it)
+                    }
+
+            val extension =
+                LocalExtension(
+                    manifest = extensionInfo,
+                    installPath = targetDir.absolutePath,
+                    size = size,
+                    createdAt = newExtensionCache.createdAt,
+                    updatedAt = newExtensionCache.updatedAt,
+                )
             localExtensions[extensionInfo.id] = extension
 
             InstallResult.Success(extension, performedUpdate)
@@ -230,12 +299,13 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
 
                 val loadedExtension = loadedExtensions[extension]
                 runCatching {
-                        if (update) {
-                            loadedExtension?.api?.onUpdated()
-                        } else {
-                            loadedExtension?.api?.onUninstalled()
-                        }
+                    loadedExtension?.api?.onDispose()
+                    if (update) {
+                        loadedExtension?.api?.onUpdated()
+                    } else {
+                        loadedExtension?.api?.onUninstalled()
                     }
+                }
                     .onFailure { errorDialog(title = strings.ext_cleanup_failed.getString(), throwable = it) }
                 loadedExtensions[extension]?.scope?.cancel()
 

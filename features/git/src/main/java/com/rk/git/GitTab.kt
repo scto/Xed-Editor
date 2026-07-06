@@ -67,6 +67,7 @@ import com.rk.components.SingleInputDialog
 import com.rk.components.compose.utils.addIf
 import com.rk.components.getDrawerWidth
 import com.rk.drawer.DrawerTab
+import com.rk.feature.FeatureRegistry
 import com.rk.file.toFileWrapper
 import com.rk.filetree.FileNameIcon
 import com.rk.filetree.FileTreeTab
@@ -74,18 +75,16 @@ import com.rk.icons.Icon
 import com.rk.resources.drawables
 import com.rk.resources.getString
 import com.rk.resources.strings
-import com.rk.feature.FeatureRegistry
 import com.rk.tabs.editor.EditorTab
+import com.rk.theme.gitAdded
+import com.rk.theme.gitConflicted
+import com.rk.theme.gitDeleted
+import com.rk.theme.gitModified
 import com.rk.utils.drawErrorUnderline
-import com.rk.git.findGitRoot
-import com.rk.theme.vcsAdded
-import com.rk.theme.vcsModified
-import com.rk.theme.vcsDeleted
-import com.rk.theme.vcsConflicted
 import com.rk.utils.getUnderlineColor
-import java.io.File
 import kotlinx.coroutines.launch
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+import java.io.File
 
 class GitTab(val viewModel: GitViewModel) : DrawerTab() {
     @Composable
@@ -635,14 +634,15 @@ class GitTab(val viewModel: GitViewModel) : DrawerTab() {
                     Text(
                         text = fileName,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = when (change.type) {
-                            ChangeType.ADDED,
-                            ChangeType.UNTRACKED -> MaterialTheme.colorScheme.vcsAdded
-                            ChangeType.DELETED -> MaterialTheme.colorScheme.vcsDeleted
-                            ChangeType.CONFLICTING -> MaterialTheme.colorScheme.vcsConflicted
-                            ChangeType.MODIFIED -> MaterialTheme.colorScheme.vcsModified
-                            ChangeType.RENAMED -> MaterialTheme.colorScheme.vcsModified
-                        },
+                        color =
+                            when (change.type) {
+                                ChangeType.ADDED,
+                                ChangeType.UNTRACKED -> MaterialTheme.colorScheme.gitAdded
+                                ChangeType.DELETED -> MaterialTheme.colorScheme.gitDeleted
+                                ChangeType.CONFLICTING -> MaterialTheme.colorScheme.gitConflicted
+                                ChangeType.MODIFIED -> MaterialTheme.colorScheme.gitModified
+                                ChangeType.RENAMED -> MaterialTheme.colorScheme.gitModified
+                            },
                         modifier = Modifier.addIf(underlineColor != null) { drawErrorUnderline(underlineColor!!) },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
