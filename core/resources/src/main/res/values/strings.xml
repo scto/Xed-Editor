@@ -285,7 +285,7 @@
     <string name="support">Support</string>
     <string name="support_desc">Support development</string>
     <string name="translate">Translate</string>
-    <string name="terminal_feature">Terminal, runners and language servers</string>
+    <string name="terminal_feature">Terminal and runners</string>
     <string name="folder_name">Folder name</string>
     <string name="invalid_characters">Invalid characters</string>
     <string name="properties">Properties</string>
