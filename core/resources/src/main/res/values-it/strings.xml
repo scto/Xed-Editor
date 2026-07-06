@@ -272,7 +272,7 @@
     <string name="storage">Archiviazione</string>
     <string name="support">Assistenza</string>
     <string name="translate">Traduci</string>
-    <string name="terminal_feature">Terminale, esecutori e language server</string>
+    <string name="terminal_feature">Terminale ed esecutori</string>
     <string name="folder_name">Nome cartella</string>
     <string name="invalid_characters">Carattere non valido</string>
     <string name="properties">Proprietà</string>
