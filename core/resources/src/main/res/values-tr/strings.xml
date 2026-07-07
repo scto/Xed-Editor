@@ -254,7 +254,7 @@
     <string name="storage">Depolama</string>
     <string name="support">Destek</string>
     <string name="translate">Tercüme et</string>
-    <string name="terminal_feature">Terminal, çalıştırıcılar ve dil sunucuları</string>
+    <string name="terminal_feature">Terminal ve çalıştırıcılar</string>
     <string name="folder_name">Klasör adı</string>
     <string name="invalid_characters">Geçersiz karakterler</string>
     <string name="properties">Nitelikler</string>
