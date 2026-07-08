@@ -700,4 +700,5 @@
     <string name="record_rpc_traffic_desc">Enregistre les communications RPC des serveurs de langue pour le débogage</string>
     <string name="lsp_log_limit">Limite de journal LSP</string>
     <string name="lsp_log_limit_desc">Les entrées de journal plus anciennes sont automatiquement supprimées quand la limite est atteinte pour éviter une consommation mémoire importante</string>
+    <string name="update_date">Date de mise à jour</string>
 </resources>
