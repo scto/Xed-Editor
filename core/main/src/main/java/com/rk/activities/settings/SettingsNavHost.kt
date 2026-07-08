@@ -6,8 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.rk.App
 import com.rk.animations.NavigationAnimationTransitions
+import com.rk.feature.SettingsRegistry
 import com.rk.lsp.LspRegistry
 import com.rk.settings.SettingsScreen
 import com.rk.settings.about.AboutScreen
@@ -30,7 +30,6 @@ import com.rk.settings.lsp.LspServerLogs
 import com.rk.settings.lsp.LspSettings
 import com.rk.settings.support.Support
 import com.rk.settings.theme.ThemeScreen
-import com.rk.feature.SettingsRegistry
 
 @Composable
 fun SettingsNavHost(navController: NavHostController, activity: SettingsActivity) {
@@ -90,9 +89,10 @@ fun SettingsNavHost(navController: NavHostController, activity: SettingsActivity
             LspServerLogs(server, instanceId)
         }
         composable(SettingsRoutes.Themes.route) { ThemeScreen() }
+
         SettingsRegistry.routes.forEach { customRoute ->
-            composable(customRoute.route) {
-                customRoute.content(navController)
+            composable(customRoute.route, arguments = customRoute.arguments) { backStackEntry ->
+                customRoute.content(navController, backStackEntry)
             }
         }
     }

@@ -34,12 +34,12 @@ class RunnerFeature : Feature {
 
         // Register settings routes
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.Runners.route) { navController ->
+            SettingsRoute(SettingsRoutes.Runners.route) { navController, _ ->
                 RunnerSettings(navController = navController)
             }
         )
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.HtmlRunner.route) {
+            SettingsRoute(SettingsRoutes.HtmlRunner.route) { _, _ ->
                 HtmlRunnerSettings()
             }
         )

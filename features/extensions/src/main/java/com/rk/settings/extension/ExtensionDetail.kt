@@ -123,11 +123,7 @@ fun ExtensionDetail(extension: Extension?, navController: NavController) {
             val installState =
                 remember(extension, localInstallState, ExtensionRegistry.activeInstalls[extension.id]) {
                     val active = ExtensionRegistry.activeInstalls[extension.id]
-                    if (active != null) {
-                        active
-                    } else {
-                        localInstallState
-                    }
+                    active ?: localInstallState
                 }
 
             Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

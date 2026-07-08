@@ -94,7 +94,7 @@ data class StoreExtension(private val entry: ExtensionEntry) : Extension {
         get() = null
 
     override val size
-        get() = null
+        get() = null // TODO
 
     override val createdAt
         get() = entry.createdAt

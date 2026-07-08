@@ -55,22 +55,20 @@ class ExtensionFeature : Feature {
 
         // Register settings routes
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.Extensions.route) { navController ->
+            SettingsRoute(SettingsRoutes.Extensions.route) { navController, _ ->
                 ExtensionScreen(navController = navController)
             }
         )
         SettingsRegistry.registerRoute(
-            SettingsRoute("${SettingsRoutes.ExtensionDetail.route}/{extensionId}") { navController ->
-                val it = navController.currentBackStackEntry
-                val extensionId = it?.arguments?.getString("extensionId")
+            SettingsRoute("${SettingsRoutes.ExtensionDetail.route}/{extensionId}") { navController, backStackEntry ->
+                val extensionId = backStackEntry.arguments?.getString("extensionId")
                 val extension = extensionId?.let { extensionManager.getExtension(it) }
                 ExtensionDetail(extension, navController)
             }
         )
         SettingsRegistry.registerRoute(
-            SettingsRoute("${SettingsRoutes.ExtensionSettings.route}/{extensionId}") { navController ->
-                val it = navController.currentBackStackEntry
-                val extensionId = it?.arguments?.getString("extensionId")
+            SettingsRoute("${SettingsRoutes.ExtensionSettings.route}/{extensionId}") { _, backStackEntry ->
+                val extensionId = backStackEntry.arguments?.getString("extensionId")
                 val extension = extensionId?.let { extensionManager.getExtension(it) }
                 ExtensionSettings(extension)
             }
