@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import com.rk.resources.drawables
 import com.rk.resources.getString
@@ -98,7 +100,8 @@ data class SettingsCategory(
 
 data class SettingsRoute(
     val route: String,
-    val content: @Composable (NavController) -> Unit,
+    val arguments: List<NamedNavArgument> = emptyList(),
+    val content: @Composable (NavController, NavBackStackEntry) -> Unit,
 )
 
 object SettingsRegistry {

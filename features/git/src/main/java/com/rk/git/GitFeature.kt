@@ -61,7 +61,7 @@ class GitFeature : Feature {
 
         // Register Git settings route
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.Git.route) {
+            SettingsRoute(SettingsRoutes.Git.route) { _, _ ->
                 GitSettings()
             }
         )

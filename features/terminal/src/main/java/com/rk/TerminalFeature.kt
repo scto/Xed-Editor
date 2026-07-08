@@ -101,22 +101,22 @@ class TerminalFeature : Feature {
 
         // Register settings routes
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.TerminalSettings.route) {
+            SettingsRoute(SettingsRoutes.TerminalSettings.route) { _, _ ->
                 SettingsTerminalScreen()
             }
         )
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.TerminalExtraKeys.route) {
+            SettingsRoute(SettingsRoutes.TerminalExtraKeys.route) { _, _ ->
                 TerminalExtraKeys()
             }
         )
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.TerminalCheck.route) {
+            SettingsRoute(SettingsRoutes.TerminalCheck.route) { _, _ ->
                 TerminalCheckScreen()
             }
         )
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.TerminalFontScreen.route) {
+            SettingsRoute(SettingsRoutes.TerminalFontScreen.route) { _, _ ->
                 TerminalFontScreen()
             }
         )

@@ -30,15 +30,15 @@ dependencies {
     implementation(project(":core:main"))
     implementation(project(":core:components"))
     implementation(project(":core:resources"))
-    
+
     // Editor modules for Markdown rendering
     implementation(project(":editor"))
     implementation(project(":editor-lsp"))
-    
+
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.semver)
-    
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -46,11 +46,13 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material.icons.core)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.compose.ui.tooling.preview)
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.gson)
-    
+
     // Image loading
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
