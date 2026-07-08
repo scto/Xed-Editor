@@ -632,7 +632,7 @@ fun ThemeStoreCard(
             Text(text = name, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
         description = {
-            androidx.compose.foundation.layout.Column {
+            Column {
                 Text(
                     text = themeEntry.id,
                     maxLines = 1,
