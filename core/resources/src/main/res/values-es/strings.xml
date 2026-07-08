@@ -264,7 +264,7 @@
     <string name="cant_write">No se puede escribir al archivo (sin permisos de escritura)</string>
     <string name="info_lsp">Servidores del idioma son proceso separados que proporcionan características inteligentes, tales como completado de código, resalto de error y alineamiento de documentación.</string>
     <string name="translate">Traducir</string>
-    <string name="terminal_feature">Terminal, ejecuciones y servidores de idioma</string>
+    <string name="terminal_feature">Terminal y ejecuciones</string>
     <string name="folder_name">Nombre de carpeta</string>
     <string name="invalid_characters">Caracteres no válidos</string>
     <string name="rename_folder">Renombrar carpeta</string>
@@ -693,4 +693,11 @@
     <string name="check_ubuntu">Comprobar Ubuntu</string>
     <string name="check_proot">Comprobar PRoot</string>
     <string name="check_system_shell">Comprobar consola del sistema</string>
+    <string name="supported">Mantenido</string>
+    <string name="crashed">Colgado</string>
+    <string name="publish_date">Fecha de publicación</string>
+    <string name="record_rpc_traffic">Grabar tráfico RPC</string>
+    <string name="record_rpc_traffic_desc">Bitácora RPC para comunicación de servidores del idioma para depurar</string>
+    <string name="lsp_log_limit">Límite de bitácora LSP</string>
+    <string name="lsp_log_limit_desc">Bitácoras más anteriores son auto-eliminadas cuando se alcanza al límite para evitar exceso de uso de memoria</string>
 </resources>

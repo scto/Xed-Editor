@@ -258,17 +258,15 @@ fun EditorTab.applyHighlightingAndConnectLSP() {
         val activity = editor.context as? Activity ?: return@launch
         val extension = getExtensionServers(activity)
         val external = getExternalServers()
-        val servers = extension + external
+        var servers = extension + external
+        if (!FeatureRegistry.isEnabled("feature_terminal")) {
+            servers = servers.filter { it.getConnectionConfig() !is com.rk.lsp.LspConnectionConfig.Process }
+        }
         if (servers.isEmpty()) return@launch
 
         // Language servers fail with content URIs
         if (file !is FileWrapper) {
             logWarn("File ${file.getName()} is not a file wrapper. Skipping language server connection.")
-            return@launch
-        }
-
-        if (!FeatureRegistry.isEnabled("feature_terminal")) {
-            logWarn("Terminal is not enabled. Skipping language server connection.")
             return@launch
         }
 

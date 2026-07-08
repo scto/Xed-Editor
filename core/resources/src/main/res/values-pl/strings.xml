@@ -255,7 +255,7 @@
     <string name="size">Rozmiar</string>
     <string name="support">Wsparcie</string>
     <string name="translate">Przetłumacz</string>
-    <string name="terminal_feature">Terminal, procesy i serwery językowe</string>
+    <string name="terminal_feature">Terminal i procesy</string>
     <string name="folder_name">Nazwa katalogu</string>
     <string name="invalid_characters">Nieprawidłowe znaki</string>
     <string name="properties">Właściwości</string>
@@ -698,4 +698,11 @@
     <string name="search_themes">Wyszukaj motywy</string>
     <string name="search_icon_packs">Wyszukaj paczki ikon</string>
     <string name="extension_warning_msg">Rozszerzenia mogą wykonywać dowolny kod i potencjalnie stanowić zagrożenie. Należy instalować rozszerzenia wyłącznie wtedy, gdy ufasz ich twórcy i sprawdziłeś kod źródłowy rozszerzenia.</string>
+    <string name="supported">Obsługiwane</string>
+    <string name="crashed">Uszkodzone</string>
+    <string name="publish_date">Data publikacji</string>
+    <string name="record_rpc_traffic">Rejestruj ruch RPC</string>
+    <string name="record_rpc_traffic_desc">Rejestrowanie komunikacji RPC serwerów językowych w celu debugowania</string>
+    <string name="lsp_log_limit">Limit logów LSP</string>
+    <string name="lsp_log_limit_desc">Starsze logi są automatycznie usuwane po osiągnięciu limitu, aby uniknąć nadmiernego zużycia pamięci</string>
 </resources>

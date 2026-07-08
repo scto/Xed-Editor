@@ -154,7 +154,7 @@
     <string name="smooth_tabs">Hladké animace karet</string>
     <string name="smooth_tab_desc">Hladce přepnout mezi karty</string>
     <string name="info">Informace</string>
-    <string name="copied">Kopírováno</string>
+    <string name="copied">Zkopírováno</string>
     <string name="tab_opened">Karta otevřena</string>
     <string name="temp_file">Dočasný soubor</string>
     <string name="cant_handle">Žádná aplikace nenalezena pro typ tohoto souboru</string>
@@ -232,7 +232,7 @@
     <string name="cant_write">Nelze zapisovat do souboru (žádná oprávnění zapisování)</string>
     <string name="storage">Úložiště</string>
     <string name="translate">Přeložit</string>
-    <string name="terminal_feature">Terminál, spouštěče a jazykové servery</string>
+    <string name="terminal_feature">Terminál a spouštěče</string>
     <string name="folder_name">Jméno složky</string>
     <string name="invalid_characters">Neplatné znaky</string>
     <string name="properties">Podrobnosti</string>
@@ -682,4 +682,9 @@
     <string name="no_icon_packs">Žádné sady ikon nenalezeny.</string>
     <string name="search_themes">Hledat téma</string>
     <string name="search_icon_packs">Hledat sady ikon</string>
+    <string name="download_count">Počet stažení</string>
+    <string name="record_rpc_traffic">Zaznamenávat provoz RPC</string>
+    <string name="record_rpc_traffic_desc">Ukládat RPC komunikaci jazykových serverů pro ladění</string>
+    <string name="lsp_log_limit_desc">Starší protokoly jsou automaticky odstraněny když je limit překročen pro zamezení vysoké využití paměti</string>
+    <string name="lsp_log_limit">Omezit LSP protokoly</string>
 </resources>

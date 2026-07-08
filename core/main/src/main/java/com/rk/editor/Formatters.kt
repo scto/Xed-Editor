@@ -89,7 +89,7 @@ object Formatters {
     }
 
     fun isLspFormatterEnabled(): Boolean {
-        return Preference.getBoolean("formatter_$LSP_FORMATTER_ID", true) && FeatureRegistry.isEnabled("feature_terminal")
+        return Preference.getBoolean("formatter_$LSP_FORMATTER_ID", true)
     }
 
     fun setLspFormatterEnabled(enabled: Boolean) {
