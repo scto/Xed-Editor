@@ -686,7 +686,6 @@
     <string name="search_themes">查找主题</string>
     <string name="search_icon_packs">查找图标包</string>
     <string name="download_count">下载次数</string>
-    <string name="vcs_status">VCS状态</string>
     <string name="supported">已支持</string>
     <string name="crashed">已崩溃</string>
     <string name="publish_date">发布日期</string>

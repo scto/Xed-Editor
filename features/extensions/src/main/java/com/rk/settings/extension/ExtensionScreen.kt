@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,12 +43,10 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -66,13 +65,11 @@ import com.rk.components.compose.preferences.base.PreferenceGroup
 import com.rk.components.compose.preferences.base.PreferenceTemplate
 import com.rk.components.compose.preferences.base.RefreshablePreferenceLayoutLazyColumn
 import com.rk.extension.Extension
-import com.rk.extension.ExtensionId
-import com.rk.extension.ExtensionStats
 import com.rk.extension.UpdatableExtension
 import com.rk.extension.extensionManager
 import com.rk.extension.manager.ExtensionRegistry
-import com.rk.extension.manager.IconPackStoreEntry
-import com.rk.extension.manager.ThemeStoreEntry
+import com.rk.extension.manager.IconPackEntry
+import com.rk.extension.manager.ThemeEntry
 import com.rk.file.child
 import com.rk.file.copyToTempDir
 import com.rk.file.themeDir
@@ -90,8 +87,6 @@ import com.rk.utils.LoadingPopup
 import com.rk.utils.errorDialog
 import com.rk.utils.toast
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -99,13 +94,14 @@ private enum class ExtensionSortOptions(val stringRes: Int) {
     NAME(strings.name),
     RATING(strings.rating),
     DOWNLOAD_COUNT(strings.download_count),
-    // TODO: Implement: PUBLISH_DATE(strings.publish_date),
+    PUBLISH_DATE(strings.publish_date),
+    UPDATE_DATE(strings.update_date),
 }
 
 private enum class ExtensionFilterOptions(val stringRes: Int) {
     ALL(strings.all),
     SUPPORTED(strings.supported),
-    CRASHED(strings.crashed),
+    CRASHED(strings.status_crashed),
 }
 
 private enum class StoreCategory(val stringRes: Int, val drawableRes: Int) {
@@ -133,15 +129,10 @@ fun ExtensionScreen(navController: NavController) {
     var isIndexing by remember { mutableStateOf(false) }
     var isFetching by remember { mutableStateOf(false) }
 
-    val statsMap = remember { mutableStateMapOf<ExtensionId, ExtensionStats>() }
-
-    var storeThemes by remember { mutableStateOf<List<ThemeStoreEntry>>(emptyList()) }
-    var storeIconPacks by remember { mutableStateOf<List<IconPackStoreEntry>>(emptyList()) }
+    var storeThemes by remember { mutableStateOf<List<ThemeEntry>>(emptyList()) }
+    var storeIconPacks by remember { mutableStateOf<List<IconPackEntry>>(emptyList()) }
 
     LaunchedEffect(refreshKey) {
-        if (refreshKey > 0) {
-            statsMap.clear()
-        }
         val shouldLoad =
             refreshKey > 0 ||
                 extensionManager.localExtensions.isEmpty() ||
@@ -190,30 +181,6 @@ fun ExtensionScreen(navController: NavController) {
         }
     }
 
-    LaunchedEffect(refreshKey, isFetching) {
-        if (!isFetching) {
-            val rawList = extensionManager.getSyncedExtensions()
-            launch(Dispatchers.IO) {
-                val deferred =
-                    rawList
-                        .filter { !statsMap.containsKey(it.id) }
-                        .map { ext ->
-                            async {
-                                ext.id to runCatching { ext.getStats() }.getOrNull()
-                            }
-                        }
-                val results = deferred.awaitAll()
-                withContext(Dispatchers.Main) {
-                    results.forEach { (id, stats) ->
-                        if (stats != null) {
-                            statsMap[id] = stats
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     val filePickerLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri ->
             installExtensionFromUri(scope, uri, activity)
@@ -252,7 +219,7 @@ fun ExtensionScreen(navController: NavController) {
         derivedStateOf {
             val allLocal = extensionManager.getLocalExtensions()
             val filtered = applyFilter(searchQuery, allLocal, currentFilterOption)
-            applySort(currentSortOption, filtered, statsMap)
+            applySort(currentSortOption, filtered)
         }
     }
     val hasLocalExtensions by remember {
@@ -265,7 +232,7 @@ fun ExtensionScreen(navController: NavController) {
         derivedStateOf {
             val allStore = extensionManager.getStoreExtensions()
             val filtered = applyFilter(searchQuery, allStore, currentFilterOption)
-            applySort(currentSortOption, filtered, statsMap)
+            applySort(currentSortOption, filtered)
         }
     }
 
@@ -644,7 +611,7 @@ private fun StoreSearchBar(
 
 @Composable
 fun ThemeStoreCard(
-    themeEntry: ThemeStoreEntry,
+    themeEntry: ThemeEntry,
     isInstalled: Boolean,
     onInstallClick: () -> Unit,
     onUninstallClick: () -> Unit,
@@ -665,7 +632,7 @@ fun ThemeStoreCard(
             Text(text = name, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
         description = {
-            androidx.compose.foundation.layout.Column {
+            Column {
                 Text(
                     text = themeEntry.id,
                     maxLines = 1,
@@ -674,7 +641,7 @@ fun ThemeStoreCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 if (progress != null) {
-                    androidx.compose.foundation.layout.Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(4.dp))
                     if (progress >= 0f) {
                         androidx.compose.material3.LinearProgressIndicator(
                             progress = { progress },
@@ -709,7 +676,7 @@ fun ThemeStoreCard(
 
 @Composable
 fun IconPackStoreCard(
-    iconPackEntry: IconPackStoreEntry,
+    iconPackEntry: IconPackEntry,
     isInstalled: Boolean,
     onInstallClick: () -> Unit,
     onUninstallClick: () -> Unit,
@@ -731,7 +698,7 @@ fun IconPackStoreCard(
             Text(text = name, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
         description = {
-            androidx.compose.foundation.layout.Column {
+            Column {
                 Text(
                     text = id,
                     maxLines = 1,
@@ -740,7 +707,7 @@ fun IconPackStoreCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 if (progress != null) {
-                    androidx.compose.foundation.layout.Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(4.dp))
                     if (progress >= 0f) {
                         androidx.compose.material3.LinearProgressIndicator(
                             progress = { progress },
@@ -849,13 +816,13 @@ private fun ExtensionSearchBar(
 private fun applySort(
     currentSortOption: ExtensionSortOptions,
     filtered: List<Extension>,
-    statsMap: SnapshotStateMap<ExtensionId, ExtensionStats>,
 ): List<Extension> =
     when (currentSortOption) {
         ExtensionSortOptions.NAME -> filtered.sortedBy { it.name }
-        ExtensionSortOptions.RATING -> filtered.sortedByDescending { statsMap[it.id]?.rating ?: 0f }
-        ExtensionSortOptions.DOWNLOAD_COUNT -> filtered.sortedByDescending { statsMap[it.id]?.downloadCount ?: 0 }
-    // TODO: ExtensionSortOptions.PUBLISH_DATE -> { }
+        ExtensionSortOptions.RATING -> filtered.sortedByDescending { it.rating }
+        ExtensionSortOptions.DOWNLOAD_COUNT -> filtered.sortedByDescending { it.downloads }
+        ExtensionSortOptions.PUBLISH_DATE -> filtered.sortedByDescending { it.createdAt }
+        ExtensionSortOptions.UPDATE_DATE -> filtered.sortedByDescending { it.updatedAt }
     }
 
 private fun applyFilter(

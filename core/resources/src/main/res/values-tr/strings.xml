@@ -690,9 +690,7 @@
     <string name="search_themes">Temaları ara</string>
     <string name="search_icon_packs">Simge paketlerini ara</string>
     <string name="download_count">İndirme sayısı</string>
-    <string name="vcs_status">VCS durumu</string>
     <string name="supported">Destekleniyor</string>
-    <string name="crashed">Çöktü</string>
     <string name="publish_date">Yayın tarihi</string>
     <string name="record_rpc_traffic">RPC trafiğini kaydet</string>
     <string name="record_rpc_traffic_desc">Hata ayıklama için dil sunucularının RPC iletişimini günlüğe kaydet</string>
