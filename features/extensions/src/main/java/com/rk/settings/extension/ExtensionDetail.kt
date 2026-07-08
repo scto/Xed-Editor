@@ -22,7 +22,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LeadingIconTab
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Text
@@ -271,28 +270,12 @@ private fun AboutSection(
     val outdatedClient = minAppVersion != null && xedVersionCode < minAppVersion
     val outdatedExtension = maxAppVersion != null && xedVersionCode > maxAppVersion
 
-    val progress = ExtensionRegistry.downloadProgress[extension.id]
-    if (progress != null) {
-        if (progress >= 0f) {
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.primary,
-            )
-        } else {
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
-
     ExtensionActionButtons(
         outdatedWarning = outdatedClient || outdatedExtension,
         modifier = Modifier.fillMaxWidth(),
         installState = installState,
         scope = scope,
-        progress = progress,
+        progress = ExtensionRegistry.downloadProgress[extension.id] ?: 0f,
         onInstallClick = {
             checkExtensionWarningAndRun(activity) {
                 runExtensionInstallAction(extension, updateInstallState, context, activity)

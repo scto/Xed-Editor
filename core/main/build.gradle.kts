@@ -10,32 +10,47 @@ plugins {
 
 val isGitRepo = generateSequence(rootProject.projectDir) { it.parentFile }.any { File(it, ".git").exists() }
 
-val gitCommitHash: Provider<String> = if (isGitRepo) {
-    providers.exec {
-        commandLine("git", "rev-parse", "--short=8", "HEAD")
-        isIgnoreExitValue = true
-    }.standardOutput.asText.map { it.trim().ifEmpty { "unknown" } }
-} else {
-    providers.provider { "unknown" }
-}
+val gitCommitHash: Provider<String> =
+    if (isGitRepo) {
+        providers
+            .exec {
+                commandLine("git", "rev-parse", "--short=8", "HEAD")
+                isIgnoreExitValue = true
+            }
+            .standardOutput
+            .asText
+            .map { it.trim().ifEmpty { "unknown" } }
+    } else {
+        providers.provider { "unknown" }
+    }
 
-val fullGitCommitHash: Provider<String> = if (isGitRepo) {
-    providers.exec {
-        commandLine("git", "rev-parse", "HEAD")
-        isIgnoreExitValue = true
-    }.standardOutput.asText.map { it.trim().ifEmpty { "unknown" } }
-} else {
-    providers.provider { "unknown" }
-}
+val fullGitCommitHash: Provider<String> =
+    if (isGitRepo) {
+        providers
+            .exec {
+                commandLine("git", "rev-parse", "HEAD")
+                isIgnoreExitValue = true
+            }
+            .standardOutput
+            .asText
+            .map { it.trim().ifEmpty { "unknown" } }
+    } else {
+        providers.provider { "unknown" }
+    }
 
-val gitCommitDate: Provider<String> = if (isGitRepo) {
-    providers.exec {
-        commandLine("git", "show", "-s", "--format=%cI", "HEAD")
-        isIgnoreExitValue = true
-    }.standardOutput.asText.map { it.trim().ifEmpty { "unknown" } }
-} else {
-    providers.provider { "unknown" }
-}
+val gitCommitDate: Provider<String> =
+    if (isGitRepo) {
+        providers
+            .exec {
+                commandLine("git", "show", "-s", "--format=%cI", "HEAD")
+                isIgnoreExitValue = true
+            }
+            .standardOutput
+            .asText
+            .map { it.trim().ifEmpty { "unknown" } }
+    } else {
+        providers.provider { "unknown" }
+    }
 
 android {
     namespace = "com.rk.xededitor"
@@ -109,6 +124,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.core)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.utilcode)
     implementation(libs.coil.compose)
@@ -178,4 +195,3 @@ abstract class GenerateSupportedLocales : DefaultTask() {
         logger.lifecycle("✅ Generated ${outFile.path}")
     }
 }
-

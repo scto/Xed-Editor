@@ -1,8 +1,12 @@
 package com.rk.settings.extension
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,7 +22,11 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -107,7 +115,7 @@ fun ExtensionActionButtons(
     onUpdateClick: suspend () -> Unit,
     modifier: Modifier = Modifier,
     outdatedWarning: Boolean = false,
-    progress: Float? = null,
+    progress: Float,
 ) {
     when (installState) {
         InstallState.Idle -> {
@@ -150,20 +158,46 @@ private fun InstallButton(
 }
 
 @Composable
-private fun InstallingButton(modifier: Modifier = Modifier, progress: Float? = null) {
-    Button(modifier = modifier, onClick = {}, enabled = false) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(16.dp),
-            strokeWidth = 2.dp,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(Modifier.width(6.dp))
-        val text = if (progress != null && progress >= 0f) {
-            "${stringResource(strings.installing)} (${(progress * 100).toInt()}%)"
-        } else {
-            stringResource(strings.installing)
+private fun InstallingButton(modifier: Modifier = Modifier, progress: Float) {
+    val shape = ButtonDefaults.shape
+
+    Button(
+        modifier = modifier,
+        onClick = {},
+        enabled = false,
+        contentPadding = PaddingValues(0.dp),
+        shape = shape,
+    ) {
+        val primaryContainer = MaterialTheme.colorScheme.primaryContainer
+        Box(
+            modifier =
+                Modifier.heightIn(min = ButtonDefaults.MinHeight).fillMaxWidth().clip(shape).drawBehind {
+                    drawRect(
+                        color = primaryContainer,
+                        size =
+                            Size(
+                                width = size.width * progress.coerceIn(0f, 1f),
+                                height = size.height,
+                            ),
+                    )
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                )
+
+                Spacer(Modifier.width(8.dp))
+
+                Text("${stringResource(strings.installing)} (${(progress * 100).toInt()}%)")
+            }
         }
-        Text(text)
     }
 }
 
@@ -216,19 +250,48 @@ private fun UpdateButton(
 }
 
 @Composable
-private fun UpdatingButton(modifier: Modifier = Modifier, progress: Float? = null) {
-    Button(modifier = modifier, onClick = {}, enabled = false) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(16.dp),
-            strokeWidth = 2.dp,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(Modifier.width(6.dp))
-        val text = if (progress != null && progress >= 0f) {
-            "${stringResource(strings.updating)} (${(progress * 100).toInt()}%)"
-        } else {
-            stringResource(strings.updating)
+private fun UpdatingButton(
+    modifier: Modifier = Modifier,
+    progress: Float,
+) {
+    val shape = ButtonDefaults.shape
+
+    Button(
+        modifier = modifier,
+        onClick = {},
+        enabled = false,
+        contentPadding = PaddingValues(0.dp),
+        shape = shape,
+    ) {
+        val primaryContainer = MaterialTheme.colorScheme.primaryContainer
+        Box(
+            modifier =
+                Modifier.heightIn(min = ButtonDefaults.MinHeight).fillMaxWidth().clip(shape).drawBehind {
+                    drawRect(
+                        color = primaryContainer,
+                        size =
+                            Size(
+                                width = size.width * progress.coerceIn(0f, 1f),
+                                height = size.height,
+                            ),
+                    )
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                )
+
+                Spacer(Modifier.width(8.dp))
+
+                Text("${stringResource(strings.updating)} (${(progress * 100).toInt()}%)")
+            }
         }
-        Text(text)
     }
 }
