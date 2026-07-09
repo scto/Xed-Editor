@@ -256,7 +256,7 @@
     <string name="wrapper_type">包装</string>
     <string name="support">支持</string>
     <string name="translate">翻译</string>
-    <string name="terminal_feature">终端、运行器和语言服务器</string>
+    <string name="terminal_feature">终端和运行器</string>
     <string name="folder_name">文件夹名称</string>
     <string name="invalid_characters">非法字符</string>
     <string name="properties">属性</string>
@@ -693,4 +693,5 @@
     <string name="record_rpc_traffic_desc">将语言服务器的通信流量写入日志以便调试</string>
     <string name="lsp_log_limit">LSP 日志存储上限</string>
     <string name="lsp_log_limit_desc">为避免高内存占用，旧日志将在超限时被自动删除</string>
+    <string name="update_date">更新日期</string>
 </resources>
