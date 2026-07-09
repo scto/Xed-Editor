@@ -700,4 +700,5 @@
     <string name="record_rpc_traffic_desc">Bitácora RPC para comunicación de servidores del idioma para depurar</string>
     <string name="lsp_log_limit">Límite de bitácora LSP</string>
     <string name="lsp_log_limit_desc">Bitácoras más anteriores son auto-eliminadas cuando se alcanza al límite para evitar exceso de uso de memoria</string>
+    <string name="update_date">Actualizar fecha</string>
 </resources>
