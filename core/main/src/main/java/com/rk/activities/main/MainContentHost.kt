@@ -23,7 +23,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import com.rk.components.DialogRegistry
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rk.components.DialogRegistry
 import com.rk.components.ResponsiveDrawer
 import com.rk.drawer.DrawerContent
 import com.rk.drawer.DrawerPersistence
@@ -207,7 +207,7 @@ fun MainActivity.MainContentHost(
                 sheetContent = sheetContent,
             )
 
-            DialogRegistry.dialogs.forEach { dialog ->
+            DialogRegistry.getDialogs().forEach { dialog ->
                 dialog()
             }
         }

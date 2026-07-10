@@ -8,28 +8,28 @@ import com.rk.extension.loader.loadAllExtensions
 import com.rk.extension.manager.ExtensionAPIManager
 import com.rk.extension.manager.ExtensionManager
 import com.rk.feature.Feature
-import com.rk.feature.SettingsRegistry
-import com.rk.feature.SettingsCategory
-import com.rk.feature.SettingsRoute
-import com.rk.resources.strings
-import com.rk.resources.drawables
-import com.rk.settings.extension.ExtensionScreen
-import com.rk.settings.extension.ExtensionDetail
-import com.rk.settings.extension.ExtensionSettings
-import com.rk.feature.FeatureRegistry
 import com.rk.feature.FeatureToggle
+import com.rk.resources.drawables
+import com.rk.resources.strings
+import com.rk.settings.SettingsCategory
+import com.rk.settings.SettingsRegistry
+import com.rk.settings.SettingsRoute
+import com.rk.settings.extension.ExtensionDetail
+import com.rk.settings.extension.ExtensionScreen
+import com.rk.settings.extension.ExtensionSettings
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class ExtensionFeature : Feature {
-    override val toggle = FeatureToggle(
-        nameRes = strings.ext,
-        key = "enable_extension",
-        default = true,
-        iconRes = drawables.extension
-    )
+    override val toggle =
+        FeatureToggle(
+            nameRes = strings.ext,
+            key = "enable_extension",
+            default = true,
+            iconRes = drawables.extension,
+        )
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun init(application: Application) {
@@ -49,7 +49,7 @@ class ExtensionFeature : Feature {
                 labelRes = strings.store,
                 descriptionRes = strings.store_desc,
                 iconRes = drawables.store,
-                route = SettingsRoutes.Extensions.route
+                route = SettingsRoutes.Extensions.route,
             )
         )
 

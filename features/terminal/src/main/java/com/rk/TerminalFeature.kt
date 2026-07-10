@@ -15,9 +15,6 @@ import com.rk.exec.ubuntuProcess
 import com.rk.feature.Feature
 import com.rk.feature.FeatureRegistry
 import com.rk.feature.FeatureToggle
-import com.rk.feature.SettingsCategory
-import com.rk.feature.SettingsRegistry
-import com.rk.feature.SettingsRoute
 import com.rk.file.FileObject
 import com.rk.file.FileWrapper
 import com.rk.file.sandboxHomeDir
@@ -41,6 +38,9 @@ import com.rk.resources.strings
 import com.rk.runner.RunnerManager
 import com.rk.runner.runners.UniversalRunner
 import com.rk.settings.Settings
+import com.rk.settings.SettingsCategory
+import com.rk.settings.SettingsRegistry
+import com.rk.settings.SettingsRoute
 import com.rk.settings.editor.TerminalFontScreen
 import com.rk.settings.terminal.SettingsTerminalScreen
 import com.rk.settings.terminal.TerminalCheckScreen
@@ -73,11 +73,11 @@ class TerminalFeature : Feature {
         )
 
         if (FeatureRegistry.isEnabled("feature_terminal")) {
-            AddProjectRegistry.options.add(
+            AddProjectRegistry.register(
                 AddProjectOption(
                     icon = Icon.ResourceIcon(drawables.terminal),
-                    titleRes = strings.terminal_home,
-                    descriptionRes = strings.terminal_home_desc,
+                    title = strings.terminal_home.getString(),
+                    description = strings.terminal_home_desc.getString(),
                     onClick = { onDismiss ->
                         if (!Settings.has_shown_terminal_dir_warning) {
                             dialogRes(

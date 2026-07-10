@@ -88,7 +88,7 @@ fun ExtensionDetail(extension: Extension?, navController: NavController) {
             if (extension?.hasSettings == true) {
                 IconButton(
                     enabled = extensionManager.isInstalled(extension.id),
-                    onClick = { navController.navigate("${SettingsRoutes.ExtensionSettings.route}/{extensionId}") },
+                    onClick = { navController.navigate("${SettingsRoutes.ExtensionSettings.route}/${extension.id}") },
                 ) {
                     Icon(
                         painter = painterResource(drawables.settings),

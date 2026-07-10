@@ -21,14 +21,13 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.rk.activities.main.MainActivity
 import com.rk.components.AddDialogItem
+import com.rk.feature.FeatureRegistry
 import com.rk.file.FileObject
 import com.rk.file.FileWrapper
-import com.rk.file.sandboxHomeDir
 import com.rk.icons.Icon
 import com.rk.resources.drawables
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.rk.feature.FeatureRegistry
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,14 +125,13 @@ fun AddProjectSheet(
             AddProjectRegistry.options.forEach { option ->
                 AddDialogItem(
                     icon = option.icon,
-                    title = stringResource(option.titleRes),
-                    description = stringResource(option.descriptionRes),
+                    title = option.title,
+                    description = option.description,
                     onClick = {
                         option.onClick { onDismiss() }
                     },
                 )
             }
-
         }
     }
 }

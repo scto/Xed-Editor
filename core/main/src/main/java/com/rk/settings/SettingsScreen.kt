@@ -31,12 +31,11 @@ import com.rk.activities.settings.SettingsRoutes
 import com.rk.components.compose.preferences.base.PreferenceLayout
 import com.rk.components.compose.preferences.base.PreferenceTemplate
 import com.rk.components.compose.preferences.category.PreferenceCategory
+import com.rk.feature.FeatureRegistry
 import com.rk.resources.drawables
 import com.rk.resources.getFilledString
 import com.rk.resources.getString
 import com.rk.resources.strings
-import com.rk.feature.FeatureRegistry
-import com.rk.feature.SettingsRegistry
 
 @Composable
 fun SettingsScreen(navController: NavController) {

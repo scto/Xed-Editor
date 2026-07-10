@@ -2,13 +2,9 @@ package com.rk.feature
 
 import android.app.Activity
 import android.app.Application
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
 import com.rk.resources.drawables
 import com.rk.resources.getString
 import com.rk.resources.strings
@@ -88,31 +84,5 @@ object FeatureRegistry {
 
     fun isEnabled(key: String): Boolean {
         return toggles.find { it.key == key }?.state?.value ?: false
-    }
-}
-
-data class SettingsCategory(
-    val labelRes: Int,
-    val descriptionRes: Int,
-    val iconRes: Int,
-    val route: String,
-)
-
-data class SettingsRoute(
-    val route: String,
-    val arguments: List<NamedNavArgument> = emptyList(),
-    val content: @Composable (NavController, NavBackStackEntry) -> Unit,
-)
-
-object SettingsRegistry {
-    val categories = mutableStateListOf<SettingsCategory>()
-    val routes = mutableStateListOf<SettingsRoute>()
-
-    fun registerCategory(category: SettingsCategory) {
-        categories.add(category)
-    }
-
-    fun registerRoute(route: SettingsRoute) {
-        routes.add(route)
     }
 }

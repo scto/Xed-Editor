@@ -1,14 +1,10 @@
 package com.rk.tabs.editor
 
-import android.content.Context
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,7 +13,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,24 +27,21 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import com.rk.DefaultScope
 import com.rk.activities.main.EditorCursorState
 import com.rk.activities.main.EditorTabState
 import com.rk.activities.main.MainActivity
 import com.rk.activities.main.MainViewModel
 import com.rk.activities.main.TabState
 import com.rk.activities.main.searchViewModel
-import com.rk.file.FileChangeNotifier
 import com.rk.color.ColorPicker
-import com.rk.components.AddDialogItem
 import com.rk.components.SingleInputDialog
 import com.rk.editor.intelligent.IntelligentFeatureRegistry
+import com.rk.events.EditorTabEvent
+import com.rk.events.Events
 import com.rk.extension.api.XedExtensionPoint
 import com.rk.file.FileObject
 import com.rk.file.FileTypeManager
 import com.rk.file.child
-import com.rk.icons.Icon
 import com.rk.lsp.LspConnector
 import com.rk.lsp.formatDocumentSuspend
 import com.rk.resources.drawables
@@ -65,8 +57,6 @@ import com.rk.utils.errorDialog
 import com.rk.utils.getTempDir
 import com.rk.utils.hasBinaryChars
 import io.github.rosemoe.sora.text.ContentIO
-import java.nio.charset.Charset
-import java.nio.file.Paths
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -85,6 +75,8 @@ import org.ec4j.core.ResourcePath
 import org.ec4j.core.ResourceProperties
 import org.ec4j.core.ResourcePropertiesService
 import org.ec4j.core.model.PropertyType
+import java.nio.charset.Charset
+import java.nio.file.Paths
 
 @OptIn(DelicateCoroutinesApi::class)
 open class EditorTab(override var file: FileObject, var projectRoot: FileObject?, val viewModel: MainViewModel) :
@@ -156,14 +148,14 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
             if (editorState.content == null) {
                 withContext(Dispatchers.IO) {
                     runCatching {
-                            editorState.content = file.getInputStream().use { ContentIO.createFrom(it, charset) }
-                            editorState.contentLoaded.complete(Unit)
+                        editorState.content = file.getInputStream().use { ContentIO.createFrom(it, charset) }
+                        editorState.contentLoaded.complete(Unit)
 
-                            if (Settings.detect_bin_files && hasBinaryChars(editorState.content.toString())) {
-                                editorState.editable = false
-                                showNotice(BINARY_NOTICE_KEY) { id -> BinaryNotice(id) }
-                            }
+                        if (Settings.detect_bin_files && hasBinaryChars(editorState.content.toString())) {
+                            editorState.editable = false
+                            showNotice(BINARY_NOTICE_KEY) { id -> BinaryNotice(id) }
                         }
+                    }
                         .onFailure { errorDialog(throwable = it) }
                 }
             }
@@ -291,60 +283,58 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
     private suspend fun write() {
         withContext(Dispatchers.IO) {
             runCatching {
-                    if (!file.canWrite()) {
-                        errorDialog(strings.cant_write)
-                        return@withContext
-                    }
-
-                    val content = editorState.content.toString()
-                    val normalizedContent = editorState.editor.get()!!.lineEnding.applyOn(content)
-                    file.writeText(normalizedContent, charset)
-
-                    editorState.isDirty = false
-                    lspConnector?.notifySave()
+                if (!file.canWrite()) {
+                    errorDialog(strings.cant_write)
+                    return@withContext
                 }
+
+                val content = editorState.content.toString()
+                val normalizedContent = editorState.editor.get()!!.lineEnding.applyOn(content)
+                file.writeText(normalizedContent, charset)
+
+                editorState.isDirty = false
+                lspConnector?.notifySave()
+            }
                 .onFailure { errorDialog(throwable = it) }
         }
     }
 
-    suspend fun quickSave() =
-        saveMutex.withLock {
-            if (isTemp) return@withLock
-            write()
-            searchViewModel.get()?.syncIndex(file)
-            FileChangeNotifier.notifyFileChanged(file.getAbsolutePath())
+    suspend fun quickSave() = saveMutex.withLock {
+        if (isTemp) return@withLock
+        write()
+        searchViewModel.get()?.syncIndex(file)
+        Events.publish(EditorTabEvent.Saved(this))
+    }
+
+    suspend fun save() = saveMutex.withLock {
+        if (Settings.format_on_save && lspConnector?.isFormattingSupported() == true) {
+            formatDocumentSuspend(this@EditorTab)
         }
 
-    suspend fun save() =
-        saveMutex.withLock {
-            if (Settings.format_on_save && lspConnector?.isFormattingSupported() == true) {
-                formatDocumentSuspend(this@EditorTab)
-            }
-
-            if (isTemp) {
-                MainActivity.instance?.apply {
-                    fileManager.createNewFile(mimeType = "*/*", title = file.getName()) {
-                        if (it != null) {
-                            file = it
-                            tabTitle.value = it.getName()
-                            scope.launch {
-                                write()
-                                searchViewModel.get()?.syncIndex(file)
-                                FileChangeNotifier.notifyFileChanged(file.getAbsolutePath())
-                            }
+        if (isTemp) {
+            MainActivity.instance?.apply {
+                fileManager.createNewFile(mimeType = "*/*", title = file.getName()) {
+                    if (it != null) {
+                        file = it
+                        tabTitle.value = it.getName()
+                        scope.launch {
+                            write()
+                            searchViewModel.get()?.syncIndex(file)
+                            Events.publish(EditorTabEvent.Saved(this@EditorTab))
                         }
                     }
                 }
-                return@withLock
             }
-
-            write()
-            searchViewModel.get()?.syncIndex(file)
-            FileChangeNotifier.notifyFileChanged(file.getAbsolutePath())
-
-            Settings.saves += 1
-            MainActivity.instance?.handleSupport()
+            return@withLock
         }
+
+        write()
+        searchViewModel.get()?.syncIndex(file)
+        Events.publish(EditorTabEvent.Saved(this))
+
+        Settings.saves += 1
+        MainActivity.instance?.handleSupport()
+    }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -355,7 +345,6 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
             LaunchedEffect(editorState.editable) { editorState.editor.get()?.editable = editorState.editable }
 
             Column {
-
                 if (editorState.showFindingsDialog) {
                     FindingsDialog(
                         title = editorState.findingsTitle,
@@ -537,5 +526,3 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
         return "[EditorTab] ${file.getAbsolutePath()}"
     }
 }
-
-

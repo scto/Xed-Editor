@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import com.rk.file.FileObject
 import com.rk.filetree.FileTreeTab
@@ -36,11 +37,9 @@ class DrawerViewModel : ViewModel() {
     val currentServiceTab: DrawerTab?
         get() = _serviceTabs.getOrNull(currentServiceTabIndex)
 
-    internal fun setupBuiltinServices(owner: androidx.lifecycle.ViewModelStoreOwner) {
+    internal fun setupBuiltinServices(owner: ViewModelStoreOwner) {
         _serviceTabs.clear()
-        ServiceTabRegistry.providers.forEach { provider ->
-            _serviceTabs.add(provider(owner))
-        }
+        _serviceTabs.addAll(ServiceTabRegistry.createAll(owner))
         currentServiceTabIndex = -1
     }
 

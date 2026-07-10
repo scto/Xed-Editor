@@ -7,8 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.rk.animations.NavigationAnimationTransitions
-import com.rk.feature.SettingsRegistry
 import com.rk.lsp.LspRegistry
+import com.rk.settings.SettingsRegistry
 import com.rk.settings.SettingsScreen
 import com.rk.settings.about.AboutScreen
 import com.rk.settings.app.SettingsAppScreen
