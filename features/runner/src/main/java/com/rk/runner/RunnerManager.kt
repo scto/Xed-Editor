@@ -2,40 +2,16 @@ package com.rk.runner
 
 import android.app.Activity
 import android.content.Context
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateListOf
+import com.rk.DefaultScope
+import com.rk.events.Events
 import com.rk.extension.api.XedExtensionPoint
 import com.rk.file.FileObject
 import com.rk.icons.Icon
 import com.rk.runner.runners.web.html.HtmlRunner
 import com.rk.runner.runners.web.markdown.MarkdownRunner
-import com.rk.settings.Preference
 import com.rk.utils.errorDialog
-
-abstract class Runner {
-    abstract val id: String
-    abstract val label: String
-    open val description: String? = null
-    open val onConfigure: (() -> Unit)? = null
-
-    abstract fun getIcon(context: Context): Icon?
-
-    abstract fun matcher(fileObject: FileObject): Boolean
-
-    abstract suspend fun run(activity: Activity, fileObject: FileObject)
-
-    abstract suspend fun isRunning(): Boolean
-
-    abstract suspend fun stop()
-
-    fun isEnabled(): Boolean {
-        return Preference.getBoolean("runner_$id", true)
-    }
-
-    fun setEnabled(enabled: Boolean) {
-        Preference.setBoolean("runner_$id", enabled)
-    }
-}
+import kotlinx.coroutines.launch
 
 object RunnerManager {
 
@@ -75,7 +51,7 @@ object RunnerManager {
         return result
     }
 
-    suspend fun run(activity: Activity, fileObject: FileObject, onMultipleRunners: (List<RunnableOption>) -> Unit) {
+    fun run(activity: Activity, fileObject: FileObject, onMultipleRunners: (List<RunnableOption>) -> Unit) {
         val availableRunners = getAvailableRunners(fileObject)
 
         if (availableRunners.isEmpty()) {
@@ -84,15 +60,21 @@ object RunnerManager {
         }
 
         if (availableRunners.size == 1) {
-            availableRunners[0].run(activity, fileObject)
+            DefaultScope.launch {
+                availableRunners.first().run(activity, fileObject)
+                Events.publish(RunnerEvent.RunnerRun(availableRunners.first()))
+            }
         } else {
             val options = availableRunners.map { runner ->
                 object : RunnableOption {
                     override val label: String = runner.label
+
                     override fun getIcon(context: Context): Icon? = runner.getIcon(context)
+
                     override fun run(activity: Activity) {
-                        com.rk.DefaultScope.launch {
+                        DefaultScope.launch {
                             runner.run(activity, fileObject)
+                            Events.publish(RunnerEvent.RunnerRun(runner))
                         }
                     }
                 }

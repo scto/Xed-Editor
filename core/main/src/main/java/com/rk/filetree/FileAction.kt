@@ -1,7 +1,6 @@
 package com.rk.filetree
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
@@ -13,7 +12,6 @@ import com.rk.activities.main.MainActivity
 import com.rk.drawer.DrawerViewModel
 import com.rk.file.FileObject
 import com.rk.file.FileOperations
-import com.rk.file.FileWrapper
 import com.rk.icons.CreateNewFile
 import com.rk.icons.CreateNewFolder
 import com.rk.icons.Icon
@@ -101,7 +99,6 @@ object RefreshAction : MultiFileAction() {
 
     override val type = FileActionType(file = false, folder = true, rootFolder = true)
 }
-
 
 object CreateNewFileAction : FileAction() {
     override val icon = Icon.VectorIcon(XedIcons.CreateNewFile)
@@ -238,17 +235,6 @@ object SaveAsAction : FileAction() {
     }
 
     override val type = FileActionType.All
-}
-
-object AddFileAction : FileAction() {
-    override val icon = Icon.ResourceIcon(drawables.arrow_downward)
-    override val title = strings.add_file.getString()
-
-    override fun action(context: FileActionContext) {
-        FileOperations.addFile(context.file)
-    }
-
-    override val type = FileActionType(file = false, folder = true, rootFolder = true)
 }
 
 object OpenAsProjectAction : FileAction() {

@@ -4,7 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
+import com.rk.DefaultScope
+import com.rk.events.EditorTabEvent
+import com.rk.events.Events
+import com.rk.events.TabEvent
 import com.rk.tabs.base.Tab
+import com.rk.tabs.editor.EditorTab
+import kotlinx.coroutines.launch
 
 class TabManager {
     private val _tabs = mutableStateListOf<Tab>()
@@ -28,6 +34,13 @@ class TabManager {
         _tabs.add(tab)
         tab.onTabAdded()
 
+        DefaultScope.launch {
+            Events.publish(TabEvent.Opened(tab))
+            if (tab is EditorTab) {
+                Events.publish(EditorTabEvent.Opened(tab))
+            }
+        }
+
         if (switchToTab) {
             setCurrentTab(_tabs.lastIndex)
         }
@@ -36,8 +49,16 @@ class TabManager {
     fun removeTab(index: Int) {
         if (index !in _tabs.indices) return
 
-        _tabs[index].onTabRemoved()
+        val tab = _tabs[index]
+        tab.onTabRemoved()
         _tabs.removeAt(index)
+
+        DefaultScope.launch {
+            Events.publish(TabEvent.Closed(tab))
+            if (tab is EditorTab) {
+                Events.publish(EditorTabEvent.Closed(tab))
+            }
+        }
 
         setCurrentTab(
             when {
@@ -55,6 +76,13 @@ class TabManager {
 
         val item = _tabs.removeAt(from)
         _tabs.add(to, item)
+
+        DefaultScope.launch {
+            Events.publish(TabEvent.Reordered(item, from, to))
+            if (item is EditorTab) {
+                Events.publish(EditorTabEvent.Reordered(item, from, to))
+            }
+        }
 
         setCurrentTab(
             when (currentTabIndex) {
@@ -74,6 +102,14 @@ class TabManager {
         currentTab?.onTabUnselected()
         currentTabIndex = index
         currentTab?.onTabSelected()
+
+        val tab = currentTab ?: return
+        DefaultScope.launch {
+            Events.publish(TabEvent.Selected(tab))
+            if (tab is EditorTab) {
+                Events.publish(EditorTabEvent.Selected(tab))
+            }
+        }
     }
 
     fun removeOtherTabs() {

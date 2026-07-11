@@ -26,16 +26,20 @@ import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.rk.DefaultScope
 import com.rk.components.InfoBlock
 import com.rk.components.SettingsItem
 import com.rk.components.compose.preferences.base.PreferenceGroup
 import com.rk.components.compose.preferences.base.PreferenceLayout
+import com.rk.events.AppEvent
+import com.rk.events.Events
 import com.rk.resources.strings
 import com.rk.settings.Settings
 import com.rk.utils.application
-import java.util.Locale
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 // Data class to hold locale with its availability status
 data class LocaleInfo(val locale: Locale, val isInstalled: Boolean, val displayName: String)
@@ -56,15 +60,14 @@ fun LanguageScreen(modifier: Modifier = Modifier) {
             val installedTags = application?.resources?.assets?.locales?.toSet() ?: emptySet()
 
             // Process all data at once
-            val processed =
-                supportedLocales.map { locale ->
-                    val tag = locale.toLanguageTag()
-                    LocaleInfo(
-                        locale = locale,
-                        isInstalled = installedTags.contains(tag),
-                        displayName = "${locale.getDisplayLanguage(locale)} ($tag)",
-                    )
-                }
+            val processed = supportedLocales.map { locale ->
+                val tag = locale.toLanguageTag()
+                LocaleInfo(
+                    locale = locale,
+                    isInstalled = installedTags.contains(tag),
+                    displayName = "${locale.getDisplayLanguage(locale)} ($tag)",
+                )
+            }
             localeInfoList.value = processed
         }
     }
@@ -108,13 +111,13 @@ fun LanguageScreen(modifier: Modifier = Modifier) {
                         modifier = Modifier,
                         label = localeInfo.displayName,
                         default = false,
-                        sideEffect = { setAppLanguage(localeInfo.locale) },
+                        sideEffect = { setAppLanguage(localeInfo.locale, currentLocale) },
                         showSwitch = false,
                         isEnabled = localeInfo.isInstalled,
                         startWidget = {
                             RadioButton(
                                 selected = selectedLocaleInfo == localeInfo,
-                                onClick = { setAppLanguage(localeInfo.locale) },
+                                onClick = { setAppLanguage(localeInfo.locale, currentLocale) },
                             )
                         },
                     )
@@ -145,8 +148,12 @@ private suspend fun readSupportedLocales(context: Context): List<Locale> =
         }
     }
 
-fun setAppLanguage(locale: Locale) {
+fun setAppLanguage(locale: Locale, oldLocale: Locale) {
     val appLocale = LocaleListCompat.create(locale)
     AppCompatDelegate.setApplicationLocales(appLocale)
     Settings.current_lang = locale.toLanguageTag()
+
+    DefaultScope.launch {
+        Events.publish(AppEvent.LanguageChanged(locale, oldLocale))
+    }
 }

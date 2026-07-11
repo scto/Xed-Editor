@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.rk.DefaultScope
 import com.rk.activities.main.MainActivity
 import com.rk.activities.main.drawerStateRef
 import com.rk.activities.main.fileTreeViewModel
@@ -273,5 +274,6 @@ class FileTreeTab(val root: FileObject) : DrawerTab() {
     override fun onRemoved() {
         Preference.removeKey(indexingPreferenceKey)
         searchViewModel.get()?.deleteIndex(MainActivity.instance!!, root)
+        DefaultScope.launch { Events.publish(FileTreeEvent.Closed(root)) }
     }
 }

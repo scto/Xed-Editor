@@ -5,9 +5,12 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.core.content.edit
 import androidx.core.content.pm.PackageInfoCompat
+import com.rk.DefaultScope
+import com.rk.events.Events
 import com.rk.extension.Extension
 import com.rk.extension.ExtensionAPI
 import com.rk.extension.ExtensionError
+import com.rk.extension.ExtensionEvent
 import com.rk.extension.ExtensionId
 import com.rk.extension.ExtensionManifest
 import com.rk.extension.InstallResult
@@ -55,7 +58,10 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
     private val mutex = Mutex()
     val localExtensions = mutableStateMapOf<ExtensionId, LocalExtension>()
     val storeExtension = mutableStateMapOf<ExtensionId, StoreExtension>()
-    val json = Json { ignoreUnknownKeys = true }
+    val json = Json {
+        ignoreUnknownKeys = true
+        allowTrailingComma = true
+    }
 
     val loadedExtensions = mutableStateMapOf<LocalExtension, LoadedExtension?>()
 
@@ -72,12 +78,17 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
         context.getSharedPreferences("disabled_extensions", Context.MODE_PRIVATE)
     }
 
-    fun isExtensionCrashed(id: ExtensionId): Boolean {
-        return disabledPrefs.getBoolean(id, false)
+    fun isExtensionCrashed(extension: Extension): Boolean {
+        return disabledPrefs.getBoolean(extension.id, false)
     }
 
-    fun setExtensionCrashed(id: ExtensionId, disabled: Boolean) {
-        disabledPrefs.edit { putBoolean(id, disabled) }
+    fun setExtensionCrashed(extension: Extension, disabled: Boolean) {
+        disabledPrefs.edit { putBoolean(extension.id, disabled) }
+        if (disabled) {
+            launch {
+                Events.publish(ExtensionEvent.Crashed(extension))
+            }
+        }
     }
 
     fun isInstalled(extensionId: ExtensionId) = localExtensions.containsKey(extensionId)
@@ -288,6 +299,8 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
                 )
             localExtensions[extensionInfo.id] = extension
 
+            Events.publish(ExtensionEvent.Installed(extension))
+
             InstallResult.Success(extension, performedUpdate)
         }
 
@@ -316,6 +329,9 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
 
                 extensionDir.deleteRecursively()
                 localExtensions.remove(extensionId)
+
+                DefaultScope.launch { Events.publish(ExtensionEvent.Uninstalled(extension, update)) }
+
                 context.compiledDexDir().deleteWithPackageName(extension.manifest.id)
                 disabledPrefs.edit { remove(extensionId) }
 

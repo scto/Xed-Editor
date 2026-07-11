@@ -119,9 +119,9 @@ class GitFeature : Feature {
                 if (showCloneDialog) {
                     GitCloneDialog(
                         onDismiss = { showCloneDialog = false },
-                        onCloneComplete = { fileObject ->
+                        onCloneComplete = { destination ->
                             // Add file tree tab on success
-                            MainActivity.instance?.drawerViewModel?.addFileTreeTab(fileObject)
+                            MainActivity.instance?.drawerViewModel?.addFileTreeTab(destination)
                         },
                     )
                 }

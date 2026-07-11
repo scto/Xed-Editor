@@ -16,7 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.rk.DefaultScope
 import com.rk.activities.main.MainActivity
+import com.rk.events.Events
+import com.rk.events.LSPEvent
 import com.rk.file.FileObject
 import com.rk.icons.Error
 import com.rk.icons.XedIcons
@@ -29,6 +32,7 @@ import com.rk.theme.yellowStatus
 import io.github.rosemoe.sora.lsp.client.languageserver.wrapper.LanguageServerWrapper
 import io.github.rosemoe.sora.lsp.editor.LspProject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.lsp4j.MessageParams
 import org.eclipse.lsp4j.MessageType
@@ -60,7 +64,7 @@ data class LspLogEntry(
 data class LspServerInstance(
     val server: LspServer,
     internal val lspProject: LspProject,
-    val projectRoot: FileObject
+    val projectRoot: FileObject,
 ) {
     val id = "${server.id}_${projectRoot.getAbsolutePath().hashCode()}"
 
@@ -74,19 +78,25 @@ data class LspServerInstance(
             LspLogEntry(
                 type = messageParams.type,
                 message = messageParams.message,
-                source = MessageSource.LSP
+                source = MessageSource.LSP,
             )
         )
     }
 
     fun addLog(lspLogEntry: LspLogEntry) {
-        if (lspLogEntry.type == MessageType.Error) hasError = true
+        if (lspLogEntry.type == MessageType.Error) {
+            hasError = true
+        }
 
         logs.add(lspLogEntry)
 
         if (logs.size > Settings.lsp_log_limit) {
             val removeCount = logs.size - Settings.lsp_log_limit
             logs.removeRange(0, removeCount)
+        }
+
+        DefaultScope.launch {
+            Events.publish(LSPEvent.LogEntryWritten(this@LspServerInstance, lspLogEntry))
         }
     }
 
@@ -102,7 +112,7 @@ data class LspServerInstance(
                     LspLogEntry(
                         MessageSource.Client,
                         MessageType.Error,
-                        "Language server instance not found..."
+                        "Language server instance not found...",
                     )
                 )
                 return null
@@ -116,7 +126,7 @@ data class LspServerInstance(
                 LspLogEntry(
                     MessageSource.Client,
                     MessageType.Info,
-                    "User stopped language server instance..."
+                    "User stopped language server instance...",
                 )
             )
             val wrapper = getWrapper() ?: return@withContext
@@ -136,7 +146,7 @@ data class LspServerInstance(
                 LspLogEntry(
                     MessageSource.Client,
                     MessageType.Info,
-                    "User restarted language server instance..."
+                    "User restarted language server instance...",
                 )
             )
             val wrapper = getWrapper() ?: return@withContext
@@ -159,7 +169,7 @@ data class LspServerInstance(
                 LspLogEntry(
                     MessageSource.Client,
                     MessageType.Info,
-                    "User started language server instance..."
+                    "User started language server instance...",
                 )
             )
             val wrapper = getWrapper() ?: return@withContext emptyList()
@@ -183,8 +193,7 @@ data class LspServerInstance(
         filteredEditors.forEach { editor ->
             val matchingEditorTab =
                 MainActivity.instance!!.viewModel.run {
-                    tabs.filterIsInstance<EditorTab>()
-                        .find { it.editorState.editor.get() == editor.editor }
+                    tabs.filterIsInstance<EditorTab>().find { it.editorState.editor.get() == editor.editor }
                 } ?: return@forEach
             matchingEditorTab.applyHighlightingAndConnectLSP()
             reconnectedEditors.add(matchingEditorTab)
@@ -197,7 +206,7 @@ data class LspServerInstance(
             server.supportedExtensions.forEach {
                 lspProject.removeServerDefinition(
                     it,
-                    server.serverName
+                    server.serverName,
                 )
             }
             lspProject.getEditors().forEach { wrapper.disconnect(it) }
@@ -211,8 +220,8 @@ fun LspServerInstance.getStatusColor(): Color? {
         MaterialTheme.colorScheme.error
     } else if (
         status == LspConnectionStatus.STARTING ||
-        status == LspConnectionStatus.RESTARTING ||
-        status == LspConnectionStatus.STOPPING
+            status == LspConnectionStatus.RESTARTING ||
+            status == LspConnectionStatus.STOPPING
     ) {
         MaterialTheme.colorScheme.yellowStatus
     } else if (status == LspConnectionStatus.RUNNING) {
@@ -232,7 +241,7 @@ fun LspServerInstance.getStatusText(): String {
         status == LspConnectionStatus.STOPPING -> stringResource(strings.status_stopping)
         DefinitionPrevention.isServerPrevented(
             lspProject,
-            server
+            server,
         ) -> stringResource(strings.status_not_running_forced)
 
         else -> stringResource(strings.status_not_running)
@@ -252,8 +261,8 @@ fun LspServerInstance.StatusIcon() {
         }
 
         status == LspConnectionStatus.STARTING ||
-                status == LspConnectionStatus.RESTARTING ||
-                status == LspConnectionStatus.STOPPING -> {
+            status == LspConnectionStatus.RESTARTING ||
+            status == LspConnectionStatus.STOPPING -> {
             CircularProgressIndicator(modifier = Modifier.size(24.dp))
         }
 

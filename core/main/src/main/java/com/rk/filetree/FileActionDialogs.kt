@@ -14,6 +14,8 @@ import com.rk.activities.main.drawerStateRef
 import com.rk.components.PropertiesDialog
 import com.rk.components.SingleInputDialog
 import com.rk.drawer.DrawerViewModel
+import com.rk.events.Events
+import com.rk.events.FileEvent
 import com.rk.file.FileObject
 import com.rk.file.FileOperations
 import com.rk.resources.fillPlaceholders
@@ -66,6 +68,8 @@ fun FileActionDialogs(
                         return@launch
                     }
 
+                    Events.publish(FileEvent.Renamed(file, oldPath))
+
                     val parentFile = file.getParentFile() ?: return@launch
                     viewModel.updateCache(parentFile)
 
@@ -87,10 +91,12 @@ fun FileActionDialogs(
             onConfirm = {
                 scope.launch {
                     for (file in files) {
+                        val path = file.getAbsolutePath()
                         viewModel.withFileOperation {
                             FileOperations.deleteFile(file)
                                 .onFailure { toast(it.message ?: strings.delete_failed.getString()) }
                                 .onSuccess {
+                                    Events.publish(FileEvent.Deleted(path))
                                     val parentFile = file.getParentFile()
                                     if (parentFile != null) {
                                         viewModel.updateCache(file.getParentFile()!!)
@@ -162,6 +168,8 @@ fun FileActionDialogs(
                                     } else {
                                         toast(strings.folder_creation_failed)
                                     }
+                                } else {
+                                    Events.publish(FileEvent.Created(newChild))
                                 }
 
                                 if (viewModel.isCreateFile && newChild != null && Settings.auto_open_new_files) {

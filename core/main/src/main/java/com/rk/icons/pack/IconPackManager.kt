@@ -14,20 +14,23 @@ import com.rk.resources.strings
 import com.rk.settings.Settings
 import com.rk.utils.application
 import com.rk.utils.dialogRes
-import java.io.File
-import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.util.zip.ZipFile
 
 val currentIconPack = mutableStateOf<IconPack?>(null)
 val iconPackDir = localDir().child("icon_pack").also { it.createDirIfNot() }
 
 class IconPackManager(private val context: Application) {
     val iconPacks = mutableStateMapOf<IconPackId, IconPack>()
-    val json = Json { ignoreUnknownKeys = true }
+    val json = Json {
+        ignoreUnknownKeys = true
+        allowTrailingComma = true
+    }
 
     suspend fun installIconPack(zipFile: File) =
         withContext(Dispatchers.IO) {
@@ -100,27 +103,28 @@ class IconPackManager(private val context: Application) {
 
             return null
         }
-        val iconPackManifest =
-            runCatching { json.decodeFromString<IconPackManifest>(iconPackJson.readText()) }
-                .getOrElse { e ->
-                    if (e is MissingFieldException) {
-                        val fields = e.missingFields.joinToString("\n") { "• $it" }
-                        dialogRes(
-                            SettingsActivity.instance,
-                            strings.icon_pack_install_failed.getString(),
-                            strings.manifest_missing_fields.getFilledString(fields),
-                            cancelable = false,
-                        )
-                        return null
-                    }
+        val iconPackManifest = runCatching {
+            json.decodeFromString<IconPackManifest>(iconPackJson.readText())
+        }
+            .getOrElse { e ->
+                if (e is MissingFieldException) {
+                    val fields = e.missingFields.joinToString("\n") { "• $it" }
                     dialogRes(
                         SettingsActivity.instance,
                         strings.icon_pack_install_failed.getString(),
-                        e.localizedMessage ?: strings.unknown_err.getString(),
+                        strings.manifest_missing_fields.getFilledString(fields),
                         cancelable = false,
                     )
                     return null
                 }
+                dialogRes(
+                    SettingsActivity.instance,
+                    strings.icon_pack_install_failed.getString(),
+                    e.localizedMessage ?: strings.unknown_err.getString(),
+                    cancelable = false,
+                )
+                return null
+            }
 
         return iconPackManifest
     }

@@ -8,6 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
+import com.rk.events.DrawerEvent
+import com.rk.events.Events
 import com.rk.file.FileObject
 import com.rk.filetree.FileTreeTab
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +43,7 @@ class DrawerViewModel : ViewModel() {
         _serviceTabs.clear()
         _serviceTabs.addAll(ServiceTabRegistry.createAll(owner))
         currentServiceTabIndex = -1
+        viewModelScope.launch { Events.publish(DrawerEvent.ServicesInitialized(serviceTabs)) }
     }
 
     fun addFileTreeTab(fileObject: FileObject, save: Boolean = false) {
@@ -60,6 +63,8 @@ class DrawerViewModel : ViewModel() {
 
         _drawerTabs.add(tab)
         selectDrawerTab(_drawerTabs.lastIndex)
+
+        viewModelScope.launch { Events.publish(DrawerEvent.TabAdded(tab)) }
 
         if (save) persistAsync()
     }
@@ -83,8 +88,11 @@ class DrawerViewModel : ViewModel() {
 
         val isActive = currentDrawerTabIndex == index
 
-        _drawerTabs[index].onRemoved()
+        val tab = _drawerTabs[index]
+        tab.onRemoved()
         _drawerTabs.removeAt(index)
+
+        viewModelScope.launch { Events.publish(DrawerEvent.TabRemoved(tab)) }
 
         if (_drawerTabs.isEmpty()) {
             unselectDrawerTab()
@@ -115,11 +123,15 @@ class DrawerViewModel : ViewModel() {
 
         currentDrawerTabIndex = index
         currentServiceTabIndex = -1
+
+        viewModelScope.launch { Events.publish(DrawerEvent.TabSelected(currentDrawerTab)) }
     }
 
     fun unselectDrawerTab() {
         currentDrawerTabIndex = -1
         currentServiceTabIndex = -1
+
+        viewModelScope.launch { Events.publish(DrawerEvent.TabSelected(null)) }
     }
 
     fun selectServiceTab(serviceTab: DrawerTab) {
@@ -131,10 +143,14 @@ class DrawerViewModel : ViewModel() {
         if (index !in _serviceTabs.indices) return
 
         currentServiceTabIndex = index
+
+        viewModelScope.launch { Events.publish(DrawerEvent.ServiceTabSelected(currentServiceTab)) }
     }
 
     fun unselectServiceTab() {
         currentServiceTabIndex = -1
+
+        viewModelScope.launch { Events.publish(DrawerEvent.ServiceTabSelected(null)) }
     }
 
     fun forcePushDrawerTabs(drawerTabs: List<DrawerTab>) {

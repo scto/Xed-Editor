@@ -6,9 +6,9 @@ import com.rk.lsp.servers.ExternalProcessServer
 import com.rk.lsp.servers.ExternalSocketServer
 import com.rk.settings.Preference
 import com.rk.utils.application
-import kotlin.random.Random
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.random.Random
 
 @Serializable
 data class SavedLspConfig(
@@ -32,7 +32,10 @@ object LspPersistence {
         }
     }
 
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        allowTrailingComma = true
+    }
     private val saveFile = application!!.filesDir.child("externalLSPServer").createFileIfNot()
 
     fun saveServers() {
@@ -65,11 +68,12 @@ object LspPersistence {
         val jsonStr = saveFile.readText()
         if (jsonStr.isEmpty()) return
 
-        val configs =
-            runCatching { json.decodeFromString<List<SavedLspConfig>>(jsonStr) }
-                .getOrElse {
-                    return
-                }
+        val configs = runCatching {
+            json.decodeFromString<List<SavedLspConfig>>(jsonStr)
+        }
+            .getOrElse {
+                return
+            }
 
         var shouldUpdateServers = false
         configs.forEach { config ->

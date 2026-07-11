@@ -2,9 +2,12 @@ package com.rk.extension.loader
 
 import android.app.Application
 import androidx.core.content.pm.PackageInfoCompat
+import com.rk.DefaultScope
 import com.rk.crashhandler.CrashActivity
+import com.rk.events.Events
 import com.rk.extension.ExtensionAPI
 import com.rk.extension.ExtensionContext
+import com.rk.extension.ExtensionEvent
 import com.rk.extension.LocalExtension
 import com.rk.extension.apkFile
 import com.rk.extension.extensionManager
@@ -60,6 +63,11 @@ fun LocalExtension.load(
         instance.onExtensionLoaded()
 
         extensionManager.loadedExtensions[this] = LoadedExtension(instance, scope)
+
+        DefaultScope.launch {
+            Events.publish(ExtensionEvent.Loaded(this@load))
+        }
+
         instance
     }
 }
@@ -154,12 +162,12 @@ suspend fun ExtensionManager.installExtensionFromZip(fileObject: FileObject) = r
 suspend fun ExtensionManager.loadAllExtensions() =
     withContext(Dispatchers.IO) {
         for ((_, extension) in localExtensions) {
-            if (isExtensionCrashed(extension.id)) {
+            if (isExtensionCrashed(extension)) {
                 continue
             }
             launch(Dispatchers.IO) {
                 extension.load(application!!).onFailure { error ->
-                    setExtensionCrashed(extension.id, true)
+                    setExtensionCrashed(extension, true)
                     withContext(Dispatchers.Main) {
                         CrashActivity.start(
                             context = application!!,

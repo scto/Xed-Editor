@@ -156,6 +156,9 @@ class FileTreeViewModel : ViewModel() {
         } else {
             selectFile(projectRoot, fileObject)
         }
+        viewModelScope.launch {
+            Events.publish(FileTreeEvent.SelectionChanged(projectRoot, getSelectedFiles(projectRoot)))
+        }
     }
 
     fun selectFile(projectRoot: FileObject, fileObject: FileObject) {
@@ -171,6 +174,9 @@ class FileTreeViewModel : ViewModel() {
 
     fun unselectAllFiles(projectRoot: FileObject) {
         selectedFiles.remove(projectRoot)
+        viewModelScope.launch {
+            Events.publish(FileTreeEvent.SelectionChanged(projectRoot, emptyList()))
+        }
     }
 
     fun isFileSelected(projectRoot: FileObject, fileObject: FileObject): Boolean {
@@ -259,6 +265,7 @@ class FileTreeViewModel : ViewModel() {
         if (expandedNodes[projectRoot]?.isEmpty() == true) {
             expandedNodes.remove(projectRoot)
         }
+        viewModelScope.launch { Events.publish(FileTreeEvent.NodeCollapsed(projectRoot, fileObject)) }
     }
 
     private fun expandFile(projectRoot: FileObject, fileObject: FileObject) {
@@ -268,6 +275,7 @@ class FileTreeViewModel : ViewModel() {
         if (!fileListCache.containsKey(fileObject)) {
             _loadingStates[fileObject] = true
         }
+        viewModelScope.launch { Events.publish(FileTreeEvent.NodeExpanded(projectRoot, fileObject)) }
     }
 
     fun getCollapsedName(node: FileTreeNode): String {
@@ -333,6 +341,7 @@ class FileTreeViewModel : ViewModel() {
     suspend fun goToFolder(projectFile: FileObject, fileObject: FileObject) {
         focusedFile[projectFile] = fileObject
         viewModelScope.launch {
+            Events.publish(FileTreeEvent.Focused(projectFile, fileObject))
             delay(1000.milliseconds)
             focusedFile.remove(projectFile)
         }

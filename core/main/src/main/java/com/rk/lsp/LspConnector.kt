@@ -3,11 +3,14 @@ package com.rk.lsp
 import android.content.Intent
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
+import com.rk.DefaultScope
 import com.rk.activities.main.MainActivity
 import com.rk.activities.main.snackbarHostStateRef
 import com.rk.activities.settings.SettingsActivity
 import com.rk.activities.settings.SettingsRoutes
 import com.rk.editor.Editor
+import com.rk.events.Events
+import com.rk.events.LSPEvent
 import com.rk.file.FileObject
 import com.rk.resources.getString
 import com.rk.resources.strings
@@ -30,9 +33,6 @@ import io.github.rosemoe.sora.lsp.events.AsyncEventListener
 import io.github.rosemoe.sora.lsp.requests.Timeout
 import io.github.rosemoe.sora.lsp.requests.Timeouts
 import io.github.rosemoe.sora.widget.CodeEditor
-import java.net.URI
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -60,6 +60,10 @@ import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.WorkspaceFoldersChangeEvent
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
+import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A utility object to temporarily prevent specific LSP servers from being used for a project.
@@ -183,14 +187,13 @@ class LspConnector(
             } finally {
                 editorTab.editorState.isConnectingLsp = false
 
-                val failedConnections =
-                    servers.filter { server ->
-                        server.instances.any { instance ->
-                            val isCrashed = instance.status == LspConnectionStatus.CRASHED
-                            val isTimeout = instance.status == LspConnectionStatus.TIMEOUT
-                            instance.lspProject == project && (isCrashed || isTimeout)
-                        }
+                val failedConnections = servers.filter { server ->
+                    server.instances.any { instance ->
+                        val isCrashed = instance.status == LspConnectionStatus.CRASHED
+                        val isTimeout = instance.status == LspConnectionStatus.TIMEOUT
+                        instance.lspProject == project && (isCrashed || isTimeout)
                     }
+                }
 
                 if (failedConnections.isNotEmpty()) {
                     launch {
@@ -217,8 +220,13 @@ class LspConnector(
         fileExt: String,
         lspProject: LspProject,
     ): CustomLanguageServerDefinition {
+
         val instance =
-            LspServerInstance(server = this@createServerDefinition, lspProject = lspProject, projectRoot = projectFile)
+            LspServerInstance(
+                    server = this@createServerDefinition,
+                    lspProject = lspProject,
+                    projectRoot = projectFile,
+                )
                 .also { addInstance(it) }
 
         return object :
@@ -342,6 +350,7 @@ class LspConnector(
                                 return
                             }
 
+                            val oldConnectionStatus = instance.status
                             instance.status =
                                 when (newStatus) {
                                     ServerStatus.IDLE -> LspConnectionStatus.NOT_RUNNING
@@ -365,6 +374,10 @@ class LspConnector(
                                         }
                                     }
                                 }
+
+                            DefaultScope.launch {
+                                Events.publish(LSPEvent.StatusChanged(instance, instance.status, oldConnectionStatus))
+                            }
                         }
                     }
         }
@@ -376,7 +389,12 @@ class LspConnector(
 
     fun getCapabilities(): ServerCapabilities? = runBlocking {
         if (!isConnected()) return@runBlocking null
-        withTimeoutOrNull(100) { runCatching { lspEditor?.requestManager?.capabilities }.getOrNull() }
+        withTimeoutOrNull(100.milliseconds) {
+            runCatching {
+                lspEditor?.requestManager?.capabilities
+            }
+                .getOrNull()
+        }
     }
 
     fun isGoToDefinitionSupported(): Boolean {
@@ -489,9 +507,9 @@ class LspConnector(
 
     suspend fun disconnect() {
         runCatching {
-                lspEditor?.disposeAsync()
-                lspEditor = null
-            }
+            lspEditor?.disposeAsync()
+            lspEditor = null
+        }
             .onFailure { it.printStackTrace() }
     }
 }

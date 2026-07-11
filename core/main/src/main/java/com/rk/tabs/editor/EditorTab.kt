@@ -77,6 +77,7 @@ import org.ec4j.core.ResourcePropertiesService
 import org.ec4j.core.model.PropertyType
 import java.nio.charset.Charset
 import java.nio.file.Paths
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(DelicateCoroutinesApi::class)
 open class EditorTab(override var file: FileObject, var projectRoot: FileObject?, val viewModel: MainViewModel) :
@@ -100,7 +101,6 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
     override var tabTitle: MutableState<String> =
         mutableStateOf(file.getName()).also {
             scope.launch(Dispatchers.IO) {
-                delay(100)
                 val parent = file.getParentFile()
                 if (
                     viewModel.tabs.any { it.tabTitle.value == tabTitle.value && it != this@EditorTab } && parent != null
@@ -339,8 +339,6 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val context = LocalContext.current
-
         key(refreshKey) {
             LaunchedEffect(editorState.editable) { editorState.editor.get()?.editable = editorState.editable }
 
@@ -434,7 +432,7 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
                             scope.launch(Dispatchers.IO) {
                                 quickSave()
                                 saveMutex.lock()
-                                delay(Settings.auto_save_delay)
+                                delay(Settings.auto_save_delay.milliseconds)
                                 saveMutex.unlock()
                             }
                         } else {

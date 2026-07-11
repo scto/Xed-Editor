@@ -856,7 +856,7 @@ private fun applyFilter(
         when (currentFilterOption) {
             ExtensionFilterOptions.ALL -> true
             ExtensionFilterOptions.SUPPORTED -> !outdatedClient && !outdatedExtension
-            ExtensionFilterOptions.CRASHED -> extensionManager.isExtensionCrashed(it.id)
+            ExtensionFilterOptions.CRASHED -> extensionManager.isExtensionCrashed(it)
         }
     }
 }
