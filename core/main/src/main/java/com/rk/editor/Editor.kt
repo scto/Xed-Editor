@@ -9,6 +9,9 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import com.rk.DefaultScope
+import com.rk.events.EditorEvent
+import com.rk.events.Events
 import com.rk.settings.Settings
 import com.rk.settings.editor.DEFAULT_EDITOR_FONT_PATH
 import com.rk.settings.editor.LineEnding
@@ -63,6 +66,7 @@ class Editor : CodeEditor {
         applySettings()
 
         getComponent(EditorAutoCompletion::class.java).setEnabledAnimation(true)
+        scope.launch { Events.publish(EditorEvent.InstanceCreated(this@Editor)) }
     }
 
     fun setThemeColors(isDarkMode: Boolean, selectionColors: TextSelectionColors, colorScheme: ColorScheme) {
@@ -141,6 +145,10 @@ class Editor : CodeEditor {
     override fun release() {
         scope.cancel()
         super.release()
+
+        DefaultScope.launch {
+            Events.publish(EditorEvent.InstanceDestroyed(this@Editor))
+        }
     }
 
     fun applySettings() {
@@ -253,18 +261,18 @@ class Editor : CodeEditor {
 
     fun applyFont() {
         runCatching {
-                val fontPath = Settings.editor_font_path
-                val font =
-                    if (fontPath.isNotEmpty()) {
-                        FontCache.getTypeface(context, fontPath, Settings.is_editor_font_asset)
-                            ?: FontCache.getTypeface(context, DEFAULT_EDITOR_FONT_PATH, true)
-                    } else {
-                        FontCache.getTypeface(context, DEFAULT_EDITOR_FONT_PATH, true)
-                    }
+            val fontPath = Settings.editor_font_path
+            val font =
+                if (fontPath.isNotEmpty()) {
+                    FontCache.getTypeface(context, fontPath, Settings.is_editor_font_asset)
+                        ?: FontCache.getTypeface(context, DEFAULT_EDITOR_FONT_PATH, true)
+                } else {
+                    FontCache.getTypeface(context, DEFAULT_EDITOR_FONT_PATH, true)
+                }
 
-                typefaceText = font ?: Typeface.DEFAULT
-                typefaceLineNumber = font ?: Typeface.DEFAULT
-            }
+            typefaceText = font ?: Typeface.DEFAULT
+            typefaceLineNumber = font ?: Typeface.DEFAULT
+        }
             .onFailure { errorDialog(throwable = it) }
     }
 

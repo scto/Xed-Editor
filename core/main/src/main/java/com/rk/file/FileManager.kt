@@ -71,9 +71,9 @@ class FileManager(private val activity: ComponentActivity) {
         launchDirectoryPicker { uri ->
             uri?.let {
                 runCatching {
-                        val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                        activity.contentResolver.takePersistableUriPermission(it, takeFlags)
-                    }
+                    val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    activity.contentResolver.takePersistableUriPermission(it, takeFlags)
+                }
                     .onFailure { e -> e.printStackTrace() }
             }
             callback(uri)

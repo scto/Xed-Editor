@@ -98,7 +98,7 @@ fun ExtensionCard(
                         )
                     }
 
-                    if (extensionManager.isExtensionCrashed(extension.id)) {
+                    if (extensionManager.isExtensionCrashed(extension)) {
                         Text(
                             text = " • ${stringResource(strings.disabled_crashed)}",
                             style = Typography.labelMedium,

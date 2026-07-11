@@ -1,23 +1,48 @@
 package com.rk.drawer
 
-import android.app.Activity
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.Composable
+import androidx.lifecycle.ViewModelStoreOwner
 import com.rk.icons.Icon
 
-
 object ServiceTabRegistry {
-    val providers = mutableStateListOf<(androidx.lifecycle.ViewModelStoreOwner) -> DrawerTab>()
+
+    private val providers = mutableListOf<ServiceTabProvider>()
+
+    fun register(provider: ServiceTabProvider) {
+        providers += provider
+    }
+
+    fun unregister(provider: ServiceTabProvider) {
+        providers -= provider
+    }
+
+    internal fun createAll(owner: ViewModelStoreOwner): List<DrawerTab> {
+        return providers.map { it.create(owner) }
+    }
+}
+
+fun interface ServiceTabProvider {
+    fun create(owner: ViewModelStoreOwner): DrawerTab
 }
 
 data class AddProjectOption(
     val icon: Icon,
-    val titleRes: Int,
-    val descriptionRes: Int,
-    val onClick: (onDismiss: () -> Unit) -> Unit
+    val title: String,
+    val description: String,
+    val onClick: (onDismiss: () -> Unit) -> Unit,
 )
 
 object AddProjectRegistry {
-    val options = mutableStateListOf<AddProjectOption>()
-}
 
+    private val _options = mutableListOf<AddProjectOption>()
+
+    val options
+        get() = _options.toList()
+
+    fun register(option: AddProjectOption) {
+        _options += option
+    }
+
+    fun unregister(option: AddProjectOption) {
+        _options -= option
+    }
+}

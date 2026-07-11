@@ -6,12 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rk.DefaultScope
+import com.rk.events.Events
+import com.rk.feature.FeatureRegistry
+import com.rk.file.FileWrapper
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.rk.feature.FeatureRegistry
-import com.rk.git.findGitRoot
 import com.rk.utils.toast
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ import org.eclipse.jgit.lib.SubmoduleConfig.FetchRecurseSubmodulesMode
 import org.eclipse.jgit.revwalk.RevWalk
 import org.eclipse.jgit.transport.RemoteRefUpdate
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
+import java.io.File
 
 class GitViewModel : ViewModel() {
     var currentRoot = mutableStateOf<File?>(null)
@@ -148,6 +150,15 @@ class GitViewModel : ViewModel() {
                         .setProgressMonitor(progressCoordinator)
                         .call()
                     done = true
+                    DefaultScope.launch {
+                        Events.publish(
+                            GitEvent.RepositoryCloned(
+                                repoURL,
+                                repoBranch,
+                                FileWrapper(targetDir),
+                            )
+                        )
+                    }
                 } catch (e: TransportException) {
                     if (
                         e.message?.contains("Auth", true) == true ||
@@ -192,6 +203,12 @@ class GitViewModel : ViewModel() {
                     }
                     withContext(Dispatchers.Main) { currentBranch = git.repository.branch }
                 }
+                Events.publish(
+                    GitEvent.BranchCheckedOut(
+                        root = FileWrapper(currentRoot.value!!),
+                        name = branchName,
+                    )
+                )
             } catch (e: Exception) {
                 toast(e.message)
             } finally {
@@ -232,6 +249,11 @@ class GitViewModel : ViewModel() {
                         toast(errorMessage)
                     }
                 }
+                GitEvent.PullCompleted(
+                    root = FileWrapper(currentRoot.value!!),
+                    remote = GIT_ORIGIN,
+                    branch = currentBranch,
+                )
             } catch (e: TransportException) {
                 if (
                     e.message?.contains("Auth", true) == true ||
@@ -274,6 +296,13 @@ class GitViewModel : ViewModel() {
                         .setRemoveDeletedRefs(true)
                         .call()
                 }
+                Events.publish(
+                    GitEvent.FetchCompleted(
+                        root = FileWrapper(currentRoot.value!!),
+                        remote = GIT_ORIGIN,
+                        branch = currentBranch,
+                    )
+                )
             } catch (e: TransportException) {
                 if (
                     e.message?.contains("Auth", true) == true ||
@@ -348,6 +377,9 @@ class GitViewModel : ViewModel() {
                         newChanges
                     }
                 changes[gitRoot] = mergedChanges
+                viewModelScope.launch {
+                    Events.publish(GitEvent.WorkingTreeUpdated(FileWrapper(root), mergedChanges))
+                }
             } catch (e: Exception) {
                 toast(e.message)
             } finally {
@@ -360,8 +392,12 @@ class GitViewModel : ViewModel() {
         return viewModelScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) { isLoading = true }
             try {
-                Git.open(currentRoot.value).use { git ->
-                    changes[currentRoot.value!!.absolutePath]!!
+                val currentRoot = currentRoot.value!!
+                val message = commitMessages[currentRoot.absolutePath]
+                val amend = amends[currentRoot.absolutePath] ?: false
+
+                Git.open(currentRoot).use { git ->
+                    changes[currentRoot.absolutePath]!!
                         .filter { it.isChecked }
                         .forEach { change ->
                             when (change.type) {
@@ -375,10 +411,25 @@ class GitViewModel : ViewModel() {
                     git.commit()
                         .setAuthor(Settings.git_name, Settings.git_email)
                         .setCommitter(Settings.git_name, Settings.git_email)
-                        .setMessage(commitMessages[currentRoot.value!!.absolutePath])
-                        .setAmend(amends[currentRoot.value!!.absolutePath]!!)
+                        .setMessage(message)
+                        .setAmend(amend)
                         .call()
                     toast(strings.commit_complete)
+                }
+                if (amend) {
+                    Events.publish(
+                        GitEvent.CommitAmended(
+                            root = FileWrapper(currentRoot),
+                            message = message.orEmpty(),
+                        )
+                    )
+                } else {
+                    Events.publish(
+                        GitEvent.CommitCreated(
+                            root = FileWrapper(currentRoot),
+                            message = message.orEmpty(),
+                        )
+                    )
                 }
             } catch (e: Exception) {
                 toast(e.message)
@@ -449,6 +500,14 @@ class GitViewModel : ViewModel() {
                         toast(strings.push_complete)
                     }
                 }
+                Events.publish(
+                    GitEvent.PushCompleted(
+                        root = FileWrapper(currentRoot.value!!),
+                        remote = GIT_ORIGIN,
+                        branch = currentBranch,
+                        force = force,
+                    )
+                )
             } catch (e: TransportException) {
                 if (
                     e.message?.contains("Auth", true) == true ||
@@ -483,6 +542,7 @@ class GitViewModel : ViewModel() {
                     }
                     toast(strings.checkout_complete)
                 }
+                Events.publish(GitEvent.BranchCreated(FileWrapper(currentRoot.value!!), branchName, branchBase))
             } catch (e: Exception) {
                 toast(e.message)
             } finally {

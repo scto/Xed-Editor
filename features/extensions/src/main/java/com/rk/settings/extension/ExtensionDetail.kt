@@ -65,6 +65,7 @@ import com.rk.resources.strings
 import com.rk.theme.Typography
 import com.rk.utils.formatFileSize
 import com.rk.utils.formatNumberCompact
+import com.rk.utils.toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -88,7 +89,7 @@ fun ExtensionDetail(extension: Extension?, navController: NavController) {
             if (extension?.hasSettings == true) {
                 IconButton(
                     enabled = extensionManager.isInstalled(extension.id),
-                    onClick = { navController.navigate("${SettingsRoutes.ExtensionSettings.route}/{extensionId}") },
+                    onClick = { navController.navigate("${SettingsRoutes.ExtensionSettings.route}/${extension.id}") },
                 ) {
                     Icon(
                         painter = painterResource(drawables.settings),
@@ -197,7 +198,10 @@ private fun AboutSection(
                         ),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    ExtensionAuthorIcon(extension.author, Modifier.size(24.dp).padding(end = 4.dp))
+                    ExtensionAuthorIcon(
+                        extension.author,
+                        Modifier.size(24.dp).padding(end = 4.dp),
+                    )
                     Text(
                         text = "${extension.author}",
                         style = Typography.labelLarge,
@@ -229,6 +233,37 @@ private fun AboutSection(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                }
+
+                var isCrashed by remember {
+                    mutableStateOf(extensionManager.isExtensionCrashed(extension))
+                }
+                if (isCrashed) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = " • ",
+                            style = Typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+
+                        Text(
+                            text = stringResource(strings.disabled_crashed),
+                            style = Typography.labelLarge,
+                            color = MaterialTheme.colorScheme.error,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier =
+                                Modifier.clickable(
+                                    onClick = {
+                                        // TODO: Crash detail screen
+                                        extensionManager.setExtensionCrashed(extension, false)
+                                        toast("Re-enabled extension. Restart the app for changes to take effect.")
+                                        isCrashed = false
+                                    }
+                                ),
+                        )
+                    }
                 }
             }
         }

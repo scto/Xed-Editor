@@ -37,15 +37,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.rk.DefaultScope
 import com.rk.activities.main.MainActivity
 import com.rk.activities.main.drawerStateRef
 import com.rk.activities.main.fileTreeViewModel
 import com.rk.activities.main.searchViewModel
-import com.rk.file.FileChangeNotifier
 import com.rk.components.AddDialogItem
 import com.rk.components.codeSearchDialog
 import com.rk.components.fileSearchDialog
 import com.rk.drawer.DrawerTab
+import com.rk.events.Events
+import com.rk.events.FileTreeEvent
 import com.rk.file.FileObject
 import com.rk.file.FileWrapper
 import com.rk.file.UriWrapper
@@ -80,7 +82,7 @@ class FileTreeTab(val root: FileObject) : DrawerTab() {
         val drawerViewModel = MainActivity.instance?.drawerViewModel
 
         LaunchedEffect(root) {
-            FileChangeNotifier.notifyProjectOpened(root.getAbsolutePath())
+            Events.publish(FileTreeEvent.Opened(root))
         }
 
         LaunchedEffect(enableIndexing) {
@@ -272,5 +274,6 @@ class FileTreeTab(val root: FileObject) : DrawerTab() {
     override fun onRemoved() {
         Preference.removeKey(indexingPreferenceKey)
         searchViewModel.get()?.deleteIndex(MainActivity.instance!!, root)
+        DefaultScope.launch { Events.publish(FileTreeEvent.Closed(root)) }
     }
 }

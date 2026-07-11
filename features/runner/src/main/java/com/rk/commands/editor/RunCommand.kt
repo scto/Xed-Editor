@@ -1,7 +1,6 @@
 package com.rk.commands.editor
 
 import android.view.KeyEvent
-import com.rk.DefaultScope
 import com.rk.commands.CommandProvider
 import com.rk.commands.EditorActionContext
 import com.rk.commands.EditorCommand
@@ -12,10 +11,9 @@ import com.rk.resources.drawables
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.runner.RunnerManager
+import com.rk.runner.RunnerUI
 import com.rk.settings.Settings
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.launch
-import com.rk.runner.RunnerUI
 
 @OptIn(DelicateCoroutinesApi::class)
 class RunCommand : EditorCommand() {
@@ -27,17 +25,15 @@ class RunCommand : EditorCommand() {
         val editorTab = editorActionContext.editorTab
         val activity = editorActionContext.currentActivity
         CommandProvider.SaveCommand.action(editorActionContext)
-        DefaultScope.launch {
-            Settings.runs += 1
-            RunnerManager.run(
-                activity = activity,
-                fileObject = editorTab.file,
-                onMultipleRunners = {
-                    RunnerUI.runnersToShow = it
-                    RunnerUI.showRunnerDialog = true
-                },
-            )
-        }
+        Settings.runs += 1
+        RunnerManager.run(
+            activity = activity,
+            fileObject = editorTab.file,
+            onMultipleRunners = {
+                RunnerUI.runnersToShow = it
+                RunnerUI.showRunnerDialog = true
+            },
+        )
     }
 
     override fun isSupported(editorNonActionContext: EditorNonActionContext): Boolean {

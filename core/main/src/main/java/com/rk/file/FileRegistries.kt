@@ -1,47 +1,64 @@
 package com.rk.file
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
-
-object FileChangeNotifier {
-    val fileChangeListeners = mutableStateListOf<suspend (String) -> Unit>()
-    val projectOpenListeners = mutableStateListOf<suspend (String) -> Unit>()
-
-    suspend fun notifyFileChanged(path: String) {
-        fileChangeListeners.forEach { it(path) }
-    }
-
-    suspend fun notifyProjectOpened(root: String) {
-        projectOpenListeners.forEach { it(root) }
-    }
-}
 
 data class FileDecoration(
     val color: Color? = null,
-    val badge: String? = null
+    val badge: String? = null,
 )
 
-interface FileDecorationProvider {
-    @Composable
-    fun getDecoration(file: FileObject): FileDecoration?
+fun interface FileDecorationProvider {
+    @Composable fun provideDecoration(file: FileObject): FileDecoration?
 }
 
 object FileDecorationRegistry {
-    var provider: FileDecorationProvider? = null
+
+    private val providers = mutableListOf<FileDecorationProvider>()
+
+    fun register(provider: FileDecorationProvider) {
+        providers += provider
+    }
+
+    fun unregister(provider: FileDecorationProvider) {
+        providers -= provider
+    }
+
+    @Composable
+    fun getDecoration(file: FileObject): FileDecoration {
+        val decorations = providers.mapNotNull { it.provideDecoration(file) }
+
+        return FileDecoration(
+            color = decorations.firstNotNullOfOrNull { it.color },
+            badge = decorations.firstNotNullOfOrNull { it.badge },
+        )
+    }
 }
 
 data class FileProperty(
     val label: String,
     val value: String,
-    val valueColor: Color? = null
+    val valueColor: Color? = null,
 )
 
-interface FilePropertiesProvider {
-    @Composable
-    fun getProperties(file: FileObject): List<FileProperty>
+fun interface FilePropertiesProvider {
+    @Composable fun provideProperties(file: FileObject): List<FileProperty>
 }
 
 object FilePropertiesRegistry {
-    val providers = mutableStateListOf<FilePropertiesProvider>()
+
+    private val providers = mutableListOf<FilePropertiesProvider>()
+
+    fun register(provider: FilePropertiesProvider) {
+        providers += provider
+    }
+
+    fun unregister(provider: FilePropertiesProvider) {
+        providers -= provider
+    }
+
+    @Composable
+    fun getProperties(file: FileObject): List<FileProperty> {
+        return providers.flatMap { it.provideProperties(file) }
+    }
 }

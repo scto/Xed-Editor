@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import com.rk.activities.main.MainActivity
 import com.rk.components.ContentProgress
+import com.rk.events.Events
+import com.rk.events.FileEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.net.io.Util
@@ -156,13 +158,20 @@ object FileOperations {
 
                 // Perform the copy operation
                 copyRecursive(context, sourceFile, destinationFolder, onProgress)
+                val newFile =
+                    destinationFolder.getChildForName(sourceFile.getName())
+                        ?: throw IllegalStateException("Failed to find pasted file")
 
                 // If it's a cut operation, delete the source
                 if (isCut) {
+                    val oldPath = sourceFile.getAbsolutePath()
                     val deleteSuccess = sourceFile.delete()
                     if (!deleteSuccess) {
                         throw IllegalStateException("Failed to delete source file after moving")
                     }
+                    Events.publish(FileEvent.Moved(newFile, oldPath))
+                } else {
+                    Events.publish(FileEvent.Copied(newFile, sourceFile.getAbsolutePath()))
                 }
             }
         }

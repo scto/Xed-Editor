@@ -10,15 +10,16 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rk.activities.main.searchViewModel
+import com.rk.events.Events
+import com.rk.events.FileTreeEvent
 import com.rk.file.FileObject
-import com.rk.file.FileChangeNotifier
 import com.rk.search.GlobExcluder
 import com.rk.settings.Settings
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.milliseconds
 
 fun FileObject.toFileTreeNode(): FileTreeNode {
     return FileTreeNode(file = this, isFile = isFile(), isDirectory = isDirectory(), name = getAppropriateName())
@@ -155,6 +156,9 @@ class FileTreeViewModel : ViewModel() {
         } else {
             selectFile(projectRoot, fileObject)
         }
+        viewModelScope.launch {
+            Events.publish(FileTreeEvent.SelectionChanged(projectRoot, getSelectedFiles(projectRoot)))
+        }
     }
 
     fun selectFile(projectRoot: FileObject, fileObject: FileObject) {
@@ -170,6 +174,9 @@ class FileTreeViewModel : ViewModel() {
 
     fun unselectAllFiles(projectRoot: FileObject) {
         selectedFiles.remove(projectRoot)
+        viewModelScope.launch {
+            Events.publish(FileTreeEvent.SelectionChanged(projectRoot, emptyList()))
+        }
     }
 
     fun isFileSelected(projectRoot: FileObject, fileObject: FileObject): Boolean {
@@ -258,6 +265,7 @@ class FileTreeViewModel : ViewModel() {
         if (expandedNodes[projectRoot]?.isEmpty() == true) {
             expandedNodes.remove(projectRoot)
         }
+        viewModelScope.launch { Events.publish(FileTreeEvent.NodeCollapsed(projectRoot, fileObject)) }
     }
 
     private fun expandFile(projectRoot: FileObject, fileObject: FileObject) {
@@ -267,6 +275,7 @@ class FileTreeViewModel : ViewModel() {
         if (!fileListCache.containsKey(fileObject)) {
             _loadingStates[fileObject] = true
         }
+        viewModelScope.launch { Events.publish(FileTreeEvent.NodeExpanded(projectRoot, fileObject)) }
     }
 
     fun getCollapsedName(node: FileTreeNode): String {
@@ -294,33 +303,35 @@ class FileTreeViewModel : ViewModel() {
         return currentNode
     }
 
-    fun updateCache(file: FileObject) {
-        searchViewModel.get()?.syncIndex(file)
-        viewModelScope.launch { FileChangeNotifier.notifyFileChanged(file.getAbsolutePath()) }
-        if (file.isDirectory().not()) {
-            return
+    fun updateCache(parent: FileObject) {
+        if (!parent.isDirectory()) return
+        searchViewModel.get()?.syncIndex(parent)
+
+        viewModelScope.launch {
+            Events.publish(FileTreeEvent.TreeSynchronized(parent))
         }
-        collapsedNameCache.remove(file)
-        _loadingStates[file] = true // Mark as loading
+
+        collapsedNameCache.remove(parent)
+        _loadingStates[parent] = true // Mark as loading
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 // Safely access file listing
                 val fileList =
                     try {
-                        file.listFiles()
-                    } catch (e: Exception) {
-                        _loadingStates[file] = false
+                        parent.listFiles()
+                    } catch (_: Exception) {
+                        _loadingStates[parent] = false
                         return@launch
                     }
 
                 // Process files
                 val sortedFiles = sortAndFilterFiles(fileList)
 
-                fileListCache[file] = sortedFiles
+                fileListCache[parent] = sortedFiles
 
-                viewModelScope.launch { clearLoadingState(file) }
+                viewModelScope.launch { clearLoadingState(parent) }
             } catch (_: Exception) {
-                _loadingStates[file] = false
+                _loadingStates[parent] = false
             }
         }
     }
@@ -330,6 +341,7 @@ class FileTreeViewModel : ViewModel() {
     suspend fun goToFolder(projectFile: FileObject, fileObject: FileObject) {
         focusedFile[projectFile] = fileObject
         viewModelScope.launch {
+            Events.publish(FileTreeEvent.Focused(projectFile, fileObject))
             delay(1000.milliseconds)
             focusedFile.remove(projectFile)
         }

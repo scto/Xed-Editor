@@ -64,7 +64,10 @@ object ExtensionRegistry {
     private const val BASE_URL = EXTENSION_API_BASE
 
     private val client: OkHttpClient = okHttpClient
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        allowTrailingComma = true
+    }
 
     val downloadProgress = mutableStateMapOf<String, Float>()
     val activeInstalls = mutableStateMapOf<String, InstallState>()

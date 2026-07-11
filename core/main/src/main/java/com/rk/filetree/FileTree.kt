@@ -52,8 +52,8 @@ import com.rk.icons.XedIcon
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import kotlin.math.min
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
 enum class SortMode(val stringRes: Int) {
     SORT_BY_NAME(strings.sort_by_name),

@@ -40,9 +40,9 @@ import com.blankj.utilcode.util.ThreadUtils
 import com.caverock.androidsvg.SVG
 import com.rk.extension.ActivityProvider
 import com.rk.file.BuiltinFileType
+import com.rk.file.FileDecorationRegistry
 import com.rk.file.FileObject
 import com.rk.filetree.FileTreeViewModel
-import com.rk.file.FileDecorationRegistry
 import com.rk.resources.getQuantityString
 import com.rk.resources.getString
 import com.rk.resources.plurals
@@ -50,6 +50,12 @@ import com.rk.resources.strings
 import com.rk.settings.Settings
 import com.rk.theme.currentTheme
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 import java.io.ObjectInputStream
@@ -57,12 +63,6 @@ import java.io.ObjectOutputStream
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.roundToInt
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(DelicateCoroutinesApi::class)
 inline fun runOnUiThread(runnable: Runnable) {
@@ -83,7 +83,6 @@ suspend fun FileObject.readObject(): Any? =
         }
     }
 
-
 fun toast(message: String?) {
     if (message.isNullOrBlank()) {
         Log.w("UTILS", "Toast with null or empty message")
@@ -96,12 +95,11 @@ fun toast(message: String?) {
 
     runOnUiThread {
         val context = ActivityProvider.currentActivity as? Context
-        if (context != null){
+        if (context != null) {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }else{
-            Log.w("Utils","no valid ui context available for making toast: $message")
+        } else {
+            Log.w("Utils", "no valid ui context available for making toast: $message")
         }
-
     }
 }
 
@@ -117,7 +115,7 @@ fun isDarkTheme(ctx: Context): Boolean {
 /** Returns true if the system theme is dark. **NOTE:** Prefer [isDarkTheme] to respect user settings. */
 fun isSystemInDarkTheme(ctx: Context): Boolean {
     return ((ctx.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
-            Configuration.UI_MODE_NIGHT_YES)
+        Configuration.UI_MODE_NIGHT_YES)
 }
 
 inline fun dpToPx(dp: Float, ctx: Context): Int {
@@ -167,7 +165,6 @@ fun origin(): String {
 val isV =
     byteArrayOf(99, 111, 109, 46, 97, 110, 100, 114, 111, 105, 100, 46, 118, 101, 110, 100, 105, 110, 103)
         .toString(Charsets.UTF_8) == origin()
-
 
 fun copyToClipboard(label: String, text: String, showToast: Boolean = true) {
     val clipboard = application!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -326,8 +323,7 @@ fun Modifier.drawErrorUnderline(errorColor: Color): Modifier = drawBehind {
 
 @Composable
 fun getFileColor(file: FileObject?): Color? {
-    if (file == null) return null
-    return FileDecorationRegistry.provider?.getDecoration(file)?.color
+    return file?.let { FileDecorationRegistry.getDecoration(it).color }
 }
 
 fun hasBinaryChars(text: String): Boolean {
@@ -341,8 +337,9 @@ fun hasBinaryChars(text: String): Boolean {
     if (checkText.any { it.code == 0 }) return true
 
     // Amount of unusual control characters
-    val unusualCharCount =
-        checkText.count { c -> c.isISOControl() && c.code != 9 && c.code != 10 && c.code != 12 && c.code != 13 }
+    val unusualCharCount = checkText.count { c ->
+        c.isISOControl() && c.code != 9 && c.code != 10 && c.code != 12 && c.code != 13
+    }
 
     // If the amount of unusual control chars in the file content is over 30%
     return unusualCharCount.toDouble() / checkText.length > threshold

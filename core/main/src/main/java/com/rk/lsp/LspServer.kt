@@ -6,14 +6,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
+import com.rk.DefaultScope
 import com.rk.TerminalLauncher
 import com.rk.activities.main.MainActivity
+import com.rk.events.Events
+import com.rk.events.LSPEvent
 import com.rk.file.FileObject
 import com.rk.icons.Icon
 import com.rk.tabs.editor.EditorTab
 import com.rk.tabs.editor.applyHighlightingAndConnectLSP
 import com.rk.theme.greenStatus
 import com.rk.theme.yellowStatus
+import kotlinx.coroutines.launch
 import org.eclipse.lsp4j.ServerCapabilities
 import java.io.File
 import java.net.URI
@@ -84,6 +88,9 @@ abstract class LspServer {
 
     fun addInstance(instance: LspServerInstance) {
         _instances.add(instance)
+        DefaultScope.launch {
+            Events.publish(LSPEvent.InstanceCreated(instance))
+        }
     }
 
     fun removeInstance(instance: LspServerInstance) {

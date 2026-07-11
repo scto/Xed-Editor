@@ -39,6 +39,8 @@ import com.rk.components.SettingsItem
 import com.rk.components.compose.preferences.base.PreferenceGroup
 import com.rk.components.compose.preferences.base.PreferenceLayout
 import com.rk.components.compose.preferences.base.PreferenceTemplate
+import com.rk.events.AppEvent
+import com.rk.events.Events
 import com.rk.file.child
 import com.rk.file.copyToTempDir
 import com.rk.file.themeDir
@@ -119,25 +121,34 @@ fun ThemeScreen(modifier: Modifier = Modifier) {
                         )
                     },
                     sideEffect = {
+                        val oldTheme = currentTheme.value
                         currentTheme.value = theme
                         Settings.theme = theme.id
                         refreshEditors()
+                        DefaultScope.launch { Events.publish(AppEvent.ThemeChanged(theme, oldTheme)) }
                     },
                     endWidget = {
                         if (!builtInThemes.contains(theme)) {
                             IconButton(
                                 onClick = {
                                     if (currentTheme.value?.id == theme.id) {
+                                        val oldTheme = currentTheme.value
                                         currentTheme.value = blueberry
                                         Settings.theme = blueberry.id
                                         refreshEditors()
+                                        DefaultScope.launch {
+                                            Events.publish(AppEvent.ThemeChanged(blueberry, oldTheme))
+                                        }
                                     }
 
                                     themeDir().child(theme.name).delete()
                                     themes.remove(theme)
                                 }
                             ) {
-                                Icon(imageVector = Icons.Outlined.Delete, stringResource(strings.delete))
+                                Icon(
+                                    imageVector = Icons.Outlined.Delete,
+                                    stringResource(strings.delete),
+                                )
                             }
                         }
                     },
@@ -174,8 +185,13 @@ fun ThemeScreen(modifier: Modifier = Modifier) {
                     )
                 },
                 sideEffect = {
+                    val oldIconPack = currentIconPack.value
                     currentIconPack.value = null
                     Settings.icon_pack = ""
+
+                    DefaultScope.launch {
+                        Events.publish(AppEvent.IconPackChanged(null, oldIconPack))
+                    }
                 },
             )
 
@@ -195,15 +211,25 @@ fun ThemeScreen(modifier: Modifier = Modifier) {
                         )
                     },
                     sideEffect = {
+                        val oldIconPack = currentIconPack.value
                         currentIconPack.value = iconPack
                         Settings.icon_pack = id
+
+                        DefaultScope.launch {
+                            Events.publish(AppEvent.IconPackChanged(iconPack, oldIconPack))
+                        }
                     },
                     endWidget = {
                         IconButton(
                             onClick = {
                                 if (currentIconPack.value?.manifest?.id == id) {
+                                    val oldIconPack = currentIconPack.value
                                     currentIconPack.value = null
                                     Settings.icon_pack = ""
+
+                                    DefaultScope.launch {
+                                        Events.publish(AppEvent.IconPackChanged(null, oldIconPack))
+                                    }
                                 }
 
                                 iconPackManager.uninstallIconPack(id)
