@@ -1,21 +1,9 @@
 package com.rk.settings.editor
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
@@ -26,18 +14,17 @@ import com.rk.activities.settings.SettingsRoutes
 import com.rk.activities.settings.settingsNavController
 import com.rk.components.EditorSettingsItem
 import com.rk.components.NextScreenCard
+import com.rk.components.PreferenceList
+import com.rk.components.PreferenceSingleInput
 import com.rk.components.SettingsItem
-import com.rk.components.SingleInputDialog
 import com.rk.components.SmoothValueSlider
 import com.rk.components.SteppedValueSlider
 import com.rk.components.compose.preferences.base.PreferenceGroup
 import com.rk.components.compose.preferences.base.PreferenceLayout
-import com.rk.components.compose.preferences.base.PreferenceTemplate
 import com.rk.editor.KeywordManager
 import com.rk.filetree.SortMode
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.rk.feature.FeatureRegistry
 import com.rk.tabs.editor.EditorTab
 import kotlinx.coroutines.launch
 
@@ -46,17 +33,6 @@ fun SettingsEditorScreen(navController: NavController) {
     PreferenceLayout(label = stringResource(id = strings.editor), backArrowVisible = true) {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
-
-        var showLineSpacingDialog by remember { mutableStateOf(false) }
-        var lineSpacingValue by remember { mutableStateOf(Settings.line_spacing.toString()) }
-        var lineSpacingError by remember { mutableStateOf<String?>(null) }
-
-        var showAutoSaveDialog by remember { mutableStateOf(false) }
-        var autoSaveDelayValue by remember { mutableStateOf(Settings.auto_save_delay.toString()) }
-        var autoSaveDelayError by remember { mutableStateOf<String?>(null) }
-
-        var showSortingModeDialog by remember { mutableStateOf(false) }
-        var sortingModeValue by remember { mutableIntStateOf(Settings.sort_mode) }
 
         PreferenceGroup(heading = stringResource(strings.language_server)) {
             NextScreenCard(
@@ -162,12 +138,23 @@ fun SettingsEditorScreen(navController: NavController) {
                 sideEffect = { Settings.hide_soft_keyboard_if_hardware = it },
             )
 
-            EditorSettingsItem(
+            PreferenceSingleInput(
                 label = stringResource(id = strings.line_spacing),
                 description = stringResource(id = strings.line_spacing_desc),
-                showSwitch = false,
-                default = false,
-                sideEffect = { showLineSpacingDialog = true },
+                value = Settings.line_spacing.toString(),
+                validate = {
+                    if (it.toFloatOrNull() == null) {
+                        context.getString(strings.value_invalid)
+                    } else if (it.toFloat() < 0.6f) {
+                        context.getString(strings.value_small)
+                    } else {
+                        null
+                    }
+                },
+                onConfirm = {
+                    Settings.line_spacing = it.toFloat()
+                    scope.launch { refreshEditorSettings() }
+                },
             )
 
             EditorSettingsItem(
@@ -366,11 +353,18 @@ fun SettingsEditorScreen(navController: NavController) {
                 sideEffect = { Settings.keep_drawer_locked = it },
             )
 
-            EditorSettingsItem(
+            PreferenceList(
                 label = stringResource(id = strings.sort_mode),
                 description = stringResource(id = strings.sort_mode_desc),
-                showSwitch = false,
-                sideEffect = { showSortingModeDialog = true },
+                items = SortMode.entries.map { it to stringResource(it.stringRes) },
+                selectedItem = SortMode.entries[Settings.sort_mode],
+                onItemSelected = { sortMode ->
+                    Settings.sort_mode = sortMode.ordinal
+                    fileTreeViewModel.get()?.apply {
+                        this.sortMode = sortMode
+                        viewModelScope.launch { refreshEverything() }
+                    }
+                },
             )
 
             EditorSettingsItem(
@@ -476,11 +470,25 @@ fun SettingsEditorScreen(navController: NavController) {
                 sideEffect = { Settings.auto_save = it },
             )
 
-            EditorSettingsItem(
+            PreferenceSingleInput(
                 label = stringResource(id = strings.auto_save_delay),
                 description = stringResource(id = strings.auto_save_delay_desc),
-                showSwitch = false,
-                sideEffect = { showAutoSaveDialog = true },
+                value = Settings.auto_save_delay.toString(),
+                validate = {
+                    if (it.toIntOrNull() == null) {
+                        context.getString(strings.value_invalid)
+                    } else if (it.toInt() > 4000) {
+                        context.getString(strings.value_large)
+                    } else if (it.toInt() < 5) {
+                        context.getString(strings.value_small)
+                    } else {
+                        null
+                    }
+                },
+                onConfirm = {
+                    Settings.auto_save_delay = it.toLong()
+                    scope.launch { refreshEditorSettings() }
+                },
             )
 
             EditorSettingsItem(
@@ -490,112 +498,6 @@ fun SettingsEditorScreen(navController: NavController) {
                 sideEffect = {
                     Settings.enable_editorconfig = it
                     scope.launch { refreshEditorSettings() }
-                },
-            )
-        }
-
-        if (showLineSpacingDialog) {
-            SingleInputDialog(
-                title = stringResource(id = strings.line_spacing),
-                inputLabel = stringResource(id = strings.line_spacing),
-                inputValue = lineSpacingValue,
-                errorMessage = lineSpacingError,
-                onInputValueChange = {
-                    lineSpacingValue = it
-                    lineSpacingError = null
-                    if (lineSpacingValue.toFloatOrNull() == null) {
-                        lineSpacingError = context.getString(strings.value_invalid)
-                    } else if (lineSpacingValue.toFloat() < 0.6f) {
-                        lineSpacingError = context.getString(strings.value_small)
-                    }
-                },
-                onConfirm = {
-                    Settings.line_spacing = lineSpacingValue.toFloat()
-                    scope.launch { refreshEditorSettings() }
-                },
-                onFinish = {
-                    lineSpacingValue = Settings.line_spacing.toString()
-                    lineSpacingError = null
-                    showLineSpacingDialog = false
-                },
-            )
-        }
-
-        if (showAutoSaveDialog) {
-            SingleInputDialog(
-                title = stringResource(id = strings.auto_save_delay),
-                inputLabel = stringResource(id = strings.auto_save_delay),
-                inputValue = autoSaveDelayValue,
-                errorMessage = autoSaveDelayError,
-                onInputValueChange = {
-                    autoSaveDelayValue = it
-                    autoSaveDelayError = null
-                    if (autoSaveDelayValue.toIntOrNull() == null) {
-                        autoSaveDelayError = context.getString(strings.value_invalid)
-                    } else if (autoSaveDelayValue.toInt() > 4000) {
-                        autoSaveDelayError = context.getString(strings.value_large)
-                    } else if (autoSaveDelayValue.toInt() < 5) {
-                        autoSaveDelayError = context.getString(strings.value_small)
-                    }
-                },
-                onConfirm = {
-                    Settings.auto_save_delay = autoSaveDelayValue.toLong()
-                    scope.launch { refreshEditorSettings() }
-                },
-                onFinish = {
-                    autoSaveDelayValue = Settings.auto_save_delay.toString()
-                    autoSaveDelayError = null
-                    showAutoSaveDialog = false
-                },
-            )
-        }
-
-        if (showSortingModeDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    showSortingModeDialog = false
-                    sortingModeValue = Settings.sort_mode
-                },
-                title = { Text(stringResource(strings.sort_mode)) },
-                text = {
-                    Column {
-                        SortMode.entries.forEach { sortMode ->
-                            PreferenceTemplate(
-                                modifier =
-                                    Modifier.clip(MaterialTheme.shapes.large).clickable {
-                                        sortingModeValue = sortMode.ordinal
-                                    },
-                                title = { Text(stringResource(sortMode.stringRes)) },
-                                startWidget = {
-                                    RadioButton(selected = sortingModeValue == sortMode.ordinal, onClick = null)
-                                },
-                            )
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showSortingModeDialog = false
-                            Settings.sort_mode = sortingModeValue
-                            fileTreeViewModel.get()?.apply {
-                                sortMode = SortMode.entries[sortingModeValue]
-                                viewModelScope.launch { refreshEverything() }
-                            }
-                        }
-                    ) {
-                        Text(stringResource(strings.apply))
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showSortingModeDialog = false
-                            sortingModeValue = Settings.sort_mode
-                        }
-                    ) {
-                        Text(stringResource(strings.cancel))
-                    }
                 },
             )
         }

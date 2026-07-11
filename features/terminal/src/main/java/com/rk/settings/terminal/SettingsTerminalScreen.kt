@@ -4,20 +4,11 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
@@ -27,13 +18,14 @@ import com.rk.activities.settings.SettingsActivity
 import com.rk.activities.settings.SettingsRoutes
 import com.rk.activities.settings.settingsNavController
 import com.rk.components.NextScreenCard
+import com.rk.components.PreferenceList
 import com.rk.components.RoundedValueSlider
 import com.rk.components.SettingsItem
 import com.rk.components.SteppedValueSlider
 import com.rk.components.compose.preferences.base.PreferenceGroup
 import com.rk.components.compose.preferences.base.PreferenceLayout
-import com.rk.components.compose.preferences.base.PreferenceTemplate
 import com.rk.components.compose.preferences.switch.PreferenceSwitch
+import com.rk.feature.FeatureRegistry
 import com.rk.file.child
 import com.rk.file.createFileIfNot
 import com.rk.file.localBinDir
@@ -44,7 +36,6 @@ import com.rk.file.toFileObject
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.rk.feature.FeatureRegistry
 import com.rk.terminal.terminalView
 import com.rk.utils.LoadingPopup
 import com.rk.utils.dialogRes
@@ -90,71 +81,18 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                 )
             }
 
-            var showSeccompDialog by remember { mutableStateOf(false) }
-            var seccompMode by remember { mutableStateOf(Settings.seccomp_mode) }
-
-            SettingsItem(
+            PreferenceList(
                 label = "SECCOMP",
                 description = stringResource(strings.seccomp_desc),
-                default = false,
-                showSwitch = false,
-                onClick = { showSeccompDialog = true },
+                items =
+                    listOf(
+                        "unspecified" to stringResource(strings.seccomp_unspecified),
+                        "no" to stringResource(strings.seccomp_no_seccomp),
+                        "yes" to stringResource(strings.seccomp_seccomp),
+                    ),
+                selectedItem = Settings.seccomp_mode,
+                onItemSelected = { Settings.seccomp_mode = it },
             )
-
-            if (showSeccompDialog) {
-                var tempSeccompMode by remember { mutableStateOf(seccompMode) }
-                // TODO: Extract to reusable component
-                AlertDialog(
-                    onDismissRequest = {
-                        showSeccompDialog = false
-                    },
-                    title = { Text("SECCOMP") },
-                    text = {
-                        Column {
-                            listOf(
-                                    "unspecified" to strings.seccomp_unspecified,
-                                    "no" to strings.seccomp_no_seccomp,
-                                    "yes" to strings.seccomp_seccomp,
-                                )
-                                .forEach { (mode, stringRes) ->
-                                    PreferenceTemplate(
-                                        modifier =
-                                            Modifier.clip(MaterialTheme.shapes.large).clickable {
-                                                tempSeccompMode = mode
-                                            },
-                                        title = { Text(stringResource(stringRes)) },
-                                        startWidget = {
-                                            RadioButton(
-                                                selected = tempSeccompMode == mode,
-                                                onClick = null,
-                                            )
-                                        },
-                                    )
-                                }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                showSeccompDialog = false
-                                Settings.seccomp_mode = tempSeccompMode
-                                seccompMode = tempSeccompMode
-                            }
-                        ) {
-                            Text(stringResource(strings.apply))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = {
-                                showSeccompDialog = false
-                            }
-                        ) {
-                            Text(stringResource(strings.cancel))
-                        }
-                    },
-                )
-            }
 
             NextScreenCard(
                 label = stringResource(strings.terminal_health),
@@ -162,11 +100,6 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                 navController = overrideNavController ?: settingsNavController.get(),
                 route = SettingsRoutes.TerminalCheck,
             )
-        }
-
-        var showCursorStyleDialog by remember { mutableStateOf(false) }
-        var cursorStyleValue by remember {
-            mutableStateOf(TerminalCursorStyle.fromString(Settings.terminal_cursor_style))
         }
 
         PreferenceGroup(heading = stringResource(strings.appearance)) {
@@ -185,62 +118,15 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                 label = stringResource(strings.manage_terminal_font),
                 description = stringResource(strings.manage_terminal_font),
                 navController = overrideNavController ?: settingsNavController.get(),
-                route = SettingsRoutes.TerminalFontScreen,
+                route = SettingsRoutes.TerminalCheck,
             )
 
-            SettingsItem(
+            PreferenceList(
                 label = stringResource(strings.cursor_style),
                 description = stringResource(strings.cursor_style_desc),
-                default = false,
-                showSwitch = false,
-                sideEffect = { showCursorStyleDialog = true },
-            )
-        }
-
-        if (showCursorStyleDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    showCursorStyleDialog = false
-                    cursorStyleValue = TerminalCursorStyle.fromString(Settings.terminal_cursor_style)
-                },
-                title = { Text(stringResource(strings.cursor_style)) },
-                text = {
-                    Column {
-                        TerminalCursorStyle.entries.forEach {
-                            PreferenceTemplate(
-                                modifier =
-                                    Modifier.clip(MaterialTheme.shapes.large).clickable { cursorStyleValue = it },
-                                title = { Text(stringResource(it.stringRes)) },
-                                startWidget = {
-                                    RadioButton(
-                                        selected = cursorStyleValue == it,
-                                        onClick = null,
-                                    )
-                                },
-                            )
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showCursorStyleDialog = false
-                            Settings.terminal_cursor_style = cursorStyleValue.value
-                        }
-                    ) {
-                        Text(stringResource(strings.apply))
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showCursorStyleDialog = false
-                            cursorStyleValue = TerminalCursorStyle.fromString(Settings.terminal_cursor_style)
-                        }
-                    ) {
-                        Text(stringResource(strings.cancel))
-                    }
-                },
+                items = TerminalCursorStyle.entries.map { it to stringResource(it.stringRes) },
+                selectedItem = TerminalCursorStyle.fromString(Settings.terminal_cursor_style),
+                onItemSelected = { Settings.terminal_cursor_style = it.value },
             )
         }
 
