@@ -44,12 +44,12 @@ import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.utils.formatFileSize
 import com.rk.utils.rememberNumberFormatter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class ContentProgress(val totalSize: Long, val totalItems: Long)
 
@@ -87,6 +87,8 @@ fun PropertiesDialog(file: FileObject, onDismiss: () -> Unit) {
                         selected = pagerState.currentPage == index,
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                         text = { Text(text = destination.label, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

@@ -39,8 +39,8 @@ import com.rk.commands.ToolbarConfiguration
 import com.rk.icons.Icon
 import com.rk.icons.XedIcon
 import com.rk.resources.strings
-import com.rk.utils.isV
 import com.rk.theme.Typography
+import com.rk.utils.isV
 import com.rk.utils.x
 import kotlin.math.min
 
@@ -109,7 +109,7 @@ fun EditorToolbarActions(modifier: Modifier = Modifier, viewModel: MainViewModel
 
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                         dropdownActions.forEach { command ->
-                            val keyCombination = KeybindingsManager.getKeyCombinationForCommand(command.id)
+                            val keyCombination = KeybindingsManager.getKeyCombinationForCommand(command)
                             val displayKeyCombination = keyCombination?.getDisplayName()
 
                             DropdownMenuItem(

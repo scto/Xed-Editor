@@ -30,12 +30,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -326,18 +325,26 @@ fun ExtensionScreen(navController: NavController) {
         }
 
         item {
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
+            PrimaryScrollableTabRow(
+                selectedTabIndex = selectedCategory.ordinal,
+                modifier = Modifier.padding(bottom = 8.dp),
+                edgePadding = 16.dp,
+            ) {
                 StoreCategory.entries.forEach { category ->
-                    SegmentedButton(
+                    LeadingIconTab(
                         selected = selectedCategory == category,
                         onClick = { selectedCategory = category },
-                        label = { Text(stringResource(category.stringRes)) },
-                        icon = { Icon(painterResource(category.drawableRes), null) },
-                        shape =
-                            SegmentedButtonDefaults.itemShape(
-                                index = category.ordinal,
-                                count = StoreCategory.entries.size,
-                            ),
+                        text = {
+                            Text(stringResource(category.stringRes))
+                        },
+                        icon = {
+                            Icon(
+                                painter = painterResource(category.drawableRes),
+                                contentDescription = null,
+                            )
+                        },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -605,7 +612,7 @@ private fun StoreSearchBar(
         onSearch = {},
         expanded = false,
         onExpandedChange = {},
-        placeholder = { Text(placeholderText) },
+        placeholder = { Text(placeholderText, maxLines = 1, overflow = TextOverflow.Ellipsis) },
     )
 }
 
@@ -809,7 +816,9 @@ private fun ExtensionSearchBar(
         onSearch = {},
         expanded = false,
         onExpandedChange = {},
-        placeholder = { Text(stringResource(strings.search_extensions)) },
+        placeholder = {
+            Text(stringResource(strings.search_extensions), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        },
     )
 }
 

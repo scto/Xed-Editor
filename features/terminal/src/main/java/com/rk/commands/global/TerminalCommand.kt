@@ -6,21 +6,20 @@ import com.rk.activities.terminal.Terminal
 import com.rk.commands.ActionContext
 import com.rk.commands.GlobalCommand
 import com.rk.commands.KeyCombination
+import com.rk.feature.FeatureRegistry
 import com.rk.icons.Icon
 import com.rk.resources.drawables
 import com.rk.resources.getString
 import com.rk.resources.strings
-import com.rk.feature.FeatureRegistry
 
-class TerminalCommand : GlobalCommand() {
+object TerminalCommand : GlobalCommand() {
     override val id: String = "global.terminal"
 
     override fun getLabel(): String = strings.terminal.getString()
 
     override fun action(actionContext: ActionContext) {
         val activity = actionContext.currentActivity
-        val intent =
-            Intent(activity, Terminal::class.java)
+        val intent = Intent(activity, Terminal::class.java)
         activity.startActivity(intent)
     }
 

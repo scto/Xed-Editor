@@ -369,13 +369,15 @@ enum class ExtensionRoutes(val icon: Icon, val label: String, val route: String)
 private fun TabSection(extension: Extension, scope: CoroutineScope, refreshKey: Int, onLoaded: () -> Unit) {
     val pagerState = rememberPagerState(initialPage = 0) { ExtensionRoutes.entries.size }
 
-    PrimaryScrollableTabRow(edgePadding = 0.dp, selectedTabIndex = pagerState.currentPage) {
+    PrimaryScrollableTabRow(edgePadding = 16.dp, selectedTabIndex = pagerState.currentPage) {
         ExtensionRoutes.entries.forEachIndexed { index, destination ->
             LeadingIconTab(
                 icon = { XedIcon(destination.icon) },
                 selected = pagerState.currentPage == index,
                 onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                 text = { Text(text = destination.label, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+                selectedContentColor = MaterialTheme.colorScheme.primary,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

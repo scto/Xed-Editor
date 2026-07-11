@@ -1,16 +1,20 @@
 package com.rk.commands
 
 import android.view.KeyEvent
-import com.google.gson.Gson
 import com.rk.activities.main.MainActivity
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.settings.Preference
 import com.rk.settings.keybinds.KeyUtils
+import com.rk.utils.application
 import io.github.rosemoe.sora.event.KeyBindingEvent
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 
-data class KeyAction(val commandId: String, val keyCombination: KeyCombination)
-
+@Serializable
 data class KeyCombination(
     val keyCode: Int,
     val ctrl: Boolean = false,
@@ -52,73 +56,110 @@ data class KeyCombination(
 }
 
 object KeybindingsManager {
-    private const val KEY_KEYBINDINGS = "keybindings"
-    private val gson = Gson()
-    private val customKeybinds = mutableListOf<KeyAction>()
-    val keybindMap = mutableMapOf<KeyCombination, String>()
+    @Deprecated("This is now saved as a file.") private const val KEY_KEYBINDINGS = "keybindings"
+    private val keybindingsFile = application!!.filesDir.resolve("keybindings.json")
 
-    fun saveKeybindings() {
-        val json = gson.toJson(customKeybinds)
-        Preference.setString(KEY_KEYBINDINGS, json)
+    private val json = Json {
+        ignoreUnknownKeys = true
+        allowTrailingComma = true
+    }
+    private val serializer = MapSerializer(String.serializer(), KeyCombination.serializer())
+
+    private val customKeybinds = mutableMapOf<String, KeyCombination>()
+
+    private var _keybindMap: MutableMap<KeyCombination, String>? = null
+    private val keybindMap: MutableMap<KeyCombination, String>
+        get() {
+            if (_keybindMap == null) {
+                _keybindMap = buildKeybindMap()
+            }
+
+            return _keybindMap!!
+        }
+
+    fun invalidate() {
+        _keybindMap = null
     }
 
-    fun loadKeybindings() {
-        try {
-            val json = Preference.getString(KEY_KEYBINDINGS, "")
-            if (json.isEmpty()) return
+    @Deprecated("This is temporary migration code.")
+    fun migrate() {
+        runCatching {
+            val old = Preference.getString(KEY_KEYBINDINGS, "")
+            if (old.isEmpty()) return
 
-            val type = Array<KeyAction>::class.java
-            val loadedActions = gson.fromJson(json, type)
-            customKeybinds.clear()
-            customKeybinds.addAll(loadedActions)
-        } finally {
-            generateKeybindMap()
+            val oldActions =
+                json.decodeFromString(
+                    ListSerializer(KeyAction.serializer()),
+                    old,
+                )
+
+            val migrated = oldActions.associate {
+                it.commandId to it.keyCombination
+            }
+
+            keybindingsFile.writeText(json.encodeToString(serializer, migrated))
+
+            Preference.removeKey(KEY_KEYBINDINGS)
         }
     }
 
+    fun saveKeybindings() {
+        keybindingsFile.writeText(json.encodeToString(serializer, customKeybinds))
+    }
+
+    fun loadKeybindings() {
+        if (!keybindingsFile.exists()) return
+
+        val content = keybindingsFile.readText()
+        if (content.isEmpty()) return
+
+        customKeybinds.clear()
+        customKeybinds.putAll(json.decodeFromString(serializer, content))
+        invalidate()
+    }
+
     fun conflictsWithExisting(keyCombination: KeyCombination, command: Command): Boolean {
-        return keybindMap.containsKey(keyCombination) && keybindMap[keyCombination] != command.id
+        return keybindMap[keyCombination]?.let { it != command.id } ?: false
     }
 
     fun resetCustomKey(commandId: String) {
-        customKeybinds.removeIf { it.commandId == commandId }
+        customKeybinds.remove(commandId)
         saveKeybindings()
-        generateKeybindMap()
+        invalidate()
     }
 
     fun resetAllKeys() {
         customKeybinds.clear()
         saveKeybindings()
-        generateKeybindMap()
+        invalidate()
     }
 
-    fun editCustomKey(keyAction: KeyAction) {
-        val index = customKeybinds.indexOfFirst { it.commandId == keyAction.commandId }
-        if (index != -1) {
-            customKeybinds[index] = keyAction
-        } else {
-            customKeybinds.add(keyAction)
-        }
+    fun editCustomKey(commandId: String, keyCombination: KeyCombination) {
+        customKeybinds[commandId] = keyCombination
         saveKeybindings()
-        generateKeybindMap()
+        invalidate()
     }
 
-    fun generateKeybindMap() {
-        keybindMap.clear()
+    private fun buildKeybindMap(): MutableMap<KeyCombination, String> {
+        val map = mutableMapOf<KeyCombination, String>()
 
-        // First add user's custom keybindings
-        customKeybinds.forEach { keybind -> keybindMap[keybind.keyCombination] = keybind.commandId }
-        val customCommandIds = customKeybinds.map { it.commandId }.toSet()
-
-        // If no custom keybind is set, proceed with default keybindings
-        for (command in CommandProvider.commandList) {
-            if (customCommandIds.contains(command.id)) continue
-            command.defaultKeybinds?.let { keybindMap[it] = command.id }
+        customKeybinds.forEach { (commandId, keyCombination) ->
+            map[keyCombination] = commandId
         }
+
+        for (command in CommandProvider.commandList) {
+            if (command.id in customKeybinds) continue
+
+            command.defaultKeybinds?.let {
+                map[it] = command.id
+            }
+        }
+
+        return map
     }
 
-    fun getKeyCombinationForCommand(commandId: String): KeyCombination? {
-        return keybindMap.entries.find { it.value == commandId }?.key
+    fun getKeyCombinationForCommand(command: Command): KeyCombination? {
+        return customKeybinds[command.id] ?: command.defaultKeybinds
     }
 
     fun handleGlobalEvent(event: KeyEvent, mainActivity: MainActivity): Boolean {
@@ -151,3 +192,10 @@ object KeybindingsManager {
         return true
     }
 }
+
+@Deprecated("Only used for migration from the old keybindings format.")
+@Serializable
+private data class KeyAction(
+    val commandId: String,
+    val keyCombination: KeyCombination,
+)

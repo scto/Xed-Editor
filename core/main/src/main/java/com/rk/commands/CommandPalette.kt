@@ -194,7 +194,7 @@ fun CommandItem(
     val activity = LocalActivity.current
     val enabled by remember { derivedStateOf { command.isEnabled() } }
     val childCommands = command.childCommands
-    val keyCombination = KeybindingsManager.getKeyCombinationForCommand(command.id)
+    val keyCombination = KeybindingsManager.getKeyCombinationForCommand(command)
 
     val startIndex = command.getLabel().indexOf(searchQuery, ignoreCase = true)
     val endIndex = startIndex + searchQuery.length
