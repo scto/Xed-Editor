@@ -1,7 +1,10 @@
 package com.rk.extension.api
 
 /**
- * Annotation to mark entry points or extension points that are used or exposed to extensions.
+ * Marks a recommended entry point for extensions.
+ *
+ * APIs annotated with this annotation are intended to be called by extensions and are considered stable integration
+ * points. Extension authors should prefer these APIs over internal methods when interacting with the app.
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)
 @Retention(AnnotationRetention.SOURCE)
