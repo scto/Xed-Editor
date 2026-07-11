@@ -121,6 +121,7 @@ object CommandProvider {
         if (_commandList.contains(command)) return
         assign(command)
         _commandList.add(command)
+        KeybindingsManager.invalidate()
     }
 
     @XedExtensionPoint
@@ -131,11 +132,13 @@ object CommandProvider {
         } else {
             _commandList.add(command)
         }
+        KeybindingsManager.invalidate()
     }
 
     @XedExtensionPoint
     fun unregisterCommand(command: Command) {
         _commandList.remove(command)
+        KeybindingsManager.invalidate()
     }
 
     private val disposer =

@@ -149,11 +149,10 @@ class TerminalFeature : Feature {
         }
 
         // Register global command
-        val command = TerminalCommand()
-        CommandProvider.registerCommand(command)
+        CommandProvider.registerCommand(TerminalCommand)
 
         // Assuming there's at least one item already there
-        ToolbarConfiguration.addGlobalToolbarCommand(command, index = 1)
+        ToolbarConfiguration.addGlobalToolbarCommand(TerminalCommand, index = 1)
 
         // Register built-in LSP servers
         LspRegistry.registerServer(Bash)

@@ -118,7 +118,7 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                 label = stringResource(strings.manage_terminal_font),
                 description = stringResource(strings.manage_terminal_font),
                 navController = overrideNavController ?: settingsNavController.get(),
-                route = SettingsRoutes.TerminalCheck,
+                route = SettingsRoutes.TerminalFontScreen,
             )
 
             PreferenceList(

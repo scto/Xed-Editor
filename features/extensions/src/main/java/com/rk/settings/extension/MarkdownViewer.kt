@@ -27,14 +27,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.rk.components.StateScreen
 import com.rk.resources.drawables
 import com.rk.resources.strings
-import io.github.rosemoe.sora.lsp.editor.text.SimpleMarkdownRenderer
 import com.rk.utils.okHttpClient
-import java.io.File
+import io.github.rosemoe.sora.lsp.editor.text.SimpleMarkdownRenderer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.File
 
 sealed interface MarkdownStatus {
     object Loading : MarkdownStatus
@@ -101,11 +101,28 @@ fun MarkdownViewer(url: String?, refreshKey: Int, onLoaded: () -> Unit, modifier
     }
 }
 
+private val protectedCodeRegex = Regex("(?s)(```.*?```|~~~.*?~~~|`[^`]*`)")
+private val unsupportedHtmlRegex =
+    Regex("(?is)<(?!/?(?:br|h[1-6]|blockquote|strong|em|code|pre|li|a|ul|ol|p)\\b)[^>]*>")
+
+private fun removeUnsupportedHtmlTags(markdown: String): String {
+    return markdown
+        .split(protectedCodeRegex)
+        .mapIndexed { index, part ->
+            if (index % 2 == 1) {
+                part
+            } else {
+                part.replace(unsupportedHtmlRegex, "")
+            }
+        }
+        .joinToString("")
+}
+
 private suspend fun loadMarkdown(
     url: String?,
     primaryColor: Int,
     client: OkHttpClient,
-    forceRefresh: Boolean = false
+    forceRefresh: Boolean = false,
 ): MarkdownStatus {
     return withContext(Dispatchers.IO) {
         if (url == null) {
@@ -113,41 +130,41 @@ private suspend fun loadMarkdown(
         }
 
         runCatching {
-                val markdown =
-                    if (url.startsWith("http://") || url.startsWith("https://")) {
-                        val requestBuilder = Request.Builder().url(url)
-                        if (forceRefresh) {
-                            requestBuilder.cacheControl(CacheControl.FORCE_NETWORK)
-                        }
-                        val request = requestBuilder.build()
-                        client.newCall(request).execute().use { response ->
-                            if (!response.isSuccessful) {
-                                return@withContext when (response.code) {
-                                    404 -> MarkdownStatus.Error.Empty
-                                    else -> MarkdownStatus.Error.Unknown
-                                }
-                            }
-                            response.body.string()
-                        }
-                    } else {
-                        val file = File(url)
-                        if (!file.exists()) {
-                            return@withContext MarkdownStatus.Error.Empty
-                        }
-                        file.readText()
+            val markdown =
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    val requestBuilder = Request.Builder().url(url)
+                    if (forceRefresh) {
+                        requestBuilder.cacheControl(CacheControl.FORCE_NETWORK)
                     }
+                    val request = requestBuilder.build()
+                    client.newCall(request).execute().use { response ->
+                        if (!response.isSuccessful) {
+                            return@withContext when (response.code) {
+                                404 -> MarkdownStatus.Error.Empty
+                                else -> MarkdownStatus.Error.Unknown
+                            }
+                        }
+                        response.body.string()
+                    }
+                } else {
+                    val file = File(url)
+                    if (!file.exists()) {
+                        return@withContext MarkdownStatus.Error.Empty
+                    }
+                    file.readText()
+                }
 
-                val spanned =
-                    SimpleMarkdownRenderer.renderAsync(
-                        markdown,
-                        boldColor = primaryColor,
-                        inlineCodeColor = primaryColor,
-                        codeTypeface = Typeface.MONOSPACE,
-                        linkColor = primaryColor,
-                    )
+            val spanned =
+                SimpleMarkdownRenderer.renderAsync(
+                    removeUnsupportedHtmlTags(markdown),
+                    boldColor = primaryColor,
+                    inlineCodeColor = primaryColor,
+                    codeTypeface = Typeface.MONOSPACE,
+                    linkColor = primaryColor,
+                )
 
-                MarkdownStatus.Success(spanned)
-            }
+            MarkdownStatus.Success(spanned)
+        }
             .getOrElse {
                 it.printStackTrace()
                 MarkdownStatus.Error.Network

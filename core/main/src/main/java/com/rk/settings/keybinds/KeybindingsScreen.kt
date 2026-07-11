@@ -54,7 +54,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rk.commands.Command
 import com.rk.commands.CommandProvider
-import com.rk.commands.KeyAction
 import com.rk.commands.KeyCombination
 import com.rk.commands.KeybindingsManager
 import com.rk.components.InfoBlock
@@ -86,7 +85,7 @@ fun KeybindingsScreen() {
                     val labelMatch = command.getLabel().contains(query, ignoreCase = true)
                     val prefixMatch = command.prefix?.contains(query, ignoreCase = true) == true
                     val keybindMatch =
-                        KeybindingsManager.getKeyCombinationForCommand(command.id)
+                        KeybindingsManager.getKeyCombinationForCommand(command)
                             ?.getDisplayName()
                             ?.contains(query, ignoreCase = true) == true
 
@@ -135,14 +134,16 @@ fun KeybindingsScreen() {
                 onSearch = {},
                 expanded = false,
                 onExpandedChange = {},
-                placeholder = { Text(stringResource(strings.search_keybinds)) },
+                placeholder = {
+                    Text(stringResource(strings.search_keybinds), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                },
             )
         }
 
         items(filteredCommands, key = { it.id }) { command ->
             val keyCombination by
                 remember(refreshTrigger) {
-                    derivedStateOf { KeybindingsManager.getKeyCombinationForCommand(command.id) }
+                    derivedStateOf { KeybindingsManager.getKeyCombinationForCommand(command) }
                 }
             Box(modifier = Modifier.animateItem()) {
                 KeybindItem(
@@ -167,7 +168,7 @@ fun KeybindingsScreen() {
                     refreshTrigger++
                     return@EditKeybindsDialog
                 }
-                KeybindingsManager.editCustomKey(KeyAction(commandId = command.id, keyCombination = keyCombination))
+                KeybindingsManager.editCustomKey(command.id, keyCombination)
                 refreshTrigger++
             },
             onDismiss = { editCommandKeybinds = null },
@@ -241,7 +242,7 @@ fun KeybindItem(
 fun EditKeybindsDialog(command: Command, onSubmit: (KeyCombination?) -> Unit, onDismiss: () -> Unit) {
     val noneSetText = stringResource(strings.none_set)
 
-    val currentKeyCombination = KeybindingsManager.getKeyCombinationForCommand(command.id)
+    val currentKeyCombination = KeybindingsManager.getKeyCombinationForCommand(command)
     var keyCombination by remember { mutableStateOf(currentKeyCombination) }
     val keyCombinationText = keyCombination?.getDisplayName() ?: noneSetText
     val hasConflict = keyCombination?.let { KeybindingsManager.conflictsWithExisting(it, command) } ?: false
