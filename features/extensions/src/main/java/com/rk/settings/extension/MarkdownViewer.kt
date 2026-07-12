@@ -101,21 +101,28 @@ fun MarkdownViewer(url: String?, refreshKey: Int, onLoaded: () -> Unit, modifier
     }
 }
 
-private val protectedCodeRegex = Regex("(?s)(```.*?```|~~~.*?~~~|`[^`]*`)")
+private val protectedCodeRegex = Regex("(?s)(```.*?```|~~~.*?~~~|`[^`]*`|<code>.*?</code>)")
 private val unsupportedHtmlRegex =
     Regex("(?is)<(?!/?(?:br|h[1-6]|blockquote|strong|em|code|pre|li|a|ul|ol|p)\\b)[^>]*>")
 
-private fun removeUnsupportedHtmlTags(markdown: String): String {
-    return markdown
-        .split(protectedCodeRegex)
-        .mapIndexed { index, part ->
-            if (index % 2 == 1) {
-                part
-            } else {
-                part.replace(unsupportedHtmlRegex, "")
-            }
-        }
-        .joinToString("")
+internal fun removeUnsupportedHtmlTags(markdown: String): String {
+    val result = StringBuilder()
+    var lastIndex = 0
+
+    protectedCodeRegex.findAll(markdown).forEach { match ->
+        val before = markdown.substring(lastIndex, match.range.first)
+        result.append(before.replace(unsupportedHtmlRegex, ""))
+
+        result.append(match.value)
+
+        lastIndex = match.range.last + 1
+    }
+
+    if (lastIndex < markdown.length) {
+        result.append(markdown.substring(lastIndex).replace(unsupportedHtmlRegex, ""))
+    }
+
+    return result.toString()
 }
 
 private suspend fun loadMarkdown(
