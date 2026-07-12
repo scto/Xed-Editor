@@ -22,8 +22,11 @@ abstract class ExtensionAPI(protected val context: ExtensionContext) : Applicati
     /** Called only once when the extension is installed for the first time. */
     open fun onInstalled() {}
 
-    /** Called when the extension is updated to a new version. */
-    open fun onUpdated() {}
+    /** Called immediately before the extension is updated to a new version (old instance). */
+    open fun beforeUpdate() {}
+
+    /** Called after the extension was updated to a new version (new instance). */
+    open fun afterUpdate() {}
 
     /** Called when the extension is uninstalled. */
     open fun onUninstalled() {}

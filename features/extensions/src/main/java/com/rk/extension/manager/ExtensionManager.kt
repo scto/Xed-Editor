@@ -142,6 +142,21 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
         cacheFile.writeText(json.encodeToString(cache))
     }
 
+    suspend fun invalidateSize(extension: Extension) {
+        if (extension is StoreExtension) return
+
+        withContext(Dispatchers.IO) {
+            val dir = context.extensionDir.resolve(extension.id)
+            val cache = resolveCache(dir)
+            val newSize = calcSize(dir)
+            writeCache(dir, cache.copy(size = newSize))
+
+            withContext(Dispatchers.Main) {
+                localExtensions[extension.id]?.size = newSize
+            }
+        }
+    }
+
     suspend fun indexLocalExtensions() = mutex.withLock {
         val newExtensions =
             withContext(Dispatchers.IO) {
@@ -163,7 +178,7 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
                                 LocalExtension(
                                     manifest = extensionManifest,
                                     installPath = dir.absolutePath,
-                                    size = size,
+                                    initSize = size,
                                     createdAt = extensionCache.createdAt,
                                     updatedAt = extensionCache.updatedAt,
                                 )
@@ -293,7 +308,7 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
                 LocalExtension(
                     manifest = extensionInfo,
                     installPath = targetDir.absolutePath,
-                    size = size,
+                    initSize = size,
                     createdAt = newExtensionCache.createdAt,
                     updatedAt = newExtensionCache.updatedAt,
                 )
@@ -314,7 +329,7 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
                 runCatching {
                     loadedExtension?.api?.onDispose()
                     if (update) {
-                        loadedExtension?.api?.onUpdated()
+                        loadedExtension?.api?.beforeUpdate()
                     } else {
                         loadedExtension?.api?.onUninstalled()
                     }

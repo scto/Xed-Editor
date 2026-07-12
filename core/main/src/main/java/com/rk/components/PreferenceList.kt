@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import com.rk.components.compose.preferences.base.PreferenceTemplate
 import com.rk.resources.getString
 import com.rk.resources.strings
@@ -33,12 +34,12 @@ fun <T> PreferenceList(
 
     SettingsItem(
         modifier = modifier,
-        onClick = { showDialog = true },
         label = label,
         description = description,
-        isEnabled = enabled,
-        default = false,
         showSwitch = false,
+        default = false,
+        sideEffect = { showDialog = true },
+        isEnabled = enabled,
     )
 
     if (showDialog) {
@@ -59,6 +60,7 @@ fun <T> PreferenceList(
                             startWidget = {
                                 RadioButton(selected = tempSelectedItem == item, onClick = null)
                             },
+                            verticalPadding = 12.dp,
                         )
                     }
                 }

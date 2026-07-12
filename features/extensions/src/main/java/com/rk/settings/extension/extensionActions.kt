@@ -19,6 +19,7 @@ import com.rk.extension.LocalExtension
 import com.rk.extension.StoreExtension
 import com.rk.extension.UpdatableExtension
 import com.rk.extension.extensionManager
+import com.rk.extension.loader.LoadScenario
 import com.rk.extension.loader.installExtensionFromZip
 import com.rk.extension.loader.load
 import com.rk.extension.manager.ExtensionRegistry
@@ -98,18 +99,16 @@ private fun showDownloadNotification(
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     val channelId = "store_downloads"
 
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-        val channel =
-            NotificationChannel(
-                    channelId,
-                    "Store Downloads",
-                    NotificationManager.IMPORTANCE_LOW,
-                )
-                .apply {
-                    description = "Notifications for store downloads and installations"
-                }
-        notificationManager.createNotificationChannel(channel)
-    }
+    val channel =
+        NotificationChannel(
+                channelId,
+                "Store Downloads",
+                NotificationManager.IMPORTANCE_LOW,
+            )
+            .apply {
+                description = "Notifications for store downloads and installations"
+            }
+    notificationManager.createNotificationChannel(channel)
 
     val builder =
         NotificationCompat.Builder(context, channelId).setSmallIcon(drawables.extension).setOnlyAlertOnce(true)
@@ -186,38 +185,43 @@ fun runExtensionInstallAction(
             if (downloadSuccess) {
                 showDownloadNotification(context, id, name, 1f)
 
-                val result = extensionManager.installExtensionFromZip(tempFile)
-                if (result is InstallResult.Success) {
-                    extensionManager.setExtensionCrashed(result.extension, false)
-                    result.extension.load(application!!, true).onFailure { error ->
-                        extensionManager.setExtensionCrashed(result.extension, true)
-                        errorMsg = error.message ?: "Failed to load extension"
-                        withContext(Dispatchers.Main) {
-                            activity?.let {
-                                CrashActivity.start(
-                                    context = it,
-                                    extensionId = result.extension.id,
-                                    extensionName = result.extension.name,
-                                    extensionVersion = result.extension.version,
-                                    extensionAuthor = result.extension.author.toString(),
-                                    repository = result.extension.repository,
-                                    error = error,
-                                )
-                            }
-                                ?: run {
-                                    errorDialog(null, msg = errorMsg)
+                when (val result = extensionManager.installExtensionFromZip(tempFile)) {
+                    is InstallResult.Success -> {
+                        extensionManager.setExtensionCrashed(result.extension, false)
+                        result.extension.load(application!!, LoadScenario.INSTALL).onFailure { error ->
+                            extensionManager.setExtensionCrashed(result.extension, true)
+                            errorMsg = error.message ?: "Failed to load extension"
+                            withContext(Dispatchers.Main) {
+                                activity?.let {
+                                    CrashActivity.start(
+                                        context = it,
+                                        extensionId = result.extension.id,
+                                        extensionName = result.extension.name,
+                                        extensionVersion = result.extension.version,
+                                        extensionAuthor = result.extension.author.toString(),
+                                        repository = result.extension.repository,
+                                        error = error,
+                                    )
                                 }
+                                    ?: run {
+                                        errorDialog(null, msg = errorMsg)
+                                    }
+                            }
                         }
+                        success = errorMsg == null
                     }
-                    success = errorMsg == null
-                } else if (result is InstallResult.Error) {
-                    errorMsg =
-                        when (result.error) {
-                            ExtensionError.OUTDATED_CLIENT -> strings.outdated_client.getString(context)
-                            ExtensionError.OUTDATED_EXTENSION -> strings.outdated_extension.getString(context)
-                        }
-                } else if (result is InstallResult.ValidationFailed) {
-                    errorMsg = result.error?.message ?: "Validation failed"
+
+                    is InstallResult.Error -> {
+                        errorMsg =
+                            when (result.error) {
+                                ExtensionError.OUTDATED_CLIENT -> strings.outdated_client.getString(context)
+                                ExtensionError.OUTDATED_EXTENSION -> strings.outdated_extension.getString(context)
+                            }
+                    }
+
+                    is InstallResult.ValidationFailed -> {
+                        errorMsg = result.error?.message ?: "Validation failed"
+                    }
                 }
             } else {
                 errorMsg = "Download failed"
@@ -293,7 +297,7 @@ fun runExtensionUpdateAction(
                 when (val result = extensionManager.installExtensionFromZip(tempFile)) {
                     is InstallResult.Success -> {
                         extensionManager.setExtensionCrashed(result.extension, false)
-                        result.extension.load(application!!).onFailure { error ->
+                        result.extension.load(application!!, LoadScenario.UPDATE).onFailure { error ->
                             extensionManager.setExtensionCrashed(result.extension, true)
                             errorMsg = error.message ?: "Failed to load extension"
                             withContext(Dispatchers.Main) {
@@ -450,8 +454,8 @@ fun installExtensionFromUri(scope: CoroutineScope, uri: Uri?, activity: AppCompa
 
                 if (result is InstallResult.Success) {
                     extensionManager.setExtensionCrashed(result.extension, false)
-                    val initialInstallation = !result.performedUpdate
-                    result.extension.load(application!!, initialInstallation).onFailure { error ->
+                    val loadScenario = if (result.performedUpdate) LoadScenario.UPDATE else LoadScenario.INSTALL
+                    result.extension.load(application!!, loadScenario).onFailure { error ->
                         extensionManager.setExtensionCrashed(result.extension, true)
                         withContext(Dispatchers.Main) {
                             activity?.let {

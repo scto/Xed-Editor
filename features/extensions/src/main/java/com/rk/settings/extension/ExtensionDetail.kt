@@ -269,19 +269,22 @@ private fun AboutSection(
         }
     }
 
-    var size by remember { mutableStateOf("---") }
-    var rating by remember { mutableStateOf("---") }
-    var downloadCount by remember { mutableStateOf("---") }
-    var showStar by remember { mutableStateOf(false) }
-
     LaunchedEffect(refreshKey) {
-        extension.size?.let { size = formatFileSize(it) }
-        extension.rating?.let {
-            rating = it.toString()
-            showStar = true
-        }
-        extension.downloads?.let { downloadCount = formatNumberCompact(it) }
+        extensionManager.invalidateSize(extension)
     }
+
+    val size =
+        remember(extension.size) {
+            extension.size?.let { formatFileSize(it) } ?: "---"
+        }
+
+    val rating = extension.rating?.toString() ?: "---"
+    val showStar = extension.rating != null
+
+    val downloadCount =
+        remember(extension.downloads) {
+            extension.downloads?.let { formatNumberCompact(it) } ?: "---"
+        }
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         ExtensionStats(Modifier.weight(1f), stringResource(strings.downloads).uppercase(), downloadCount)

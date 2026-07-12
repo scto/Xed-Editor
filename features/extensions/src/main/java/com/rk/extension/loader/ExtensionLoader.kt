@@ -26,6 +26,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.reflect.InvocationTargetException
 
+enum class LoadScenario {
+    INSTALL,
+    UPDATE,
+    NONE,
+}
+
 /**
  * Loads a locally installed extension.
  *
@@ -33,12 +39,13 @@ import java.lang.reflect.InvocationTargetException
  * lifecycle, and caches the result.
  *
  * @param application The main Android [Application] instance.
- * @param initialInstallation True if this is the first time the extension is installed/loaded.
+ * @param loadScenario The reason why the extension is being loaded. Determines whether installation or update lifecycle
+ *   callbacks are invoked before the extension is marked as loaded.
  * @return A [Result] enclosing the loaded [com.rk.extension.ExtensionAPI] instance, or a failure exception.
  */
-fun LocalExtension.load(
+suspend fun LocalExtension.load(
     application: Application,
-    initialInstallation: Boolean = false,
+    loadScenario: LoadScenario,
 ): Result<ExtensionAPI> {
     if (isMainThread()) {
         return Result.failure(
@@ -57,8 +64,12 @@ fun LocalExtension.load(
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("Extension: $id"))
         val instance = instantiateAPI(mainClass, application, scope)
 
-        if (initialInstallation) {
+        if (loadScenario == LoadScenario.INSTALL) {
             instance.onInstalled()
+            extensionManager.invalidateSize(this)
+        } else if (loadScenario == LoadScenario.UPDATE) {
+            instance.afterUpdate()
+            extensionManager.invalidateSize(this)
         }
         instance.onExtensionLoaded()
 
@@ -166,7 +177,7 @@ suspend fun ExtensionManager.loadAllExtensions() =
                 continue
             }
             launch(Dispatchers.IO) {
-                extension.load(application!!).onFailure { error ->
+                extension.load(application!!, LoadScenario.NONE).onFailure { error ->
                     setExtensionCrashed(extension, true)
                     withContext(Dispatchers.Main) {
                         CrashActivity.start(
