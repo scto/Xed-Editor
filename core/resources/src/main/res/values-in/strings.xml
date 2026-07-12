@@ -693,4 +693,6 @@
     <string name="lsp_log_limit">Batas catatan LSP</string>
     <string name="lsp_log_limit_desc">Catatan yang lebih lama akan dihapus secara otomatis saat batas tercapai untuk menghindari penggunaan memori yang tinggi</string>
     <string name="update_date">Tanggal pembaruan</string>
+    <string name="enable_logcat">Aktifkan Logcat</string>
+    <string name="enable_logcat_desc">Jalankan logcat dan tampilkan log di layar log</string>
 </resources>
