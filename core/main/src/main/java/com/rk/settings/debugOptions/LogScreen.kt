@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -51,11 +52,37 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LogScreen(logText: String, issueTitle: String, copyLabel: String, toolbarButtons: @Composable RowScope.() -> Unit) {
+fun LogScreen(
+    logText: String,
+    issueTitle: String,
+    copyLabel: String,
+    flow: kotlinx.coroutines.flow.Flow<String>? = null,
+    toolbarButtons: @Composable RowScope.() -> Unit
+) {
     val scope = rememberCoroutineScope()
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     val editorState = remember { CodeEditorState() }
+
+    LaunchedEffect(flow) {
+        flow?.collect { newLine ->
+            editorState.editor.get()?.let { editor ->
+                val text = editor.text
+                val lastLine = text.lineCount - 1
+                val lastColumn = text.getColumnCount(lastLine)
+                val isAtBottom = editor.offsetY >= editor.scrollMaxY - 5
+                text.insert(lastLine, lastColumn, "\n" + newLine)
+                
+                if (isAtBottom) {
+                    editor.post {
+                        editor.scroller.forceFinished(true)
+                        editor.scroller.startScroll(editor.offsetX, editor.scrollMaxY, 0, 0, 0)
+                        editor.scroller.abortAnimation()
+                    }
+                }
+            }
+        }
+    }
 
     XedTheme {
         Scaffold(
@@ -136,14 +163,15 @@ fun LogScreen(logText: String, issueTitle: String, copyLabel: String, toolbarBut
                         }
                     },
                     update = { editor ->
-                        val x = editor.offsetX
-                        val y = editor.offsetY
-
-                        editor.setText(logText)
-
-                        editor.scroller.forceFinished(true)
-                        editor.scroller.startScroll(x, y, 0, 0, 0)
-                        editor.scroller.abortAnimation()
+                        val currentText = editor.text.toString()
+                        if (currentText != logText) {
+                            editor.setText(logText)
+                            editor.post {
+                                editor.scroller.forceFinished(true)
+                                editor.scroller.startScroll(editor.offsetX, editor.scrollMaxY, 0, 0, 0)
+                                editor.scroller.abortAnimation()
+                            }
+                        }
                     },
                 )
             }

@@ -124,6 +124,9 @@ open class App : Application() {
 
             // debug options
             startThemeFlipperIfNotRunning()
+            if (Settings.enable_logcat) {
+                com.rk.settings.debugOptions.LogcatService.start(this@App)
+            }
         }
 
         if (BuildConfig.DEBUG || Settings.anr_watchdog) {

@@ -110,6 +110,7 @@ object Settings {
     var confirm_exit by CachedPreference("confirm_exit", true)
     var terminal_clipboard_keybindings by CachedPreference("terminal_clipboard_keybindings", true)
     var record_rpc by CachedPreference("record_rpc", BuildConfig.DEBUG)
+    var enable_logcat by CachedPreference("enable_logcat", false)
 
     // Int settings
     var tab_size by CachedPreference("tab_size", 4)

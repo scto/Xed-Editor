@@ -14,5 +14,9 @@
             </intent-filter>
         </provider>
 
+        <service
+            android:name="com.rk.settings.debugOptions.LogcatService"
+            android:foregroundServiceType="specialUse" />
+
     </application>
 </manifest>

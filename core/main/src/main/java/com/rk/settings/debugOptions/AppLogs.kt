@@ -12,6 +12,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,22 +21,81 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
 import com.rk.components.StyledTextField
+import com.rk.settings.Settings
 import com.rk.utils.application
 import com.rk.xededitor.BuildConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AppLogs() {
     var logLevel by remember { mutableStateOf(LogLevel.INFO) }
-    val logText = buildLogs(logLevel)
+    var logText by remember { mutableStateOf("Loading...") }
 
-    LogScreen(logText, "App Logs Report", "app_logs") { LogLevelDropdown(logLevel, { logLevel = it }) }
+    LaunchedEffect(logLevel) {
+        withContext(Dispatchers.IO) {
+            logText = buildLogs(logLevel)
+        }
+    }
+
+    val logFlow = remember(logLevel) {
+        if (Settings.enable_logcat) {
+            LogcatService.logFlow.filter { line ->
+                if (line.isNotEmpty() && line.contains('/')) {
+                    val idx = line.indexOf('/')
+                    if (idx == 1) {
+                        val char = line[0]
+                        val priorityValue = when (char) {
+                            'V', 'D' -> 5
+                            'I' -> 3
+                            'W' -> 2
+                            'E', 'F' -> 1
+                            else -> 5
+                        }
+                        priorityValue <= logLevel.value
+                    } else true
+                } else true
+            }
+        } else {
+            null
+        }
+    }
+
+    LogScreen(logText, "App Logs Report", "app_logs", flow = logFlow) {
+        LogLevelDropdown(logLevel, { logLevel = it })
+    }
 }
 
 private fun buildLogs(logLevel: LogLevel): String {
-    val entries =
+    val entries = if (Settings.enable_logcat) {
+        val logsCopy = synchronized(LogcatService.logcatLogs) {
+            LogcatService.logcatLogs.toList()
+        }
+        logsCopy
+            .filter { line ->
+                if (line.isNotEmpty() && line.contains('/')) {
+                    val idx = line.indexOf('/')
+                    if (idx == 1) {
+                        val char = line[0]
+                        val priorityValue = when (char) {
+                            'V', 'D' -> 5
+                            'I' -> 3
+                            'W' -> 2
+                            'E', 'F' -> 1
+                            else -> 5
+                        }
+                        priorityValue <= logLevel.value
+                    } else true
+                } else true
+            }
+            .takeLast(1000)
+            .joinToString("\n")
+    } else {
         LogCollector.logs
             .filter { it.level.ordinal <= logLevel.ordinal }
             .joinToString("\n") { "[${it.level.name.uppercase()}] ${it.message}" }
+    }
 
     val packageInfo = with(application!!) { packageManager.getPackageInfo(packageName, 0) }
     val versionName = packageInfo.versionName

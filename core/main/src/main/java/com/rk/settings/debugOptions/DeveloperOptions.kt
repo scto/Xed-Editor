@@ -19,6 +19,7 @@ import com.rk.components.compose.preferences.base.PreferenceLayout
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.settings.Settings
+import com.rk.utils.application
 import com.rk.utils.dialogRes
 import com.rk.utils.toast
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -140,6 +141,21 @@ fun DeveloperOptions(modifier: Modifier = Modifier, navController: NavController
                 showSwitch = true,
                 default = Settings.record_rpc,
                 sideEffect = { Settings.record_rpc = it },
+            )
+
+            SettingsItem(
+                label = stringResource(strings.enable_logcat),
+                description = stringResource(strings.enable_logcat_desc),
+                showSwitch = true,
+                default = Settings.enable_logcat,
+                sideEffect = {
+                    Settings.enable_logcat = it
+                    if (it) {
+                        LogcatService.start(application!!)
+                    } else {
+                        LogcatService.stop(application!!)
+                    }
+                },
             )
 
             RoundedValueSlider(
