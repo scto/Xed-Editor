@@ -303,7 +303,7 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
         if (isTemp) return@withLock
         write()
         searchViewModel.get()?.syncIndex(file)
-        Events.publish(EditorTabEvent.Saved(this))
+        Events.publish(EditorTabEvent.Saved(this, true))
     }
 
     suspend fun save() = saveMutex.withLock {
@@ -320,7 +320,7 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
                         scope.launch {
                             write()
                             searchViewModel.get()?.syncIndex(file)
-                            Events.publish(EditorTabEvent.Saved(this@EditorTab))
+                            Events.publish(EditorTabEvent.Saved(this@EditorTab, false))
                         }
                     }
                 }
@@ -330,7 +330,7 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
 
         write()
         searchViewModel.get()?.syncIndex(file)
-        Events.publish(EditorTabEvent.Saved(this))
+        Events.publish(EditorTabEvent.Saved(this, false))
 
         Settings.saves += 1
         MainActivity.instance?.handleSupport()
