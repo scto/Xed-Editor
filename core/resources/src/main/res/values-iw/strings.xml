@@ -10,8 +10,8 @@
     <string name="copy">העתק</string>
     <string name="save_all">שמור הכל</string>
     <string name="search">חיפוש</string>
-    <string name="go_next">קדימה</string>
-    <string name="go_prev">אחורה</string>
+    <string name="go_next">הבא</string>
+    <string name="go_prev">הקודם</string>
     <string name="replace">החלף</string>
     <string name="share">שיתוף</string>
     <string name="open_file">פתח קובץ</string>
@@ -35,7 +35,7 @@
     <string name="add_file">הוסף קובץ חיצוני</string>
     <string name="replace_all">החלף הכל</string>
     <string name="download">הורדה</string>
-    <string name="close_current_project">סגור פרוייקט נוכחי</string>
+    <string name="close_current_project">לסגור את הפרוייקט \'%s\'?</string>
     <string name="keep_drawer_locked">שמור על מגירה נעולה</string>
     <string name="open_in_terminal">פתח במסוף</string>
     <string name="file_open_denied">פתיחת קובץ זה עם אפליקציות אחרות אסורה</string>
@@ -43,7 +43,7 @@
     <string name="file_name">שם קובץ</string>
     <string name="path">נתיב</string>
     <string name="open">פתח</string>
-    <string name="permission_denied">הרשאות נדחו</string>
+    <string name="permission_denied">ההרשאה נדחתה</string>
     <string name="ok">בסדר</string>
     <string name="clone_repo">שכפל מאגר</string>
     <string name="private_files">קבצים פרטיים</string>
@@ -87,7 +87,7 @@
     <string name="font_added">גופן נוסף בהצלחה</string>
     <string name="delete_font">מחק גופו</string>
     <string name="add_font">הוסף גופו חדש</string>
-    <string name="ask_deletion_one">האם אתה בטוח שאתה רוצה למחוק לצמיתות?</string>
+    <string name="ask_deletion_one">האם למחוק לצמיתות את \'%s\'?</string>
     <string name="report_issue">דיווח על בעיה</string>
     <string name="undo">בטל</string>
     <string name="apply">החל</string>
@@ -170,4 +170,25 @@
     <string name="warning">אזהרה</string>
     <string name="encoding_warning">שינוי קידוד ברירת המחדל לא מומלץ כלל, מכיוון שהוא עלול להוביל להשחתת קבצים. מומלץ בחום להשתמש ב-UTF-8 אלא אם כן אתם מבינים היטב את ההשלכות ויצרתם גיבויים מתאימים.</string>
     <string name="temp_file">קובץ זמני</string>
+    <string name="ask_deletion_many">האם ברצונך למחוק לצמיתות %d קבצים?</string>
+    <string name="open_as_project">פתח כפרוייקט</string>
+    <string name="repo_url">כתובת המאגר</string>
+    <string name="branch">ענף</string>
+    <string name="open_removable_storage">פתח אחסן נשלף</string>
+    <string name="auto_save_delay">תדירות שמירה אוטומטית</string>
+    <string name="clone_repo_desc">העתקת מאגר מרוחק</string>
+    <string name="auto_save_delay_desc">עיכוב באלפיות־שנייה בין שמירות אוטומטיות</string>
+    <string name="files_unsaved">קבצים לא שמורים</string>
+    <string name="line_spacing_desc">מכפיל גובה לכל שורה בעורך</string>
+    <string name="store_desc">הורדת תוספים, ערכות נושא, וחבילות סמלים</string>
+    <string name="value_empty_err">הערך לא יכול להיות ריק</string>
+    <string name="updating">מעדכן…</string>
+    <string name="no_themes">לא נמצאו ערכות נושא.</string>
+    <string name="no_icon_packs">לא נצאו חבילות סמלים.</string>
+    <string name="size">גודל</string>
+    <string name="manage_storage_desc">ניהול הרשאות אחסון</string>
+    <string name="lang">שפה</string>
+    <string name="lang_desc">הגדרות שפה</string>
+    <string name="add_theme">הוספת ערכת נושא</string>
+    <string name="confirm_exit">האם ברצונך לצאת?</string>
 </resources>
