@@ -347,4 +347,11 @@
     <string name="enable_logcat">Logcat 활성화</string>
     <string name="enable_logcat_desc">Logcat을 실행하고 로그 화면에서 로그를 출력합니다</string>
     <string name="permissions">권한</string>
+    <string name="project_restore_failed">프로젝트 복구 실패</string>
+    <string name="theme_flipper_desc">테마를 7초마다 계속 변경합니다</string>
+    <string name="theme_flipper">테마 플리퍼</string>
+    <string name="socket">소켓</string>
+    <string name="process">프로세스</string>
+    <string name="empty_command">명령어 비어</string>
+    <string name="command">명령</string>
 </resources>
