@@ -354,4 +354,5 @@
     <string name="process">프로세스</string>
     <string name="empty_command">명령어 비어</string>
     <string name="command">명령</string>
+    <string name="show_tab_icons">탭 아이콘 표시</string>
 </resources>
