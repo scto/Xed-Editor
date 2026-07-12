@@ -1,10 +1,18 @@
 package com.rk.settings.debugOptions
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import androidx.compose.runtime.mutableStateListOf
+import androidx.core.app.NotificationCompat
+import com.rk.activities.main.MainActivity
+import com.rk.resources.drawables
 import com.rk.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -82,6 +90,10 @@ class LogcatService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        createNotificationChannel()
+        val notification = createNotification()
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.notify(99, notification)
 
         // Start collecting logcat
         serviceScope.launch {
@@ -159,6 +171,48 @@ class LogcatService : Service() {
         serviceScope.cancel()
         logcatProcess?.destroy()
         //logcatLogs.clear()
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.cancel(99)
         super.onDestroy()
+    }
+
+    private val CHANNEL_ID = "logcat_service_channel"
+
+    private fun createNotificationChannel() {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        val channel =
+            NotificationChannel(CHANNEL_ID, "Logcat Service", NotificationManager.IMPORTANCE_LOW).apply {
+                description = "Notification for Logcat Background Service"
+            }
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun createNotification(): Notification {
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+
+        val stopIntent = Intent(this, LogcatService::class.java).apply { action = "ACTION_STOP" }
+        val stopPendingIntent =
+            PendingIntent.getService(
+                this,
+                1,
+                stopIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Logcat Running")
+            .setContentText("Logcat is printing logs to the logs screen.")
+            .setSmallIcon(drawables.terminal)
+            .setContentIntent(pendingIntent)
+            .addAction(NotificationCompat.Action.Builder(null, "Stop", stopPendingIntent).build())
+            .setOngoing(true)
+            .build()
     }
 }
