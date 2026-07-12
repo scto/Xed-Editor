@@ -167,6 +167,7 @@ private fun ValueSliderImpl(
                         onValueChanged(sliderPosition)
                     }
                 },
+                enabled = enabled,
                 steps = steps,
                 valueRange = min.toFloat()..max.toFloat(),
             )

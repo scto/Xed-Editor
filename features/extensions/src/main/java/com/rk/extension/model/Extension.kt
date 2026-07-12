@@ -1,5 +1,8 @@
 package com.rk.extension
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.rk.extension.manager.ExtensionEntry
 import com.rk.extension.manager.ExtensionRegistry
 import com.rk.xededitor.BuildConfig
@@ -110,7 +113,7 @@ data class LocalExtension(
     val manifest: ExtensionManifest,
     val installPath: String,
     val enabled: Boolean = true,
-    override val size: Long,
+    val initSize: Long?,
     override val createdAt: Long?,
     override val updatedAt: Long?,
 ) : Extension {
@@ -173,6 +176,8 @@ data class LocalExtension(
 
     override val rating
         get() = null
+
+    override var size by mutableStateOf(initSize)
 
     override suspend fun getReviews(): List<Review> = emptyList()
 }
