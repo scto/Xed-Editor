@@ -49,7 +49,7 @@
     <string name="path">Caminho</string>
     <string name="open">Abrir</string>
     <string name="permission_denied">Permissão negada</string>
-    <string name="manage_storage">Gerenciar Armazenamento</string>
+    <string name="manage_storage">Gerenciar armazenamento</string>
     <string name="manage_storage_reason">Xed-Editor precisa de acesso para editar arquivos no seu armazenamento. Por favor, permita o acesso na próxima configuração do sistema.</string>
     <string name="ok">OK</string>
     <string name="clone_repo">Clonar repositório</string>
@@ -275,7 +275,7 @@
     <string name="api_error">Erro de API</string>
     <string name="unknown">Desconhecido</string>
     <string name="cant_write">Sem permissão para escrever no arquivo</string>
-    <string name="info_lsp">Servidores de linguagem (LSP) são processos em segundo plano responsáveis por funcionalidades como auto complete, realce de sintaxe, erros de código e documentação em linha.</string>
+    <string name="info_lsp">Servidores de linguagem (LSP) são processos em segundo plano responsáveis por funcionalidades como auto completar, realce de sintaxe, erros de código e documentação em linha.</string>
     <string name="storage">Armazenamento</string>
     <string name="support">Suporte</string>
     <string name="translate">Traduzir</string>
@@ -320,7 +320,7 @@
     <string name="external">Externo</string>
     <string name="desktop_mode">Modo desktop (Experimental)</string>
     <string name="desktop_mode_desc">Faz o app ser mais fácil de usar em tabletes e telas grandes</string>
-    <string name="built_in">Built-in</string>
+    <string name="built_in">Integrado</string>
     <string name="change_lang_warn">Para aplicar o novo idioma imediatamente, esta tela será reiniciada. Durante esse processo, uma tela em branco poderá ser exibida brevemente, o que pode causar desconforto em pessoas com epilepsia fotossensível.</string>
     <string name="address">Endereço</string>
     <string name="invalid_address">Endereço inválido</string>
@@ -335,6 +335,28 @@
     <string name="clone_repo_desc">Clonar repositório remoto</string>
     <string name="repo_url">URL do repositório</string>
     <string name="open_removable_storage">Abrir armazenamento removível</string>
-    <string name="auto_save_delay_desc">Atraso entre salvamentos automáticos em milissegundos</string>
-    <string name="enable_logcat">Habilitar Logcat</string>
+    <string name="auto_save_delay_desc">delay de milissegundos entre auto-salvamentos</string>
+    <string name="enable_logcat">ativar logcat</string>
+    <string name="branch">Branch</string>
+    <string name="symbols">Símbolos</string>
+    <string name="commands">Comandos</string>
+    <string name="toolbar_actions">Ações da barra de ferramentas</string>
+    <string name="add_command">Adicionar comando</string>
+    <string name="permissions">Permissões</string>
+    <string name="command">Comando</string>
+    <string name="empty_command">Comando vazio</string>
+    <string name="process">Processo</string>
+    <string name="project_restore_failed">Falha ao restorar projetos</string>
+    <string name="jump_to_line">Pular uma linha</string>
+    <string name="line_number">Número da linha</string>
+    <string name="search_file_folder">Pesquisar arquivos no projeto</string>
+    <string name="search_code">Pesquisar código no projeto</string>
+    <string name="no_results">Nenhum resultado encontrado</string>
+    <string name="results">%s resultados encontrados</string>
+    <string name="enter_name">Insira um nome</string>
+    <string name="show_hidden_files">Mostrar arquivos escondidos</string>
+    <string name="show_hidden_files_drawer">Mostrar arquivos escondidos na gaveta</string>
+    <string name="show_hidden_files_search">Mostrar arquivos escondidos na pesquisa</string>
+    <string name="disclaimer_read_carefully">Por favor, leia cuidadosamente antes de usar este aplicativo.</string>
+    <string name="data_loss_risk">Risco de perda de dados</string>
 </resources>
