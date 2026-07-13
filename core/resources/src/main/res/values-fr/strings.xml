@@ -256,7 +256,7 @@
     <string name="wrapper_type">Type de wrapper</string>
     <string name="support">Assistance</string>
     <string name="translate">Traduire</string>
-    <string name="terminal_feature">Terminal, lanceurs et serveurs de langue</string>
+    <string name="terminal_feature">Terminal et lanceurs</string>
     <string name="folder_name">Nom de répertoire</string>
     <string name="invalid_characters">Caractères invalides</string>
     <string name="properties">Propriétés</string>
@@ -701,4 +701,6 @@
     <string name="lsp_log_limit">Limite de journal LSP</string>
     <string name="lsp_log_limit_desc">Les entrées de journal plus anciennes sont automatiquement supprimées quand la limite est atteinte pour éviter une consommation mémoire importante</string>
     <string name="update_date">Date de mise à jour</string>
+    <string name="enable_logcat">Activer Logcat</string>
+    <string name="enable_logcat_desc">Lance Logcat et affiche le journal dans l\'écran dédié</string>
 </resources>
