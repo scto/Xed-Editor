@@ -395,4 +395,15 @@
     <string name="no_warranty">보증 없음</string>
     <string name="no_warranty_content">해당 소프트웨어는 GNU GPL(범용 공개 라이센스, 일반 공중 사용 허가서) v3.0에 따라 배포되며, “있는 그대로” 제공되고, 상품성, 특정 목적에 대한 적합성 및 비침해성에 대한 보증을 포함하되 이에 국한되지 않는, 명시적이든 묵시적이든 어떠한 종류의 보증도 제공되지 않습니다.</string>
     <string name="not_liable">법적 책임의 제약</string>
+    <string name="not_liable_content">어떠한 경우든 개발자와 저작권자는 해당 소프트웨어에 대한 이용으로 인해 발생하는 청구, 손상, 또는 손실에 대해 법적인 책임을 지지 않습니다. 이것은 데이터 손실, 시스템 오작동, 수익 손실, 또는 부수적이거나 그로 인해 일어나는 손해, 심지어 이러한 손실의 가능성에 대해 조언을 받았을 경우도 포함되며, 이에 국한되지 않습니다.</string>
+    <string name="consent_statement">\'동의\'를 클릭함으로써, 당신은 이 약관들을 읽었고, 이해하였고, 동의한다고 인정합니다.</string>
+    <string name="decline">거부</string>
+    <string name="i_accept">동의</string>
+    <string name="keybindings">키바인딩</string>
+    <string name="keybindings_desc">키바인딩 구성</string>
+    <string name="none_set">설정 안 됨</string>
+    <string name="press_key">키를 눌러 조합하세요 (Ctrl 또는 Alt을 반드시 포함)</string>
+    <string name="ctrl">Ctrl</string>
+    <string name="alt">Alt</string>
+    <string name="shift">Shift</string>
 </resources>
