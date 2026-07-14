@@ -7,7 +7,7 @@
     <string name="new_file">Новий файл</string>
     <string name="wait">Будь ласка, зачекайте…</string>
     <string name="report_issue">Повідомити про проблему</string>
-    <string name="copy">Копіювати</string>
+    <string name="copy">Скопіювати</string>
     <string name="save_all">Зберегти все</string>
     <string name="undo">Скасувати дію</string>
     <string name="settings">Налаштування</string>
@@ -87,7 +87,7 @@
     <string name="tab_size">Розмір вкладки</string>
     <string name="tab_size_desc">Кількість пробілів клавіші Tab</string>
     <string name="monet">Динамічні кольори</string>
-    <string name="monet_desc">Використання теми пристрою в застосунку</string>
+    <string name="monet_desc">Використати тему пристрою в застосунку</string>
     <string name="app_desc">Загальні налаштування програми</string>
     <string name="editor_desc">Загальні налаштування редактора</string>
     <string name="terminal_desc">Загальні налаштування терміналу</string>
@@ -271,13 +271,13 @@
     <string name="intelligent_features">Розумні функції</string>
     <string name="auto_close_tags">Автозакриття тегів</string>
     <string name="auto_close_tags_desc">Автоматично закривати HTML теги</string>
-    <string name="bullet_continuation">Продовження маркованого списку</string>
+    <string name="bullet_continuation">Продовжувати маркований список</string>
     <string name="bullet_continuation_desc">Автоматичне продовжити список і маркування в Markdown</string>
     <string name="insert_final_newline">Додавання пустого рядка в кінець</string>
     <string name="search_keybinds">Пошук команд чи біндів клавіш</string>
     <string name="transform_lowercase">Всі літери малими</string>
     <string name="transform_uppercase">Всі літери великими</string>
-    <string name="keybindings_conflict_error">Поєднання клавіш, яке ви намагаєтеся задати, конфліктує з іншим поєднанням клавіш</string>
+    <string name="keybindings_conflict_error">Поєднання клавіш, яке ви намагаєтеся задати, конфліктує з іншим поєднанням клавіш.</string>
     <string name="auto_open_new_files">Відкрити створені файли</string>
     <string name="logs">Логи</string>
     <string name="view_logs">Переглянути логи</string>
@@ -286,8 +286,8 @@
     <string name="use">Використати</string>
     <string name="yes_support">Так, я хочу підтримати! ❤️</string>
     <string name="not_for_me">Ні, дякую</string>
-    <string name="manage_storage_desc">Керувати дозволом на сховище</string>
-    <string name="no_folder_opened">Немає відкритої теки</string>
+    <string name="manage_storage_desc">Керувати дозволами сховища</string>
+    <string name="no_folder_opened">Ще не відкрито жодної теки</string>
     <string name="more">Більше</string>
     <string name="ask_lsp_install">Бажаєте встановити мовний сервер для \'%s\'?</string>
     <string name="ask_lsp_update">Чи ви бажаєте оновити мовний сервер \'%s\'?</string>
@@ -297,7 +297,7 @@
     <string name="debug_options">Опції налагодження</string>
     <string name="debug_options_desc">Опції налагодження для %s</string>
     <string name="force_crash">Примусовий збій</string>
-    <string name="force_crash_confirm">Ви хочете зробити примусовий збій програми? Програма може зависнути.</string>
+    <string name="force_crash_confirm">Ви дійсно хочете спричинити збій у роботі застосунку? Програма може зависнути.</string>
     <string name="github_stars">GitHib зірки</string>
     <string name="terminal_feature">Термінал і скрипти</string>
     <string name="rename_symbol">Перейменувати символ</string>
@@ -331,9 +331,18 @@
     <string name="confirm_exit_dialog">Підтверджувати вихід</string>
     <string name="confirm_exit_dialog_desc">Просити підтвердження перед закриттям застосунка</string>
     <string name="tab_memory_warning">Бракує пам\'яті для відкриття вкладки. Це може спричинити збій Xed. Продовжити попри це?</string>
-    <string name="terminal_virus_notice">На деяких пристроях (зокрема на певних моделях китайських виробників) може з\'являтися системне попередження безпеки, коли в терміналі запущено багато процесів (наприклад, під час виконання \"apt update\" або \"apt upgrade\"). Це хибне спрацьовування, яке не свідчить про наявність справжнього вірусу</string>
+    <string name="terminal_virus_notice">На деяких пристроях (зокрема на певних моделях китайських виробників) може з\'являтися системне попередження безпеки, коли в терміналі запущено багато процесів (наприклад, під час виконання \"apt update\" або \"apt upgrade\"). Це хибне спрацьовування, яке не свідчить про наявність справжнього вірусу.</string>
     <string name="text_mate_suggestion">Автодоповнення TextMate</string>
     <string name="seccomp_desc">Виправити помилку \"функцію не реалізовано\" на деяких пристроях</string>
     <string name="wrapper_type">Тип обгортки</string>
-    <string name="force_crash_desc">Створити виняток виконання</string>
+    <string name="force_crash_desc">Викинути програмний виняток</string>
+    <string name="anr_watchdog">Моніторинг зависань</string>
+    <string name="anr_watchdog_desc">Завершити роботу Xed-Editor, якщо він не відповідає понад 5 секунд</string>
+    <string name="verbose_errors">Детальні повідомлення про помилки</string>
+    <string name="verbose_errors_desc">Додавати стек викликів у діалоги помилок</string>
+    <string name="user_data">Дані користувача</string>
+    <string name="acquire_wakelock">Заборонити перехід у режим очікування</string>
+    <string name="release_wakelock">Дозволити перехід у режим очікування</string>
+    <string name="native_runner">Цей запускач працює лише з локальними файлами; радимо перемістити його до домашнього каталогу термінала</string>
+    <string name="text_mate_suggestion_desc">Пропонувати визначені ключові слова</string>
 </resources>
