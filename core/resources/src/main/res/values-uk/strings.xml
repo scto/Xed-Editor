@@ -456,4 +456,10 @@
     <string name="exclude_files_drawer_desc">Встановити файли, які не будуть показані у файловому дереві бічної панелі</string>
     <string name="always_index_projects">Завжди індексувати проєкти</string>
     <string name="auto_open_new_files_desc">Автоматично відкривати новостворені файли</string>
+    <string name="line_ending">Закінчення рядків</string>
+    <string name="line_ending_desc">Змінити типове закінчення рядків</string>
+    <string name="line_ending_info">Переноси рядків — це спеціальні символи, що позначають кінець рядка, також відомі як символи кінця рядка (EOL). Зміна закінчень рядків може спричинити несумісність після передачі файлів на інші платформи.</string>
+    <string name="amend_commit">Внести поправку в коміт</string>
+    <string name="amend_commit_and_push">Внести поправку в коміт й опублікувати</string>
+    <string name="enjoying_xed">Подобається Xed-Editor?</string>
 </resources>
