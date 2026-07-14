@@ -17,7 +17,7 @@ object FileActionProvider {
             PasteAction,
             OpenWithAction,
             SaveAsAction,
-            // AddFileAction,
+            AddFileAction,
             OpenAsProjectAction,
             PropertiesAction,
         )
