@@ -22,7 +22,7 @@ import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.rk.components.XedDropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -170,7 +170,7 @@ fun EditorSearchPanel(editorState: CodeEditorState, modifier: Modifier = Modifie
                                         expanded = editorState.showOptionsMenu,
                                         onDismissRequest = { editorState.showOptionsMenu = false },
                                     ) {
-                                        DropdownMenuItem(
+                                        XedDropdownMenuItem(
                                             text = {
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     Checkbox(checked = editorState.ignoreCase, onCheckedChange = null)
@@ -185,7 +185,7 @@ fun EditorSearchPanel(editorState: CodeEditorState, modifier: Modifier = Modifie
                                             },
                                         )
 
-                                        DropdownMenuItem(
+                                        XedDropdownMenuItem(
                                             text = {
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     Checkbox(checked = editorState.searchRegex, onCheckedChange = null)
@@ -204,7 +204,7 @@ fun EditorSearchPanel(editorState: CodeEditorState, modifier: Modifier = Modifie
                                             },
                                         )
 
-                                        DropdownMenuItem(
+                                        XedDropdownMenuItem(
                                             text = {
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     Checkbox(

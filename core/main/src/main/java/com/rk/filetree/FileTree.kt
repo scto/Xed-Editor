@@ -24,7 +24,7 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.rk.components.XedDropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -220,7 +220,7 @@ private fun SelectionActions(viewModel: FileTreeViewModel, drawerViewModel: Draw
                             when (action) {
                                 is FileAction -> {
                                     val file = selectedFiles.first() // Is safe because of the check in getActions()
-                                    DropdownMenuItem(
+                                    XedDropdownMenuItem(
                                         text = { Text(action.title) },
                                         leadingIcon = { XedIcon(action.icon, contentDescription = action.title) },
                                         enabled = action.isEnabled(file),
@@ -241,7 +241,7 @@ private fun SelectionActions(viewModel: FileTreeViewModel, drawerViewModel: Draw
                                     )
                                 }
                                 is MultiFileAction -> {
-                                    DropdownMenuItem(
+                                    XedDropdownMenuItem(
                                         text = { Text(action.title) },
                                         leadingIcon = { XedIcon(action.icon, contentDescription = action.title) },
                                         enabled = action.isEnabled(selectedFiles),
@@ -284,7 +284,7 @@ private fun FileTreeActions(viewModel: FileTreeViewModel, onSearchClick: () -> U
         IconButton(onClick = { showOptionsMenu = true }) { Icon(Icons.Outlined.MoreVert, stringResource(strings.more)) }
 
         DropdownMenu(expanded = showOptionsMenu, onDismissRequest = { showOptionsMenu = false }) {
-            DropdownMenuItem(
+            XedDropdownMenuItem(
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = Settings.show_hidden_files_drawer, onCheckedChange = null)
@@ -299,7 +299,7 @@ private fun FileTreeActions(viewModel: FileTreeViewModel, onSearchClick: () -> U
                 },
             )
 
-            DropdownMenuItem(
+            XedDropdownMenuItem(
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = Settings.compact_folders_drawer, onCheckedChange = null)
@@ -314,7 +314,7 @@ private fun FileTreeActions(viewModel: FileTreeViewModel, onSearchClick: () -> U
                 },
             )
 
-            DropdownMenuItem(
+            XedDropdownMenuItem(
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = viewModel.sortMode == SortMode.SORT_BY_NAME, onClick = null)
@@ -330,7 +330,7 @@ private fun FileTreeActions(viewModel: FileTreeViewModel, onSearchClick: () -> U
                 },
             )
 
-            DropdownMenuItem(
+            XedDropdownMenuItem(
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = viewModel.sortMode == SortMode.SORT_BY_SIZE, onClick = null)
@@ -346,7 +346,7 @@ private fun FileTreeActions(viewModel: FileTreeViewModel, onSearchClick: () -> U
                 },
             )
 
-            DropdownMenuItem(
+            XedDropdownMenuItem(
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = viewModel.sortMode == SortMode.SORT_BY_DATE, onClick = null)
