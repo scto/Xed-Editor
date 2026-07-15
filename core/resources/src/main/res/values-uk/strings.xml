@@ -219,7 +219,7 @@
     <string name="developer">Розробник</string>
     <string name="build_info">Інформація про збірку</string>
     <string name="community">Спільнота</string>
-    <string name="failsafe_mode">Режим відмовостійкості</string>
+    <string name="failsafe_mode">Аварійний режим</string>
     <string name="render_whitespace">Відображати пробіли</string>
     <string name="render_whitespace_desc">Відображати пробіли, табуляції та розриви рядків як видимі символи</string>
     <string name="ask_refresh">Ви впевнені, що хочете оновити цей документ? Усі незбережені зміни будуть втрачені.</string>
@@ -537,4 +537,8 @@
     <string name="conflicts">Конфлікти</string>
     <string name="untracked">Не відстежуються</string>
     <string name="support_message">Ви зберегли %s файлів і запускали код %s разів у Xed.\n\nЯ самотній розробник, я роблю цей застосунок приватним і не додаю сюди рекламу. Якщо Xed полегшив вам програмування, чи не могли б ви допомогти з розробкою редактора?\n\nВаша підтримка допомагає мені:\n• Швидше писати функціонал\n• Підтримувати Xed назавжди безрекламним\n• Швидко виправляти помилки</string>
+    <string name="ext_not_found_desc">Ця сторінка не доступна. Це могло трапитися, якщо ви видалили локальне розширення з пристрою або розробник розширення видалив його з магазину.</string>
+    <string name="terminal_font_warning">Шрифт терміналу \'etc/font.ttf\' замінює вибраний нижче користувацький шрифт. Видаліть файл у пісочниці терміналу, щоб застосувати користувацькі шрифти.</string>
+    <string name="outdated_extension">Розширення зроблено для старішої версії Xed-Editor. Буль ласка, попросіть розробника оновити розширення.</string>
+    <string name="debug">Налагодження</string>
 </resources>
