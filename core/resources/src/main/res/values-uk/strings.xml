@@ -559,7 +559,6 @@
     <string name="terminal_health">Стан термінала</string>
     <string name="underline">Підкреслення</string>
     <string name="email">Електронна пошта</string>
-    <string name="pull"></string>
     <string name="block">Блокувати</string>
     <string name="push">Опублікувати</string>
     <string name="commit">Закомітити</string>
