@@ -2,9 +2,6 @@ set -e
 
 source "$LOCAL/bin/utils"
 
-info 'Preparing...'
-apt update && apt upgrade -y
-
 LLEMINX_VERSION="0.31.0"
 INSTALL_DIR="$HOME/.lsp/lemminx"
 

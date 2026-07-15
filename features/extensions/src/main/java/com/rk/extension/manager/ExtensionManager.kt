@@ -9,6 +9,7 @@ import com.rk.DefaultScope
 import com.rk.events.Events
 import com.rk.extension.Extension
 import com.rk.extension.ExtensionAPI
+import com.rk.extension.ExtensionAuthor
 import com.rk.extension.ExtensionError
 import com.rk.extension.ExtensionEvent
 import com.rk.extension.ExtensionId
@@ -206,6 +207,49 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
                 val toRemove = storeExtension.keys.filter { it !in newExtensions }
                 toRemove.forEach { storeExtension.remove(it) }
                 storeExtension.putAll(newExtensions)
+
+                // TODO: TEMPORARY!
+                storeExtension.put(
+                    "com.test",
+                    StoreExtension(
+                        ExtensionEntry(
+                            "com.test",
+                            manifest =
+                                ExtensionManifest(
+                                    id = "com.test",
+                                    name = "Test extension",
+                                    mainClass = "com.test.Main",
+                                    version = "1.0.0-alpha",
+                                    description = "Test extension",
+                                    author = ExtensionAuthor("Unknown"),
+                                    minAppVersion = 101,
+                                    supportedArchitectures =
+                                        listOf(
+                                            "arm64-v8a",
+                                            "x86_64",
+                                        ),
+                                    repository = "",
+                                    license = null,
+                                    localization = listOf("en"),
+                                    dependencies = listOf("com.koner.rust", "com.koner.typst"),
+                                    recommendations = listOf("com.koner.typst"),
+                                    tags = listOf(),
+                                    hasSettings = true,
+                                ),
+                            downloads = 100,
+                            download =
+                                DownloadUrls(
+                                    icon = "",
+                                    readme = "",
+                                    zip = "",
+                                    size = 92838,
+                                ),
+                            size = 92838,
+                            createdAt = 0,
+                            updatedAt = 0,
+                        )
+                    ),
+                )
             }
         }
 
@@ -287,8 +331,6 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
 
             if (extensionInfo.minAppVersion != null && xedVersionCode < extensionInfo.minAppVersion) {
                 return@withContext InstallResult.Error(ExtensionError.OUTDATED_CLIENT)
-            } else if (extensionInfo.maxAppVersion != null && xedVersionCode > extensionInfo.maxAppVersion) {
-                return@withContext InstallResult.Error(ExtensionError.OUTDATED_EXTENSION)
             }
 
             dir.copyRecursively(targetDir, overwrite = true)

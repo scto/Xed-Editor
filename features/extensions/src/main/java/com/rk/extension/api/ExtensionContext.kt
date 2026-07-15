@@ -10,11 +10,14 @@ import com.rk.extension.api.logDebug
 import com.rk.extension.api.logError
 import com.rk.extension.api.logInfo
 import com.rk.extension.api.logWarn
+import com.rk.file.createDirIfNot
 import kotlinx.coroutines.CoroutineScope
+import java.io.File
 
 @XedExtensionPoint
 @Keep
 class ExtensionContext(val extension: LocalExtension, val appContext: Context, val scope: CoroutineScope) {
+
     val settings = SharedPrefExtensionSettings(extension.id)
 
     val currentActivity
@@ -22,6 +25,9 @@ class ExtensionContext(val extension: LocalExtension, val appContext: Context, v
 
     val appResources
         get() = AppResources(appContext, appContext.resources, appContext.packageName)
+
+    val extensionFiles
+        get() = File(extension.installPath).resolve("files").createDirIfNot()
 
     val assets: AssetManager by lazy {
         AssetManager::class.java.getDeclaredConstructor().newInstance().apply {

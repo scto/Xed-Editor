@@ -1,6 +1,7 @@
 package com.rk.settings.extension
 
 import android.content.Intent
+import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
@@ -297,32 +298,46 @@ private fun AboutSection(
         ExtensionStats(Modifier.weight(1f), stringResource(strings.size).uppercase(), size)
     }
 
-    val minAppVersion = extension.minAppVersion
-    val maxAppVersion = extension.maxAppVersion
-
     val xedVersionCode = App.versionCode
+    val minAppVersion = extension.minAppVersion
     val outdatedClient = minAppVersion != null && xedVersionCode < minAppVersion
-    val outdatedExtension = maxAppVersion != null && xedVersionCode > maxAppVersion
+
+    val currentArchitecture = Build.SUPPORTED_ABIS.firstOrNull()
+    val supportedArchitecture =
+        currentArchitecture == null || extension.supportedArchitectures?.contains(currentArchitecture) ?: true
+
+    var showRecommendationsDialog by remember {
+        mutableStateOf(false)
+    }
+    val recommendations = extension.recommendations.filter { !extensionManager.isInstalled(it) }
 
     ExtensionActionButtons(
-        outdatedWarning = outdatedClient || outdatedExtension,
-        modifier = Modifier.fillMaxWidth(),
+        outdatedWarning = outdatedClient || !supportedArchitecture,
         installState = installState,
         scope = scope,
         progress = ExtensionRegistry.downloadProgress[extension.id] ?: 0f,
         onInstallClick = {
             checkExtensionWarningAndRun(activity) {
-                runExtensionInstallAction(extension, updateInstallState, context, activity)
+                ensureExtensionDependencies(extension, scope, context, activity) {
+                    runExtensionInstallAction(extension, updateInstallState, context, activity)
+                }
             }
         },
         onUninstallClick = { runExtensionUninstallAction(extension, updateInstallState, scope, activity) },
         onUpdateClick = {
             if (extension !is UpdatableExtension) return@ExtensionActionButtons
-            runExtensionUpdateAction(extension, updateInstallState, context, activity)
+
+            ensureExtensionDependencies(extension, scope, context, activity) {
+                runExtensionUpdateAction(extension, updateInstallState, context, activity)
+            }
+        },
+        showRecommendedButton = recommendations.isNotEmpty(),
+        onRecommendedClick = {
+            showRecommendationsDialog = true
         },
     )
 
-    if (outdatedClient || outdatedExtension) {
+    if (outdatedClient || !supportedArchitecture) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Rounded.Warning,
@@ -330,10 +345,24 @@ private fun AboutSection(
                 tint = MaterialTheme.colorScheme.error,
             )
             Text(
-                stringResource(if (outdatedClient) strings.outdated_client else strings.outdated_extension),
+                stringResource(if (outdatedClient) strings.outdated_client else strings.unsupported_architecture),
                 style = MaterialTheme.typography.labelMedium,
             )
         }
+    }
+
+    if (showRecommendationsDialog) {
+        DependenciesDialog(
+            extensionIds = recommendations,
+            softDependencies = true,
+            onDismiss = {
+                showRecommendationsDialog = false
+            },
+            scope = scope,
+            context = context,
+            activity = activity,
+            onCompletion = {},
+        )
     }
 }
 

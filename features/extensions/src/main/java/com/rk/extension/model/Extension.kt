@@ -20,12 +20,14 @@ sealed interface Extension {
     val tags: List<String>
     val repository: String
     val license: String?
+    val dependencies: List<ExtensionId>
+    val recommendations: List<ExtensionId>
     val hasSettings: Boolean
     val iconUrl: String
     val readmeUrl: String
     val changelogUrl: String
     val minAppVersion: Int?
-    val maxAppVersion: Int?
+    val supportedArchitectures: List<String>?
     val downloads: Int?
     val rating: Float?
     val size: Long?
@@ -72,6 +74,12 @@ data class StoreExtension(private val entry: ExtensionEntry) : Extension {
     override val license
         get() = manifest.license
 
+    override val dependencies
+        get() = manifest.dependencies
+
+    override val recommendations
+        get() = manifest.recommendations
+
     override val hasSettings: Boolean
         get() = manifest.hasSettings
 
@@ -87,8 +95,8 @@ data class StoreExtension(private val entry: ExtensionEntry) : Extension {
     override val minAppVersion
         get() = manifest.minAppVersion
 
-    override val maxAppVersion
-        get() = manifest.maxAppVersion
+    override val supportedArchitectures
+        get() = manifest.supportedArchitectures
 
     override val downloads
         get() = entry.downloads
@@ -97,7 +105,7 @@ data class StoreExtension(private val entry: ExtensionEntry) : Extension {
         get() = null
 
     override val size
-        get() = null // TODO
+        get() = entry.size ?: entry.download.size
 
     override val createdAt
         get() = entry.createdAt
@@ -153,6 +161,12 @@ data class LocalExtension(
     override val license
         get() = manifest.license
 
+    override val dependencies
+        get() = manifest.dependencies
+
+    override val recommendations
+        get() = manifest.recommendations
+
     override val hasSettings: Boolean
         get() = manifest.hasSettings
 
@@ -168,8 +182,8 @@ data class LocalExtension(
     override val minAppVersion
         get() = manifest.minAppVersion
 
-    override val maxAppVersion
-        get() = manifest.maxAppVersion
+    override val supportedArchitectures
+        get() = manifest.supportedArchitectures
 
     override val downloads
         get() = null
@@ -210,6 +224,12 @@ data class UpdatableExtension(val installed: LocalExtension, val store: StoreExt
     override val license
         get() = store.license
 
+    override val dependencies: List<ExtensionId>
+        get() = store.dependencies
+
+    override val recommendations
+        get() = store.recommendations
+
     override val hasSettings: Boolean
         get() = installed.hasSettings
 
@@ -225,8 +245,8 @@ data class UpdatableExtension(val installed: LocalExtension, val store: StoreExt
     override val minAppVersion
         get() = store.minAppVersion
 
-    override val maxAppVersion
-        get() = store.maxAppVersion
+    override val supportedArchitectures
+        get() = store.supportedArchitectures
 
     override val downloads
         get() = store.downloads

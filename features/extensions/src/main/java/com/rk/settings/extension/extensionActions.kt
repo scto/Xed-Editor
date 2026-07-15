@@ -30,6 +30,7 @@ import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.utils.LoadingPopup
 import com.rk.utils.application
+import com.rk.utils.composableDialog
 import com.rk.utils.dialogRes
 import com.rk.utils.errorDialog
 import com.rk.utils.toast
@@ -57,6 +58,33 @@ fun checkExtensionWarningAndRun(activity: AppCompatActivity?, onApproved: () -> 
         )
     } else {
         onApproved()
+    }
+}
+
+fun ensureExtensionDependencies(
+    extension: Extension,
+    scope: CoroutineScope,
+    context: Context,
+    activity: AppCompatActivity?,
+    onCompletion: () -> Unit,
+) {
+    val missingDependencies = extension.dependencies.filter { !extensionManager.isInstalled(it) }
+
+    if (missingDependencies.isNotEmpty()) {
+        // TODO: Move to UI components
+        composableDialog(activity = activity) {
+            DependenciesDialog(
+                extensionIds = missingDependencies,
+                softDependencies = false,
+                scope = scope,
+                context = context,
+                activity = activity,
+                onDismiss = {},
+                onCompletion = onCompletion,
+            )
+        }
+    } else {
+        onCompletion()
     }
 }
 
@@ -215,7 +243,6 @@ fun runExtensionInstallAction(
                         errorMsg =
                             when (result.error) {
                                 ExtensionError.OUTDATED_CLIENT -> strings.outdated_client.getString(context)
-                                ExtensionError.OUTDATED_EXTENSION -> strings.outdated_extension.getString(context)
                             }
                     }
 
@@ -324,7 +351,6 @@ fun runExtensionUpdateAction(
                         errorMsg =
                             when (result.error) {
                                 ExtensionError.OUTDATED_CLIENT -> strings.outdated_client.getString(context)
-                                ExtensionError.OUTDATED_EXTENSION -> strings.outdated_extension.getString(context)
                             }
                     }
 
@@ -511,8 +537,6 @@ private fun handleInstallResult(
             when (result.error) {
                 ExtensionError.OUTDATED_CLIENT ->
                     errorDialog(activity, strings.install_failed.getString(), strings.outdated_client.getString())
-                ExtensionError.OUTDATED_EXTENSION ->
-                    errorDialog(activity, strings.install_failed.getString(), strings.outdated_extension.getString())
             }
             onError()
         }

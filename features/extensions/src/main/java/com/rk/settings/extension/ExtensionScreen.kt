@@ -1,5 +1,6 @@
 package com.rk.settings.extension
 
+import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -111,7 +112,7 @@ private enum class StoreCategory(val stringRes: Int, val drawableRes: Int) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExtensionScreen(navController: NavController) {
+fun ExtensionScreen(navController: NavController, query: String?) {
     val context = LocalContext.current
     val activity = LocalActivity.current as? AppCompatActivity
     val scope = rememberCoroutineScope()
@@ -123,7 +124,7 @@ fun ExtensionScreen(navController: NavController) {
 
     var currentSortOption by remember { mutableStateOf(ExtensionSortOptions.DOWNLOAD_COUNT) }
     var currentFilterOption by remember { mutableStateOf(ExtensionFilterOptions.ALL) }
-    val searchQuery = rememberTextFieldState("")
+    val searchQuery = rememberTextFieldState(query ?: "")
 
     var isIndexing by remember { mutableStateOf(false) }
     var isFetching by remember { mutableStateOf(false) }
@@ -381,7 +382,9 @@ fun ExtensionScreen(navController: NavController) {
                                             installState = installState,
                                             onInstallClick = {
                                                 checkExtensionWarningAndRun(activity) {
-                                                    runExtensionInstallAction(extension, {}, context, activity)
+                                                    ensureExtensionDependencies(extension, scope, context, activity) {
+                                                        runExtensionInstallAction(extension, {}, context, activity)
+                                                    }
                                                 }
                                             },
                                             onUninstallClick = {
@@ -389,7 +392,9 @@ fun ExtensionScreen(navController: NavController) {
                                             },
                                             onUpdateClick = {
                                                 if (extension !is UpdatableExtension) return@ExtensionCard
-                                                runExtensionUpdateAction(extension, {}, context, activity)
+                                                ensureExtensionDependencies(extension, scope, context, activity) {
+                                                    runExtensionUpdateAction(extension, {}, context, activity)
+                                                }
                                             },
                                             onClick = {
                                                 navController.navigate(
@@ -436,7 +441,9 @@ fun ExtensionScreen(navController: NavController) {
                                             installState = installState,
                                             onInstallClick = {
                                                 checkExtensionWarningAndRun(activity) {
-                                                    runExtensionInstallAction(extension, {}, context, activity)
+                                                    ensureExtensionDependencies(extension, scope, context, activity) {
+                                                        runExtensionInstallAction(extension, {}, context, activity)
+                                                    }
                                                 }
                                             },
                                             onUninstallClick = {
@@ -444,7 +451,9 @@ fun ExtensionScreen(navController: NavController) {
                                             },
                                             onUpdateClick = {
                                                 if (extension !is UpdatableExtension) return@ExtensionCard
-                                                runExtensionUpdateAction(extension, {}, context, activity)
+                                                ensureExtensionDependencies(extension, scope, context, activity) {
+                                                    runExtensionUpdateAction(extension, {}, context, activity)
+                                                }
                                             },
                                             onClick = {
                                                 navController.navigate(
@@ -857,14 +866,15 @@ private fun applyFilter(
     val xedVersionCode = App.versionCode
     return filteredBySearchQuery.filter {
         val minAppVersion = it.minAppVersion
-        val maxAppVersion = it.maxAppVersion
-
         val outdatedClient = minAppVersion != null && xedVersionCode < minAppVersion
-        val outdatedExtension = maxAppVersion != null && xedVersionCode > maxAppVersion
+
+        val currentArchitecture = Build.SUPPORTED_ABIS.firstOrNull()
+        val supportedArchitecture =
+            currentArchitecture == null || it.supportedArchitectures?.contains(currentArchitecture) ?: true
 
         when (currentFilterOption) {
             ExtensionFilterOptions.ALL -> true
-            ExtensionFilterOptions.SUPPORTED -> !outdatedClient && !outdatedExtension
+            ExtensionFilterOptions.SUPPORTED -> !outdatedClient && supportedArchitecture
             ExtensionFilterOptions.CRASHED -> extensionManager.isExtensionCrashed(it)
         }
     }

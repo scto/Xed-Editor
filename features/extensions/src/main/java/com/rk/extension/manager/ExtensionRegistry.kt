@@ -25,13 +25,19 @@ data class ExtensionEntry(
     val id: String,
     val manifest: ExtensionManifest,
     val downloads: Int? = null,
-    // TODO: val download: DownloadUrls,
+    val download: DownloadUrls,
+    val size: Long? = null,
     val createdAt: Long,
     val updatedAt: Long,
 )
 
 @Serializable
-data class DownloadUrls(val icon: String? = null, val readme: String? = null, val zip: String, val size: Int)
+data class DownloadUrls(
+    val icon: String? = null,
+    val readme: String? = null,
+    val zip: String,
+    val size: Long? = null,
+)
 
 @Serializable data class ThemeListResponse(val themes: List<ThemeEntry>)
 

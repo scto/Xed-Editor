@@ -2,9 +2,6 @@ set -e
 
 source "$LOCAL/bin/utils"
 
-info 'Preparing...'
-apt update && apt upgrade -y
-
 install() {
   if ! command_exists node || ! command_exists npm; then
     install_nodejs

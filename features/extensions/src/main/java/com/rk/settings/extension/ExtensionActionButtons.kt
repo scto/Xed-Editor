@@ -16,6 +16,7 @@ import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -113,33 +114,53 @@ fun ExtensionActionButtons(
     onInstallClick: suspend () -> Unit,
     onUninstallClick: suspend () -> Unit,
     onUpdateClick: suspend () -> Unit,
-    modifier: Modifier = Modifier,
+    onRecommendedClick: () -> Unit,
     outdatedWarning: Boolean = false,
+    showRecommendedButton: Boolean = false,
     progress: Float,
 ) {
-    when (installState) {
-        InstallState.Idle -> {
-            InstallButton(scope, onInstallClick, modifier, outdatedWarning)
-        }
 
-        InstallState.Installing -> {
-            InstallingButton(modifier, progress)
-        }
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        when (installState) {
+            InstallState.Idle -> {
+                InstallButton(scope, onInstallClick, Modifier.weight(1f), outdatedWarning)
+            }
 
-        InstallState.Installed -> {
-            UninstallButton(scope, onUninstallClick, modifier)
-        }
+            InstallState.Installing -> {
+                InstallingButton(Modifier.weight(1f), progress)
+            }
 
-        InstallState.Updatable -> {
-            Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            InstallState.Installed -> {
+                UninstallButton(scope, onUninstallClick, Modifier.weight(1f))
+            }
+
+            InstallState.Updatable -> {
                 UpdateButton(scope, onUpdateClick, Modifier.weight(1f), outdatedWarning)
                 UninstallButton(scope, onUninstallClick, Modifier.weight(1f))
             }
+
+            InstallState.Updating -> {
+                UpdatingButton(Modifier.weight(1f), progress)
+            }
         }
 
-        InstallState.Updating -> {
-            UpdatingButton(modifier, progress)
+        if (showRecommendedButton) {
+            RecommendationsButton(Modifier, onRecommendedClick)
         }
+    }
+}
+
+@Composable
+private fun RecommendationsButton(
+    modifier: Modifier = Modifier,
+    onRecommendedClick: () -> Unit,
+) {
+    FilledIconButton(
+        modifier = modifier,
+        onClick = onRecommendedClick,
+        colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+    ) {
+        Icon(painterResource(drawables.widgets), contentDescription = stringResource(strings.recommendations))
     }
 }
 
