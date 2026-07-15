@@ -45,13 +45,13 @@
     <string name="apply">Застосувати</string>
     <string name="open_in_terminal">Відкрити в терміналі</string>
     <string name="file_open_denied">Відкривати цей файл іншими програмами заборонено</string>
-    <string name="close_current_project">Ви впевнені що бажаєте закрити проект \'%s\'?</string>
+    <string name="close_current_project">Ви впевнені що бажаєте закрити проєкт \'%s\'?</string>
     <string name="file_name">Назва файлу</string>
     <string name="path">Шлях</string>
     <string name="open">Відкрити</string>
-    <string name="permission_denied">Відмовлено у задоволі</string>
+    <string name="permission_denied">Відмовлено у доступі</string>
     <string name="manage_storage">Керування сховищем</string>
-    <string name="manage_storage_reason">Karbon потребує доступу для редагування файлів у вашому сховищі. Будь ласка, надайте доступ у наступному вікні налаштувань.</string>
+    <string name="manage_storage_reason">Xed-Editor потребує доступу для редагування файлів у вашому сховищі. Будь ласка, надайте доступ у наступному вікні налаштувань.</string>
     <string name="ok">Добре</string>
     <string name="clone_repo">Сховище клонів</string>
     <string name="private_files">Приватні файли</string>
@@ -77,7 +77,7 @@
     <string name="pin_line_number">Закріпити номери рядків</string>
     <string name="extra_keys">Додаткові клавіші</string>
     <string name="extra_keys_desc">Показати додаткові клавіші над клавіатурою</string>
-    <string name="auto_save">Авто збереження</string>
+    <string name="auto_save">Автозбереження</string>
     <string name="auto_save_desc">Автоматично зберігати файл</string>
     <string name="value_invalid">Недійсне значення</string>
     <string name="value_small">Замале значення</string>
@@ -130,7 +130,7 @@
     <string name="warning">Попередження</string>
     <string name="encoding_warning">Не рекомендується змінювати типове кодування, оскільки це може призвести до пошкодження файлів. Ми наполегливо рекомендуємо використовувати UTF-8, якщо ви не розумієте всіх наслідків і не створили належних резервних копій.</string>
     <string name="line_spacing">Міжрядковий інтервал</string>
-    <string name="open_as_project">Відкрити як проект</string>
+    <string name="open_as_project">Відкрити як проєкт</string>
     <string name="line_spacing_desc">Множник висоти для кожного рядка в редакторі</string>
     <string name="update_av">Доступне нове оновлення</string>
     <string name="update">Оновити</string>
@@ -266,7 +266,7 @@
     <string name="settings_backup_desc">Створити резервну копію для всіх поточних налаштувань</string>
     <string name="settings_restore_desc">Відновити налаштування за допомогою Резервної копії</string>
     <string name="export_successful">Успішно експортовано</string>
-    <string name="import_successful">Успішго імпортовано</string>
+    <string name="import_successful">Успішно імпортовано</string>
     <string name="import_failed">Помилка імпорту</string>
     <string name="intelligent_features">Розумні функції</string>
     <string name="auto_close_tags">Автозакриття тегів</string>
