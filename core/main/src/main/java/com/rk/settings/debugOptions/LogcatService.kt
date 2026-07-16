@@ -7,12 +7,13 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.NotificationCompat
 import com.rk.activities.main.MainActivity
 import com.rk.resources.drawables
+import com.rk.resources.getString
+import com.rk.resources.strings
 import com.rk.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,8 @@ class LogcatService : Service() {
     private var logcatProcess: Process? = null
 
     companion object {
+        private const val CHANNEL_ID = "logcat_service_channel"
+
         val logcatLogs = mutableStateListOf<String>()
 
         private val _logFlow = MutableSharedFlow<String>(extraBufferCapacity = 512)
@@ -52,11 +55,28 @@ class LogcatService : Service() {
         }
 
         // Filter out known noisy system verbose logs
-        val noisyKeywords = listOf(
-            "ViewRootImpl", "Choreographer", "OpenGLRenderer", "InputMethodManager", 
-            "RenderThread", "libEGL", "EGL_emulation", "CompatChangeReporter", "vndksupport",
-            "ConfigStore", "Mono", "me.weishu.reflection", "chatty", "HostConnection", "gralloc","GestureDetector","WindowManager","ImeFocusController","Insets"
-        )
+        val noisyKeywords =
+            listOf(
+                "ViewRootImpl",
+                "Choreographer",
+                "OpenGLRenderer",
+                "InputMethodManager",
+                "RenderThread",
+                "libEGL",
+                "EGL_emulation",
+                "CompatChangeReporter",
+                "vndksupport",
+                "ConfigStore",
+                "Mono",
+                "me.weishu.reflection",
+                "chatty",
+                "HostConnection",
+                "gralloc",
+                "GestureDetector",
+                "WindowManager",
+                "ImeFocusController",
+                "Insets",
+            )
         if (noisyKeywords.any { line.contains(it, ignoreCase = true) }) {
             return false
         }
@@ -106,7 +126,7 @@ class LogcatService : Service() {
                 // Run logcat continuously in brief format
                 val process = Runtime.getRuntime().exec(arrayOf("logcat", "-v", "brief"))
                 logcatProcess = process
-                
+
                 val batch = mutableListOf<String>()
                 var lastUpdateTime = System.currentTimeMillis()
 
@@ -120,11 +140,12 @@ class LogcatService : Service() {
 
                             val now = System.currentTimeMillis()
                             if (batch.size >= 50 || now - lastUpdateTime > 100) {
-                                val itemsToAdd = synchronized(batch) {
-                                    val copy = batch.toList()
-                                    batch.clear()
-                                    copy
-                                }
+                                val itemsToAdd =
+                                    synchronized(batch) {
+                                        val copy = batch.toList()
+                                        batch.clear()
+                                        copy
+                                    }
                                 lastUpdateTime = now
                                 launch(Dispatchers.Main) {
                                     synchronized(logcatLogs) {
@@ -170,13 +191,10 @@ class LogcatService : Service() {
     override fun onDestroy() {
         serviceScope.cancel()
         logcatProcess?.destroy()
-        //logcatLogs.clear()
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.cancel(99)
         super.onDestroy()
     }
-
-    private val CHANNEL_ID = "logcat_service_channel"
 
     private fun createNotificationChannel() {
         val notificationManager = getSystemService(NotificationManager::class.java)
@@ -207,11 +225,11 @@ class LogcatService : Service() {
             )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Logcat Running")
-            .setContentText("Logcat is printing logs to the logs screen.")
+            .setContentTitle(strings.logcat_running.getString())
+            .setContentText(strings.logcat_running_desc.getString())
             .setSmallIcon(drawables.terminal)
             .setContentIntent(pendingIntent)
-            .addAction(NotificationCompat.Action.Builder(null, "Stop", stopPendingIntent).build())
+            .addAction(NotificationCompat.Action.Builder(null, strings.stop.getString(), stopPendingIntent).build())
             .setOngoing(true)
             .build()
     }

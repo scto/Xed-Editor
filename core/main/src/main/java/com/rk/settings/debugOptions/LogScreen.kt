@@ -45,10 +45,11 @@ import com.rk.tabs.editor.CodeEditorState
 import com.rk.theme.XedTheme
 import com.rk.utils.copyToClipboard
 import com.rk.utils.dialogRes
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,8 +57,8 @@ fun LogScreen(
     logText: String,
     issueTitle: String,
     copyLabel: String,
-    flow: kotlinx.coroutines.flow.Flow<String>? = null,
-    toolbarButtons: @Composable RowScope.() -> Unit
+    flow: Flow<String>? = null,
+    toolbarButtons: @Composable RowScope.() -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
@@ -72,7 +73,7 @@ fun LogScreen(
                 val lastColumn = text.getColumnCount(lastLine)
                 val isAtBottom = editor.offsetY >= editor.scrollMaxY - 5
                 text.insert(lastLine, lastColumn, "\n" + newLine)
-                
+
                 if (isAtBottom) {
                     editor.post {
                         editor.scroller.forceFinished(true)
@@ -96,13 +97,21 @@ fun LogScreen(
                         },
                         title = { Text(stringResource(strings.logs)) },
                         actions = {
-                            TextButton(onClick = { copyToClipboard(copyLabel, logText, true) }) {
+                            TextButton(
+                                onClick = {
+                                    val currentText = editorState.editor.get()?.text
+                                    copyToClipboard(copyLabel, currentText?.toString() ?: logText, true)
+                                }
+                            ) {
                                 Text(stringResource(strings.copy))
                             }
 
                             TextButton(
                                 onClick = {
-                                    runCatching { reportLogs(logText, issueTitle, copyLabel) }
+                                    runCatching {
+                                        val currentText = editorState.editor.get()?.text
+                                        reportLogs(currentText?.toString() ?: logText, issueTitle, copyLabel)
+                                    }
                                         .onFailure { logErrorOrExit(it) }
                                 }
                             ) {

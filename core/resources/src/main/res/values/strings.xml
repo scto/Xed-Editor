@@ -256,7 +256,9 @@
     <string name="verbose_errors">Verbose errors</string>
     <string name="verbose_errors_desc">Include stacktrace in error dialogs</string>
     <string name="enable_logcat">Enable Logcat</string>
-    <string name="enable_logcat_desc">Run logcat and print logs in the logs screen</string>
+    <string name="enable_logcat_desc">Run Logcat and print logs in the logs screen</string>
+    <string name="logcat_running">Logcat running</string>
+    <string name="logcat_running_desc">Logcat is printing logs to the logs screen.</string>
     <string name="unsupported_file_ext">Unsupported file extension</string>
     <string name="invalid_port">Invalid port</string>
     <string name="port_number">Port number</string>
