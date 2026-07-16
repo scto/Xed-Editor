@@ -27,9 +27,7 @@ fun XedDropdownMenuItem(
     DropdownMenuItem(
         text = text,
         onClick = onClick,
-        modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 2.dp)
-            .clip(RoundedCornerShape(12.dp)),
+        modifier = modifier.padding(horizontal = 8.dp).clip(RoundedCornerShape(12.dp)),
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         enabled = enabled,

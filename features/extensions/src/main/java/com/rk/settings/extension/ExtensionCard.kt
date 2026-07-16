@@ -1,5 +1,6 @@
 package com.rk.settings.extension
 
+import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -48,12 +49,13 @@ fun ExtensionCard(
 ) {
     val scope = rememberCoroutineScope()
 
-    val minAppVersion = extension.minAppVersion
-    val maxAppVersion = extension.maxAppVersion
-
     val xedVersionCode = App.versionCode
+    val minAppVersion = extension.minAppVersion
     val outdatedClient = minAppVersion != null && xedVersionCode < minAppVersion
-    val outdatedExtension = maxAppVersion != null && xedVersionCode > maxAppVersion
+
+    val currentArchitecture = Build.SUPPORTED_ABIS.firstOrNull()
+    val supportedArchitecture =
+        currentArchitecture == null || extension.supportedArchitectures?.contains(currentArchitecture) ?: true
 
     PreferenceTemplate(
         modifier = modifier.fillMaxWidth().clickable(onClick = { onClick(extension) }),
@@ -134,7 +136,7 @@ fun ExtensionCard(
                 onInstallClick = onInstallClick,
                 onUninstallClick = onUninstallClick,
                 onUpdateClick = onUpdateClick,
-                outdatedWarning = outdatedClient || outdatedExtension,
+                outdatedWarning = outdatedClient || !supportedArchitecture,
             )
         },
     )

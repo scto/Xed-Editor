@@ -287,8 +287,6 @@ open class ExtensionManager(private val context: Application) : CoroutineScope b
 
             if (extensionInfo.minAppVersion != null && xedVersionCode < extensionInfo.minAppVersion) {
                 return@withContext InstallResult.Error(ExtensionError.OUTDATED_CLIENT)
-            } else if (extensionInfo.maxAppVersion != null && xedVersionCode > extensionInfo.maxAppVersion) {
-                return@withContext InstallResult.Error(ExtensionError.OUTDATED_EXTENSION)
             }
 
             dir.copyRecursively(targetDir, overwrite = true)

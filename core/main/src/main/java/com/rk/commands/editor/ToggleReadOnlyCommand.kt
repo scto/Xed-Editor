@@ -30,7 +30,7 @@ class ToggleReadOnlyCommand : EditorCommand() {
     }
 
     override fun isEnabled(editorNonActionContext: EditorNonActionContext): Boolean {
-        return editorNonActionContext.editorTab.file.canWrite()
+        return editorNonActionContext.editorTab.file.canWrite() && !editorNonActionContext.editorTab.isReadOnly
     }
 
     override fun getIcon(): Icon {

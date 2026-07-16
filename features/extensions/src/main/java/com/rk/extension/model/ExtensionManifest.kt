@@ -14,9 +14,12 @@ data class ExtensionManifest(
     val description: String? = null,
     val author: ExtensionAuthor,
     val minAppVersion: Int? = null, // null means no minimum restriction
-    val maxAppVersion: Int? = null, // null means no maximum restriction
+    val supportedArchitectures: List<String>? = null,
     val repository: String,
     val license: String? = null,
+    val localization: List<String>? = null, // e.g. listOf("en", "de", "ja")
+    val dependencies: List<ExtensionId> = emptyList(),
+    val recommendations: List<ExtensionId> = emptyList(),
     val tags: List<String> = emptyList(),
     val hasSettings: Boolean = false,
 ) {
@@ -27,19 +30,4 @@ data class ExtensionManifest(
     }
 
     override fun hashCode(): Int = id.hashCode()
-}
-
-@Serializable
-data class CachedExtension(
-    val sha: String, // from GitHub
-    val metadata: ExtensionManifest,
-    val lastFetched: Long,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is CachedExtension) return false
-        return sha == other.sha
-    }
-
-    override fun hashCode(): Int = sha.hashCode()
 }

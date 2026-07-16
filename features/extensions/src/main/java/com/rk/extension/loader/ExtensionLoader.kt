@@ -88,18 +88,13 @@ suspend fun LocalExtension.load(
  * the app version does not satisfy the extension's requirements.
  */
 private fun LocalExtension.verifyCompatibility(application: Application) {
-    val minAppVersion = manifest.minAppVersion
-    val maxAppVersion = manifest.maxAppVersion
-
     val xedVersionCode =
         PackageInfoCompat.getLongVersionCode(application.packageManager.getPackageInfo(application.packageName, 0))
 
-    val isBelowMin = minAppVersion != null && xedVersionCode < minAppVersion
-    val isAboveMax = maxAppVersion != null && xedVersionCode > maxAppVersion
-
-    if (isBelowMin || isAboveMax) {
+    val minAppVersion = manifest.minAppVersion
+    if (minAppVersion != null && xedVersionCode < minAppVersion) {
         throw IllegalStateException(
-            "Extension '${manifest.name}' (${manifest.version}) is not compatible with this version of Xed-Editor (min: $minAppVersion, max: $maxAppVersion, Xed-Editor: $xedVersionCode)"
+            "Extension '${manifest.name}' (${manifest.version}) is not compatible with this version of Xed-Editor (min: $minAppVersion, current: $xedVersionCode)"
         )
     }
 }

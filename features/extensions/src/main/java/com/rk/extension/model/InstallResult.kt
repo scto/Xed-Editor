@@ -9,6 +9,5 @@ sealed interface InstallResult {
 }
 
 enum class ExtensionError {
-    OUTDATED_CLIENT,
-    OUTDATED_EXTENSION,
+    OUTDATED_CLIENT
 }

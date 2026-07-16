@@ -1,6 +1,7 @@
 package com.rk.settings.extension
 
 import android.content.Intent
+import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
@@ -62,6 +63,7 @@ import com.rk.icons.XedIcon
 import com.rk.resources.drawables
 import com.rk.resources.getString
 import com.rk.resources.strings
+import com.rk.settings.Settings
 import com.rk.theme.Typography
 import com.rk.utils.formatFileSize
 import com.rk.utils.formatNumberCompact
@@ -72,6 +74,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ExtensionDetail(extension: Extension?, navController: NavController) {
     val scope = rememberCoroutineScope()
+    val dialogManager = remember { ExtensionDialogManager() }
 
     var isRefreshing by remember { mutableStateOf(false) }
     var refreshKey by remember { mutableIntStateOf(0) }
@@ -104,28 +107,12 @@ fun ExtensionDetail(extension: Extension?, navController: NavController) {
             refreshKey++
         },
     ) {
+        ExtensionDialogRenderer(dialogManager)
+
         if (extension == null) {
             Text(stringResource(strings.ext_not_found_desc), modifier = Modifier.padding(horizontal = 16.dp))
         } else {
-            var localInstallState by remember {
-                mutableStateOf(
-                    if (extensionManager.isInstalled(extension.id)) {
-                        if (extension is UpdatableExtension && extension.hasUpdate()) {
-                            InstallState.Updatable
-                        } else {
-                            InstallState.Installed
-                        }
-                    } else {
-                        InstallState.Idle
-                    }
-                )
-            }
-
-            val installState =
-                remember(extension, localInstallState, ExtensionRegistry.activeInstalls[extension.id]) {
-                    val active = ExtensionRegistry.activeInstalls[extension.id]
-                    active ?: localInstallState
-                }
+            val installState = rememberInstallState(extension)
 
             Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 AboutSection(
@@ -133,12 +120,12 @@ fun ExtensionDetail(extension: Extension?, navController: NavController) {
                     refreshKey = refreshKey,
                     installState = installState,
                     updateInstallState = {
-                        localInstallState = it
-                        if (it == InstallState.Idle && extensionManager.storeExtension[extension.id] == null) {
+                        if (extensionManager.getExtension(extension.id) == null) {
                             navController.popBackStack()
                         }
                     },
                     scope = scope,
+                    dialogManager = dialogManager,
                 )
             }
             TabSection(extension, scope, refreshKey, onLoaded = { isRefreshing = false })
@@ -157,6 +144,7 @@ private fun AboutSection(
     installState: InstallState,
     updateInstallState: (InstallState) -> Unit,
     scope: CoroutineScope,
+    dialogManager: ExtensionDialogManager,
 ) {
     val context = LocalContext.current
     val activity = LocalActivity.current as? AppCompatActivity
@@ -297,32 +285,59 @@ private fun AboutSection(
         ExtensionStats(Modifier.weight(1f), stringResource(strings.size).uppercase(), size)
     }
 
-    val minAppVersion = extension.minAppVersion
-    val maxAppVersion = extension.maxAppVersion
-
     val xedVersionCode = App.versionCode
+    val minAppVersion = extension.minAppVersion
     val outdatedClient = minAppVersion != null && xedVersionCode < minAppVersion
-    val outdatedExtension = maxAppVersion != null && xedVersionCode > maxAppVersion
+
+    val currentArchitecture = Build.SUPPORTED_ABIS.firstOrNull()
+    val supportedArchitecture =
+        currentArchitecture == null || extension.supportedArchitectures?.contains(currentArchitecture) ?: true
+
+    val recommendations = getRecommendations(extension)
 
     ExtensionActionButtons(
-        outdatedWarning = outdatedClient || outdatedExtension,
-        modifier = Modifier.fillMaxWidth(),
+        outdatedWarning = outdatedClient || !supportedArchitecture,
         installState = installState,
         scope = scope,
         progress = ExtensionRegistry.downloadProgress[extension.id] ?: 0f,
         onInstallClick = {
-            checkExtensionWarningAndRun(activity) {
-                runExtensionInstallAction(extension, updateInstallState, context, activity)
+            val action = {
+                val missing = getMissingDependencies(extension)
+                if (missing.isNotEmpty()) {
+                    dialogManager.showDependencies(extension, missing) {
+                        runExtensionInstallAction(extension, updateInstallState, context, activity)
+                    }
+                } else {
+                    runExtensionInstallAction(extension, updateInstallState, context, activity)
+                }
+            }
+
+            if (Settings.warn_extensions) {
+                dialogManager.showWarning(action)
+            } else {
+                action()
             }
         },
         onUninstallClick = { runExtensionUninstallAction(extension, updateInstallState, scope, activity) },
         onUpdateClick = {
             if (extension !is UpdatableExtension) return@ExtensionActionButtons
-            runExtensionUpdateAction(extension, updateInstallState, context, activity)
+
+            val missing = getMissingDependencies(extension)
+            if (missing.isNotEmpty()) {
+                dialogManager.showDependencies(extension, missing) {
+                    runExtensionUpdateAction(extension, updateInstallState, context, activity)
+                }
+            } else {
+                runExtensionUpdateAction(extension, updateInstallState, context, activity)
+            }
+        },
+        showRecommendedButton = recommendations.isNotEmpty(),
+        onRecommendedClick = {
+            dialogManager.showRecommendations(extension, recommendations)
         },
     )
 
-    if (outdatedClient || outdatedExtension) {
+    if (outdatedClient || !supportedArchitecture) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Rounded.Warning,
@@ -330,7 +345,7 @@ private fun AboutSection(
                 tint = MaterialTheme.colorScheme.error,
             )
             Text(
-                stringResource(if (outdatedClient) strings.outdated_client else strings.outdated_extension),
+                stringResource(if (outdatedClient) strings.outdated_client else strings.unsupported_architecture),
                 style = MaterialTheme.typography.labelMedium,
             )
         }

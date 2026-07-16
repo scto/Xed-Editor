@@ -1,6 +1,8 @@
 package com.rk
 
 import android.app.Application
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.rk.activities.settings.SettingsRoutes
 import com.rk.extension.ActivityProvider
 import com.rk.extension.extensionManager
@@ -55,8 +57,21 @@ class ExtensionFeature : Feature {
 
         // Register settings routes
         SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.Extensions.route) { navController, _ ->
-                ExtensionScreen(navController = navController)
+            SettingsRoute(
+                "${SettingsRoutes.Extensions.route}?query={query}",
+                arguments =
+                    listOf(
+                        navArgument(
+                            "query",
+                            builder = {
+                                nullable = true
+                                type = NavType.StringType
+                            },
+                        )
+                    ),
+            ) { navController, backStackEntry ->
+                val query = backStackEntry.arguments?.getString("query")
+                ExtensionScreen(navController = navController, query)
             }
         )
         SettingsRegistry.registerRoute(

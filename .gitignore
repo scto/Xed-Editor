@@ -21,6 +21,7 @@ Todo.md
 */build
 **/build
 .vscode
+.artifacts
 core/wasm3
 
 # Binary artifacts

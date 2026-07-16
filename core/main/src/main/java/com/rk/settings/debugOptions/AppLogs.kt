@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
 import com.rk.components.StyledTextField
+import com.rk.resources.getString
+import com.rk.resources.strings
 import com.rk.settings.Settings
 import com.rk.utils.application
 import com.rk.xededitor.BuildConfig
@@ -31,7 +33,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun AppLogs() {
     var logLevel by remember { mutableStateOf(LogLevel.INFO) }
-    var logText by remember { mutableStateOf("Loading...") }
+    var logText by remember { mutableStateOf(strings.loading.getString()) }
 
     LaunchedEffect(logLevel) {
         withContext(Dispatchers.IO) {
@@ -39,28 +41,14 @@ fun AppLogs() {
         }
     }
 
-    val logFlow = remember(logLevel) {
-        if (Settings.enable_logcat) {
-            LogcatService.logFlow.filter { line ->
-                if (line.isNotEmpty() && line.contains('/')) {
-                    val idx = line.indexOf('/')
-                    if (idx == 1) {
-                        val char = line[0]
-                        val priorityValue = when (char) {
-                            'V', 'D' -> 5
-                            'I' -> 3
-                            'W' -> 2
-                            'E', 'F' -> 1
-                            else -> 5
-                        }
-                        priorityValue <= logLevel.value
-                    } else true
-                } else true
+    val logFlow =
+        remember(logLevel) {
+            if (Settings.enable_logcat) {
+                LogcatService.logFlow.filter { it.matchesLogLevel(logLevel) }
+            } else {
+                null
             }
-        } else {
-            null
         }
-    }
 
     LogScreen(logText, "App Logs Report", "app_logs", flow = logFlow) {
         LogLevelDropdown(logLevel, { logLevel = it })
@@ -68,34 +56,23 @@ fun AppLogs() {
 }
 
 private fun buildLogs(logLevel: LogLevel): String {
-    val entries = if (Settings.enable_logcat) {
-        val logsCopy = synchronized(LogcatService.logcatLogs) {
-            LogcatService.logcatLogs.toList()
+    val entries =
+        if (Settings.enable_logcat) {
+            val logsCopy =
+                synchronized(LogcatService.logcatLogs) {
+                    LogcatService.logcatLogs.toList()
+                }
+            logsCopy
+                .filter { line ->
+                    line.matchesLogLevel(logLevel)
+                }
+                .takeLast(1000)
+                .joinToString("\n")
+        } else {
+            LogCollector.logs
+                .filter { it.level.ordinal <= logLevel.ordinal }
+                .joinToString("\n") { "[${it.level.name.uppercase()}] ${it.message}" }
         }
-        logsCopy
-            .filter { line ->
-                if (line.isNotEmpty() && line.contains('/')) {
-                    val idx = line.indexOf('/')
-                    if (idx == 1) {
-                        val char = line[0]
-                        val priorityValue = when (char) {
-                            'V', 'D' -> 5
-                            'I' -> 3
-                            'W' -> 2
-                            'E', 'F' -> 1
-                            else -> 5
-                        }
-                        priorityValue <= logLevel.value
-                    } else true
-                } else true
-            }
-            .takeLast(1000)
-            .joinToString("\n")
-    } else {
-        LogCollector.logs
-            .filter { it.level.ordinal <= logLevel.ordinal }
-            .joinToString("\n") { "[${it.level.name.uppercase()}] ${it.message}" }
-    }
 
     val packageInfo = with(application!!) { packageManager.getPackageInfo(packageName, 0) }
     val versionName = packageInfo.versionName
@@ -110,6 +87,26 @@ private fun buildLogs(logLevel: LogLevel): String {
 
         append(entries)
     }
+}
+
+private fun String.matchesLogLevel(level: LogLevel): Boolean {
+    if (isEmpty()) return true
+
+    val idx = indexOf('/')
+    if (idx != 1) return true
+
+    val priority =
+        when (this[0]) {
+            'V',
+            'D' -> 5
+            'I' -> 3
+            'W' -> 2
+            'E',
+            'F' -> 1
+            else -> 5
+        }
+
+    return priority <= level.value
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

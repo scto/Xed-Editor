@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -86,7 +87,7 @@ fun FormatterSettings(navController: NavController, modifier: Modifier = Modifie
         isExpandedScreen = LocalIsExpandedScreen.current,
         fab = {
             ExtendedFloatingActionButton(
-                onClick = { navController.navigate(SettingsRoutes.Extensions.route) },
+                onClick = { navController.navigate("${SettingsRoutes.Extensions.route}?query=formatter") },
                 icon = { Icon(painter = painterResource(drawables.extension), contentDescription = null) },
                 text = { Text(stringResource(strings.browse_extensions)) },
             )
@@ -216,6 +217,7 @@ fun DraggableFormatter(modifier: Modifier = Modifier, formatter: FormatterProvid
                         icon = formatter.icon ?: Icon.ResourceIcon(drawables.auto_fix),
                         modifier = Modifier.padding(end = 8.dp).size(20.dp),
                         contentDescription = formatter.label,
+                        tint = Color.Unspecified,
                     )
 
                     Column {

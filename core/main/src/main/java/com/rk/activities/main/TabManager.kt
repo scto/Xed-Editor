@@ -12,10 +12,14 @@ import com.rk.tabs.base.Tab
 import com.rk.tabs.editor.EditorTab
 import kotlinx.coroutines.launch
 
+// TODO: Show lock icon for readOnly tabs (allow readOnly tabs)
+
 class TabManager {
     private val _tabs = mutableStateListOf<Tab>()
     val tabs: List<Tab>
         get() = _tabs.toList()
+
+    private val selectionHistory = mutableListOf<Tab>()
 
     var currentTabIndex by mutableIntStateOf(0)
         private set
@@ -32,6 +36,7 @@ class TabManager {
         }
 
         _tabs.add(tab)
+        selectionHistory.add(0, tab)
         tab.onTabAdded()
 
         DefaultScope.launch {
@@ -52,6 +57,7 @@ class TabManager {
         val tab = _tabs[index]
         tab.onTabRemoved()
         _tabs.removeAt(index)
+        selectionHistory.remove(tab)
 
         DefaultScope.launch {
             Events.publish(TabEvent.Closed(tab))
@@ -60,13 +66,21 @@ class TabManager {
             }
         }
 
-        setCurrentTab(
-            when {
-                _tabs.isEmpty() -> 0
-                index <= currentTabIndex -> maxOf(0, currentTabIndex - 1)
-                else -> currentTabIndex
+        if (_tabs.isEmpty()) {
+            currentTabIndex = 0
+        } else if (index == currentTabIndex) {
+            val nextTab = selectionHistory.firstOrNull()
+            val nextIndex = if (nextTab != null) _tabs.indexOf(nextTab) else -1
+
+            if (nextIndex != -1) {
+                setCurrentTab(nextIndex)
+            } else {
+                val newIndex = maxOf(0, index - 1)
+                setCurrentTab(newIndex)
             }
-        )
+        } else if (index < currentTabIndex) {
+            currentTabIndex--
+        }
     }
 
     fun removeTab(tab: Tab) = removeTab(_tabs.indexOf(tab))
@@ -104,6 +118,9 @@ class TabManager {
         currentTab?.onTabSelected()
 
         val tab = currentTab ?: return
+        selectionHistory.remove(tab)
+        selectionHistory.add(0, tab)
+
         DefaultScope.launch {
             Events.publish(TabEvent.Selected(tab))
             if (tab is EditorTab) {
@@ -117,12 +134,15 @@ class TabManager {
 
         _tabs.forEach { if (it != tabToKeep) it.onTabRemoved() }
         _tabs.removeAll { it != tabToKeep }
+        selectionHistory.clear()
+        selectionHistory.add(tabToKeep)
         currentTabIndex = 0
     }
 
     fun removeAllTabs() {
         _tabs.forEach { it.onTabRemoved() }
         _tabs.clear()
+        selectionHistory.clear()
         currentTabIndex = 0
     }
 }

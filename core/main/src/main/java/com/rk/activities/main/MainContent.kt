@@ -4,9 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -235,6 +237,7 @@ private fun TabItem(
             tabState,
             tabState.tabTitle.value,
             tabState is EditorTab && tabState.editorState.isDirty,
+            tabState is EditorTab && tabState.editorState.editable,
             Settings.show_tab_icons,
         ) {
             mutableStateOf<Int?>(null)
@@ -309,6 +312,11 @@ private fun TabItemContent(
                 calculatedTabWidth?.let { width -> modifier.width(with(density) { width.toDp() }) } ?: modifier
             }
             .let { if (isDraggableContent) it.background(backgroundColor.copy(alpha = 0.4f)) else it }
+            .let {
+                if (tabState is EditorTab && !tabState.editorState.editable)
+                    it.background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f))
+                else it
+            }
 
     val onClick: () -> Unit = {
         if (isSelected) {
@@ -320,17 +328,27 @@ private fun TabItemContent(
 
     val underlineColor = getUnderlineColor(context, fileTreeViewModel, tabState.file)
     val tabText: @Composable () -> Unit = {
-        Text(
-            text =
-                if (tabState is EditorTab && tabState.editorState.isDirty) {
-                    "*${tabState.tabTitle.value}"
-                } else {
-                    tabState.tabTitle.value
-                },
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.addIf(underlineColor != null) { drawErrorUnderline(underlineColor!!) },
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (tabState is EditorTab && !tabState.editorState.editable) {
+                Icon(
+                    painter = painterResource(drawables.lock),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp).padding(end = 4.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                text =
+                    if (tabState is EditorTab && tabState.editorState.isDirty) {
+                        "*${tabState.tabTitle.value}"
+                    } else {
+                        tabState.tabTitle.value
+                    },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.addIf(underlineColor != null) { drawErrorUnderline(underlineColor!!) },
+            )
+        }
 
         DropdownMenu(expanded = showTabMenu, onDismissRequest = { showTabMenu = false }) {
             XedDropdownMenuItem(

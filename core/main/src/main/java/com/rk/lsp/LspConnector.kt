@@ -40,7 +40,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.eclipse.lsp4j.DefinitionParams
-import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams
 import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.LocationLink
 import org.eclipse.lsp4j.MessageParams
@@ -56,8 +55,6 @@ import org.eclipse.lsp4j.RenameParams
 import org.eclipse.lsp4j.ServerCapabilities
 import org.eclipse.lsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.WorkspaceEdit
-import org.eclipse.lsp4j.WorkspaceFolder
-import org.eclipse.lsp4j.WorkspaceFoldersChangeEvent
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import java.net.URI
@@ -169,19 +166,7 @@ class LspConnector(
             launch { servers.forEach { it.beforeConnect() } }
 
             try {
-                lspEditor?.apply {
-                    connectWithTimeout()
-                    requestManager.didChangeWorkspaceFolders(
-                        DidChangeWorkspaceFoldersParams().apply {
-                            event =
-                                WorkspaceFoldersChangeEvent().apply {
-                                    added =
-                                        listOf(WorkspaceFolder(projectFile.toUri().toString(), projectFile.getName()))
-                                }
-                        }
-                    )
-                    openDocument()
-                }
+                lspEditor?.connectWithTimeout()
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
