@@ -3,6 +3,8 @@ package com.rk.theme
 import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -90,7 +92,13 @@ fun XedTheme(
         }
 
     CompositionLocalProvider(LocalThemeHolder provides themeHolder) {
-        MaterialTheme(colorScheme = colorScheme, typography = rememberAppTypography(LocalContext.current)) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = rememberAppTypography(LocalContext.current),
+            shapes = MaterialTheme.shapes.copy(
+                extraSmall = RoundedCornerShape(16.dp)
+            )
+        ) {
             Surface(color = MaterialTheme.colorScheme.background) { content() }
         }
     }

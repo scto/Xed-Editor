@@ -237,6 +237,17 @@ object SaveAsAction : FileAction() {
     override val type = FileActionType.All
 }
 
+object AddFileAction : FileAction() {
+    override val icon = Icon.ResourceIcon(drawables.arrow_downward)
+    override val title = strings.add_file.getString()
+
+    override fun action(context: FileActionContext) {
+        FileOperations.addFile(context.file)
+    }
+
+    override val type = FileActionType(file = false, folder = true, rootFolder = true)
+}
+
 object OpenAsProjectAction : FileAction() {
     override val icon = Icon.ResourceIcon(drawables.folder_code)
     override val title = strings.open_as_project.getString()

@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.rk.components.XedDropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -112,32 +112,32 @@ fun EditorToolbarActions(modifier: Modifier = Modifier, viewModel: MainViewModel
                             val keyCombination = KeybindingsManager.getKeyCombinationForCommand(command)
                             val displayKeyCombination = keyCombination?.getDisplayName()
 
-                            DropdownMenuItem(
-                                enabled = command.isEnabled(),
-                                text = {
-                                    Text(
-                                        text = command.getLabel(),
-                                        color =
-                                            if (command is ToggleableCommand && command.isOn()) {
-                                                MaterialTheme.colorScheme.primary
-                                            } else {
-                                                Color.Unspecified
-                                            },
-                                    )
-                                },
-                                onClick = {
-                                    command.performCommand(ActionContext(activity!!))
-                                    expanded = false
-                                },
-                                leadingIcon = {
-                                    XedIcon(
-                                        command.getIcon(),
-                                        contentDescription = command.getLabel(),
-                                        tint =
-                                            if (command is ToggleableCommand && command.isOn()) {
-                                                MaterialTheme.colorScheme.primary
-                                            } else LocalContentColor.current,
-                                    )
+                             XedDropdownMenuItem(
+                                 enabled = command.isEnabled(),
+                                 text = {
+                                     Text(
+                                         text = command.getLabel(),
+                                         color =
+                                             if (command is ToggleableCommand && command.isOn()) {
+                                                 MaterialTheme.colorScheme.primary
+                                             } else {
+                                                 Color.Unspecified
+                                             },
+                                     )
+                                 },
+                                 onClick = {
+                                     command.performCommand(ActionContext(activity!!))
+                                     expanded = false
+                                 },
+                                 leadingIcon = {
+                                     XedIcon(
+                                         command.getIcon(),
+                                         contentDescription = command.getLabel(),
+                                         tint =
+                                             if (command is ToggleableCommand && command.isOn()) {
+                                                 MaterialTheme.colorScheme.primary
+                                             } else LocalContentColor.current,
+                                     )
                                 },
                                 trailingIcon =
                                     displayKeyCombination?.let {

@@ -31,7 +31,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.rk.components.XedDropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -166,7 +166,7 @@ class GitTab(val viewModel: GitViewModel) : DrawerTab() {
 
                     DropdownMenu(expanded = showBranchesMenu, onDismissRequest = { showBranchesMenu = false }) {
                         viewModel.getBranchList().forEach { branch ->
-                            DropdownMenuItem(
+                            XedDropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         RadioButton(selected = branch == viewModel.currentBranch, onClick = null)
@@ -180,7 +180,7 @@ class GitTab(val viewModel: GitViewModel) : DrawerTab() {
                                 },
                             )
                         }
-                        DropdownMenuItem(
+                        XedDropdownMenuItem(
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(imageVector = Icons.Outlined.Add, contentDescription = null)

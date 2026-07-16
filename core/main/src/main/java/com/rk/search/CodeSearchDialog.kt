@@ -28,7 +28,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.rk.components.XedDropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -152,7 +152,7 @@ fun CodeSearchDialog(
                             expanded = searchViewModel.showOptionsMenu,
                             onDismissRequest = { searchViewModel.showOptionsMenu = false },
                         ) {
-                            DropdownMenuItem(
+                            XedDropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Checkbox(checked = searchViewModel.ignoreCase, onCheckedChange = null)
@@ -167,7 +167,7 @@ fun CodeSearchDialog(
                                 },
                             )
 
-                            DropdownMenuItem(
+                            XedDropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(painter = painterResource(drawables.edit), contentDescription = null)

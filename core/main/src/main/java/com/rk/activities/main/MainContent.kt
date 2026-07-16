@@ -14,7 +14,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.rk.components.XedDropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LeadingIconTab
@@ -351,21 +351,21 @@ private fun TabItemContent(
         }
 
         DropdownMenu(expanded = showTabMenu, onDismissRequest = { showTabMenu = false }) {
-            DropdownMenuItem(
+            XedDropdownMenuItem(
                 text = { Text(stringResource(strings.close_this)) },
                 onClick = {
                     showTabMenu = false
                     onCloseThis(index)
                 },
             )
-            DropdownMenuItem(
+            XedDropdownMenuItem(
                 text = { Text(stringResource(strings.close_others)) },
                 onClick = {
                     showTabMenu = false
                     onCloseOthers(index)
                 },
             )
-            DropdownMenuItem(
+            XedDropdownMenuItem(
                 text = { Text(stringResource(strings.close_all)) },
                 onClick = {
                     showTabMenu = false
@@ -374,7 +374,7 @@ private fun TabItemContent(
             )
             tabState.file?.let {
                 val fileExists by produceState(false) { value = it.exists() }
-                DropdownMenuItem(
+                XedDropdownMenuItem(
                     text = { Text(stringResource(strings.file_actions)) },
                     enabled = fileExists,
                     trailingIcon = {
@@ -399,7 +399,7 @@ private fun TabItemContent(
                 actions.forEach { action ->
                     when (action) {
                         is FileAction -> {
-                            DropdownMenuItem(
+                            XedDropdownMenuItem(
                                 text = { Text(action.title) },
                                 leadingIcon = { XedIcon(action.icon, contentDescription = action.title) },
                                 enabled = action.isEnabled(it),
@@ -413,7 +413,7 @@ private fun TabItemContent(
                         }
                         is MultiFileAction -> {
                             val files = listOf(it)
-                            DropdownMenuItem(
+                            XedDropdownMenuItem(
                                 text = { Text(action.title) },
                                 leadingIcon = { XedIcon(action.icon, contentDescription = action.title) },
                                 enabled = action.isEnabled(files),

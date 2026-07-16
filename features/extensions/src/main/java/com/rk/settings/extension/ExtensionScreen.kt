@@ -24,7 +24,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.rk.components.XedDropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -797,7 +797,7 @@ private fun ExtensionSearchBar(
                             fontWeight = FontWeight.Bold,
                         )
                         ExtensionSortOptions.entries.forEach { sortOption ->
-                            DropdownMenuItem(
+                            XedDropdownMenuItem(
                                 text = { Text(stringResource(sortOption.stringRes)) },
                                 onClick = {
                                     onSortOptionChange(sortOption)
@@ -816,7 +816,7 @@ private fun ExtensionSearchBar(
                             fontWeight = FontWeight.Bold,
                         )
                         ExtensionFilterOptions.entries.forEach { filterOption ->
-                            DropdownMenuItem(
+                            XedDropdownMenuItem(
                                 text = { Text(stringResource(filterOption.stringRes)) },
                                 onClick = {
                                     onFilterOptionChange(filterOption)
