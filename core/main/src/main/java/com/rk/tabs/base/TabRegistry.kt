@@ -25,7 +25,7 @@ object TabRegistry {
         registeredTabs.values.remove(tabFactory)
     }
 
-    fun getTab(file: FileObject, projectRoot: FileObject?, viewModel: MainViewModel): Tab {
+    fun getTab(file: FileObject, projectRoot: FileObject?, viewModel: MainViewModel, readOnly: Boolean): Tab {
         val ext = file.getExtension()
         val type = FileTypeManager.fromExtension(ext)
 
@@ -35,7 +35,7 @@ object TabRegistry {
 
         return when (type) {
             BuiltinFileType.IMAGE -> ImageTab(file)
-            else -> viewModel.editorManager.createEditorTab(file, projectRoot)
+            else -> viewModel.editorManager.createEditorTab(file, projectRoot, readOnly)
         }
     }
 }

@@ -80,8 +80,12 @@ import java.nio.file.Paths
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(DelicateCoroutinesApi::class)
-open class EditorTab(override var file: FileObject, var projectRoot: FileObject?, val viewModel: MainViewModel) :
-    Tab() {
+open class EditorTab(
+    override var file: FileObject,
+    var projectRoot: FileObject?,
+    val viewModel: MainViewModel,
+    val isReadOnly: Boolean = false,
+) : Tab() {
     val isTemp: Boolean
         get() {
             return file.getAbsolutePath().startsWith(getTempDir().child("temp_editor").absolutePath)
@@ -138,7 +142,7 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
 
             projectRoot = projectRoot ?: file.getParentFile()
 
-            editorState.editable = !Settings.read_only_default && file.canWrite()
+            editorState.editable = !isReadOnly && !Settings.read_only_default && file.canWrite()
             if (editorState.textmateScope == null) {
                 editorState.textmateScope = FileTypeManager.fromFileName(file.getName()).textmateScope
             }
@@ -498,6 +502,7 @@ open class EditorTab(override var file: FileObject, var projectRoot: FileObject?
             scrollX = editor.scrollX,
             scrollY = editor.scrollY,
             unsavedContent = if (editorState.isDirty) editor.text.toString() else null,
+            isReadOnly = isReadOnly,
         )
     }
 

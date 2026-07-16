@@ -23,8 +23,9 @@ class ExtensionContext(val extension: LocalExtension, val appContext: Context, v
     val currentActivity
         get() = ActivityProvider.currentActivity
 
-    val appResources
-        get() = AppResources(appContext, appContext.resources, appContext.packageName)
+    val appResources by lazy {
+        AppResources(appContext, appContext.resources, appContext.packageName)
+    }
 
     val extensionFiles
         get() = File(extension.installPath).resolve("files").createDirIfNot()

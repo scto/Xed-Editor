@@ -16,24 +16,33 @@ import kotlinx.coroutines.withContext
 
 class EditorManager(private val viewModel: MainViewModel) {
 
-    fun createEditorTab(file: FileObject, projectRoot: FileObject?): EditorTab {
-        return EditorTab(file = file, projectRoot = projectRoot, viewModel = viewModel)
+    fun createEditorTab(file: FileObject, projectRoot: FileObject? = null, isReadOnly: Boolean = false): EditorTab {
+        return EditorTab(file = file, projectRoot = projectRoot, viewModel = viewModel, isReadOnly = isReadOnly)
     }
 
-    fun addEditorTab(file: FileObject, projectRoot: FileObject?, switchToTab: Boolean, checkDuplicate: Boolean = true) {
-        val editorTab = createEditorTab(file, projectRoot)
+    fun addEditorTab(
+        file: FileObject,
+        projectRoot: FileObject? = null,
+        switchToTab: Boolean = true,
+        checkDuplicate: Boolean = true,
+        isReadOnly: Boolean = false,
+    ) {
+        val editorTab = createEditorTab(file, projectRoot, isReadOnly)
         viewModel.tabManager.addTab(editorTab, switchToTab, checkDuplicate)
     }
 
     suspend fun jumpToPosition(
         file: FileObject,
-        projectRoot: FileObject?,
+        projectRoot: FileObject? = null,
         lineStart: Int,
         charStart: Int,
         lineEnd: Int,
         charEnd: Int,
+        isReadOnly: Boolean = false,
     ) {
-        withContext(Dispatchers.Main) { openFile(file, projectRoot = projectRoot, switchToTab = true) }
+        withContext(Dispatchers.Main) {
+            openFile(file, projectRoot = projectRoot, switchToTab = true, isReadOnly = isReadOnly)
+        }
 
         val targetTab = viewModel.tabs.filterIsInstance<EditorTab>().find { it.file == file } ?: return
 
@@ -51,12 +60,13 @@ class EditorManager(private val viewModel: MainViewModel) {
 
     suspend fun openFile(
         fileObject: FileObject,
-        projectRoot: FileObject?,
-        switchToTab: Boolean,
+        projectRoot: FileObject? = null,
+        switchToTab: Boolean = true,
         checkDuplicate: Boolean = true,
+        isReadOnly: Boolean = false,
     ) {
         val function = suspend {
-            val tab = TabRegistry.getTab(fileObject, projectRoot, viewModel)
+            val tab = TabRegistry.getTab(fileObject, projectRoot, viewModel, isReadOnly)
             withContext(Dispatchers.Main) { viewModel.tabManager.addTab(tab, switchToTab, checkDuplicate) }
         }
 
