@@ -78,6 +78,7 @@ import com.rk.icons.Download
 import com.rk.icons.XedIcons
 import com.rk.resources.drawables
 import com.rk.resources.strings
+import com.rk.settings.Settings
 import com.rk.settings.theme.themes
 import com.rk.theme.ThemeConfig
 import com.rk.theme.Typography
@@ -125,6 +126,8 @@ fun ExtensionScreen(navController: NavController, query: String?) {
     var currentSortOption by remember { mutableStateOf(ExtensionSortOptions.DOWNLOAD_COUNT) }
     var currentFilterOption by remember { mutableStateOf(ExtensionFilterOptions.ALL) }
     val searchQuery = rememberTextFieldState(query ?: "")
+
+    val dialogManager = remember { ExtensionDialogManager() }
 
     var isIndexing by remember { mutableStateOf(false) }
     var isFetching by remember { mutableStateOf(false) }
@@ -282,7 +285,11 @@ fun ExtensionScreen(navController: NavController, query: String?) {
                 onClick = {
                     when (selectedCategory) {
                         StoreCategory.EXTENSIONS -> {
-                            checkExtensionWarningAndRun(activity) {
+                            if (Settings.warn_extensions) {
+                                dialogManager.showWarning {
+                                    filePickerLauncher.launch(arrayOf("application/zip"))
+                                }
+                            } else {
                                 filePickerLauncher.launch(arrayOf("application/zip"))
                             }
                         }
@@ -295,6 +302,10 @@ fun ExtensionScreen(navController: NavController, query: String?) {
             )
         },
     ) {
+        item {
+            ExtensionDialogRenderer(dialogManager)
+        }
+
         when (selectedCategory) {
             StoreCategory.EXTENSIONS -> {
                 item {
@@ -359,32 +370,27 @@ fun ExtensionScreen(navController: NavController, query: String?) {
                             PreferenceGroup(heading = stringResource(strings.local)) {
                                 localExtensions.forEach { extension ->
                                     key(extension.id) {
-                                        val installState =
-                                            remember(
-                                                extension,
-                                                ExtensionRegistry.activeInstalls[extension.id],
-                                            ) {
-                                                val active = ExtensionRegistry.activeInstalls[extension.id]
-                                                active
-                                                    ?: if (extensionManager.isInstalled(extension.id)) {
-                                                        if (extension is UpdatableExtension && extension.hasUpdate()) {
-                                                            InstallState.Updatable
-                                                        } else {
-                                                            InstallState.Installed
-                                                        }
-                                                    } else {
-                                                        InstallState.Idle
-                                                    }
-                                            }
+                                        val installState = rememberInstallState(extension)
 
                                         ExtensionCard(
                                             extension = extension,
                                             installState = installState,
                                             onInstallClick = {
-                                                checkExtensionWarningAndRun(activity) {
-                                                    ensureExtensionDependencies(extension, scope, context, activity) {
+                                                val action = {
+                                                    val missing = getMissingDependencies(extension)
+                                                    if (missing.isNotEmpty()) {
+                                                        dialogManager.showDependencies(extension, missing) {
+                                                            runExtensionInstallAction(extension, {}, context, activity)
+                                                        }
+                                                    } else {
                                                         runExtensionInstallAction(extension, {}, context, activity)
                                                     }
+                                                }
+
+                                                if (Settings.warn_extensions) {
+                                                    dialogManager.showWarning(action)
+                                                } else {
+                                                    action()
                                                 }
                                             },
                                             onUninstallClick = {
@@ -392,7 +398,12 @@ fun ExtensionScreen(navController: NavController, query: String?) {
                                             },
                                             onUpdateClick = {
                                                 if (extension !is UpdatableExtension) return@ExtensionCard
-                                                ensureExtensionDependencies(extension, scope, context, activity) {
+                                                val missing = getMissingDependencies(extension)
+                                                if (missing.isNotEmpty()) {
+                                                    dialogManager.showDependencies(extension, missing) {
+                                                        runExtensionUpdateAction(extension, {}, context, activity)
+                                                    }
+                                                } else {
                                                     runExtensionUpdateAction(extension, {}, context, activity)
                                                 }
                                             },
@@ -418,32 +429,27 @@ fun ExtensionScreen(navController: NavController, query: String?) {
                             ) {
                                 storeExtensions.forEach { extension ->
                                     key(extension.id) {
-                                        val installState =
-                                            remember(
-                                                extension,
-                                                ExtensionRegistry.activeInstalls[extension.id],
-                                            ) {
-                                                val active = ExtensionRegistry.activeInstalls[extension.id]
-                                                active
-                                                    ?: if (extensionManager.isInstalled(extension.id)) {
-                                                        if (extension is UpdatableExtension && extension.hasUpdate()) {
-                                                            InstallState.Updatable
-                                                        } else {
-                                                            InstallState.Installed
-                                                        }
-                                                    } else {
-                                                        InstallState.Idle
-                                                    }
-                                            }
+                                        val installState = rememberInstallState(extension)
 
                                         ExtensionCard(
                                             extension = extension,
                                             installState = installState,
                                             onInstallClick = {
-                                                checkExtensionWarningAndRun(activity) {
-                                                    ensureExtensionDependencies(extension, scope, context, activity) {
+                                                val action = {
+                                                    val missing = getMissingDependencies(extension)
+                                                    if (missing.isNotEmpty()) {
+                                                        dialogManager.showDependencies(extension, missing) {
+                                                            runExtensionInstallAction(extension, {}, context, activity)
+                                                        }
+                                                    } else {
                                                         runExtensionInstallAction(extension, {}, context, activity)
                                                     }
+                                                }
+
+                                                if (Settings.warn_extensions) {
+                                                    dialogManager.showWarning(action)
+                                                } else {
+                                                    action()
                                                 }
                                             },
                                             onUninstallClick = {
@@ -451,7 +457,12 @@ fun ExtensionScreen(navController: NavController, query: String?) {
                                             },
                                             onUpdateClick = {
                                                 if (extension !is UpdatableExtension) return@ExtensionCard
-                                                ensureExtensionDependencies(extension, scope, context, activity) {
+                                                val missing = getMissingDependencies(extension)
+                                                if (missing.isNotEmpty()) {
+                                                    dialogManager.showDependencies(extension, missing) {
+                                                        runExtensionUpdateAction(extension, {}, context, activity)
+                                                    }
+                                                } else {
                                                     runExtensionUpdateAction(extension, {}, context, activity)
                                                 }
                                             },

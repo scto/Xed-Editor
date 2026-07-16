@@ -1,6 +1,5 @@
 package com.rk.settings.extension
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +14,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,37 +31,30 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.rk.extension.Extension
 import com.rk.extension.ExtensionId
-import com.rk.extension.UpdatableExtension
 import com.rk.extension.extensionManager
 import com.rk.resources.drawables
 import com.rk.resources.strings
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
-fun DependenciesDialog(
+fun RecommendationsDialog(
     extensionIds: List<ExtensionId>,
-    softDependencies: Boolean,
     scope: CoroutineScope,
-    context: Context,
     activity: AppCompatActivity?,
+    onInstallClick: (Extension) -> Unit,
+    onUpdateClick: (Extension) -> Unit,
     onDismiss: () -> Unit,
-    onCompletion: () -> Unit,
 ) {
-    val allExtensionsInstalled = extensionIds.all { extensionManager.isInstalled(it) }
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(stringResource(if (softDependencies) strings.recommendations else strings.missing_dependencies))
+            Text(stringResource(strings.recommendations))
         },
         text = {
             Column {
                 Text(
-                    text =
-                        stringResource(
-                            if (softDependencies) strings.recommendations_description
-                            else strings.dependencies_description
-                        ),
+                    text = stringResource(strings.recommendations_description),
                     style = MaterialTheme.typography.bodyMedium,
                 )
 
@@ -67,28 +63,9 @@ fun DependenciesDialog(
                 extensionIds.forEach { extensionId ->
                     DependencyItem(
                         extensionId = extensionId,
-                        onInstallClick = { dependency ->
-                            ensureExtensionDependencies(dependency, scope, context, activity) {
-                                runExtensionInstallAction(
-                                    extension = dependency,
-                                    updateInstallState = {},
-                                    context = context,
-                                    activity = activity,
-                                )
-                            }
-                        },
-                        onUpdateClick = { dependency ->
-                            if (dependency !is UpdatableExtension) return@DependencyItem
-
-                            ensureExtensionDependencies(dependency, scope, context, activity) {
-                                runExtensionUpdateAction(
-                                    extension = dependency,
-                                    updateInstallState = {},
-                                    context = context,
-                                    activity = activity,
-                                )
-                            }
-                        },
+                        showActions = true,
+                        onInstallClick = onInstallClick,
+                        onUpdateClick = onUpdateClick,
                         onUninstallClick = { dependency ->
                             runExtensionUninstallAction(
                                 extension = dependency,
@@ -102,30 +79,78 @@ fun DependenciesDialog(
             }
         },
         confirmButton = {
-            if (softDependencies) {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(strings.close))
-                }
-            } else {
-                TextButton(onClick = onCompletion, enabled = allExtensionsInstalled) {
-                    Text(stringResource(strings.continue_action))
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(strings.close))
+            }
+        },
+    )
+}
+
+@Composable
+fun DependenciesDialog(
+    extensionIds: List<ExtensionId>,
+    scope: CoroutineScope,
+    activity: AppCompatActivity?,
+    onDismiss: () -> Unit,
+    onCompletion: () -> Unit,
+) {
+    val context = LocalContext.current
+    var isInstalling by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = { if (!isInstalling) onDismiss() },
+        title = {
+            Text(stringResource(strings.missing_dependencies))
+        },
+        text = {
+            Column {
+                Text(
+                    text = stringResource(strings.dependencies_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                extensionIds.forEach { extensionId ->
+                    DependencyItem(
+                        extensionId = extensionId,
+                        showActions = false,
+                        onInstallClick = {},
+                        onUpdateClick = {},
+                        onUninstallClick = {},
+                    )
                 }
             }
         },
-        dismissButton =
-            if (!softDependencies) {
-                {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(strings.cancel))
+        confirmButton = {
+            TextButton(
+                enabled = !isInstalling,
+                onClick = {
+                    scope.launch {
+                        isInstalling = true
+                        val success = batchInstallExtensions(extensionIds, context, activity)
+                        isInstalling = false
+                        if (success) {
+                            onCompletion()
+                        }
                     }
-                }
-            } else null,
+                },
+            ) {
+                Text(stringResource(if (isInstalling) strings.installing else strings.continue_action))
+            }
+        },
+        dismissButton = {
+            TextButton(enabled = !isInstalling, onClick = onDismiss) {
+                Text(stringResource(strings.cancel))
+            }
+        },
     )
 }
 
 @Composable
 private fun DependencyItem(
     extensionId: ExtensionId,
+    showActions: Boolean,
     onInstallClick: (Extension) -> Unit,
     onUpdateClick: (Extension) -> Unit,
     onUninstallClick: (Extension) -> Unit,
@@ -169,19 +194,23 @@ private fun DependencyItem(
         }
 
         extension?.let {
-            SmallExtensionActionButton(
-                installState = InstallState.Idle,
-                scope = rememberCoroutineScope(),
-                onInstallClick = {
-                    onInstallClick(it)
-                },
-                onUninstallClick = {
-                    onUninstallClick(it)
-                },
-                onUpdateClick = {
-                    onUpdateClick(it)
-                },
-            )
+            if (showActions) {
+                val installState = rememberInstallState(extension)
+
+                SmallExtensionActionButton(
+                    installState = installState,
+                    scope = rememberCoroutineScope(),
+                    onInstallClick = {
+                        onInstallClick(it)
+                    },
+                    onUninstallClick = {
+                        onUninstallClick(it)
+                    },
+                    onUpdateClick = {
+                        onUpdateClick(it)
+                    },
+                )
+            }
         }
     }
 }
